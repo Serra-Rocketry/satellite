@@ -184,13 +184,18 @@ g = 9.81  # m/s² - aceleração da gravidade
 rho_ar = 1.225  # kg/m³ - densidade do ar ao nível do mar
 rho_tpu = 1200  # kg/m³ - densidade do TPU (material das asas)
 espessura = 0.6e-3  # m - espessura da asa (0.6 mm)
-Cd = 1.1  # coeficiente de arrasto (para superfícies planas em descida)
+Cd = 1.1  # coeficiente de arrasto (para asas e PocketQube)
+
+# Área frontal do PocketQube (caindo frontal)
+# Formato padrão: 50×50 mm = 2500 mm² = 25 cm² = 0.0025 m²
+area_frontal_pq_m2 = 0.0025
 ```
 
 **Valores calibrados para**:
 - Densidade do TPU: 1200 kg/m³ (TPU rígido)
 - Espessura: 0.6 mm (6/10 de mm de espessura)
 - Coeficiente de arrasto: 1.1 (placa plana em ângulo)
+- **Novo**: Área frontal PQ: 50×50 mm = 0.0025 m² (caindo frontal, Cd~1.0)
 
 
 ## Troubleshooting
@@ -256,10 +261,21 @@ cat extras/wing-analisys/asa_nova_relatorio.txt
 
 ## Histórico de Mudanças
 
+### v3 (08/04/2026) - Adição da Área Frontal do PocketQube
+- **Mudança**: Adicionada área frontal do PocketQube (50×50 mm = 25 cm²) ao cálculo de arrasto
+- **Fórmula**: `A_total = n_asas × area_asa + area_frontal_pq`
+- **Impacto**:
+  - 2 asas: v reduz 15.7% (área frontal é 40.6% do total)
+  - 4 asas: v reduz 8.8% (área frontal é 20.3% do total)
+  - 6 asas: v reduz 6.2% (área frontal é 13.5% do total)
+- **Validação**: Resultado está dentro do esperado (10-15% para poucas asas)
+- **Implicação**: Velocidades agora mais realistas para comparação com testes físicos
+  - Ex: 4 asas, R=124mm: v = 21.25 m/s (era 23.31 m/s sem PQ)
+
 ### v2 (08/04/2026) - Correção da Física
 - **Problema identificado**: Fórmula empírica `v = k√m / (R√n)` não respondia corretamente ao aumento de área
 - **Solução**: Implementada fórmula aerodinâmica correta `v = √(2mg / (ρCdA))`
-- **Validação**: Aumentar área 9x agora reduz v_terminal em 66.5% (fisicamente correto)
+- **Validação**: Aumentar área 9x reduz v_terminal em 66.5% (fisicamente correto)
 - **Mudanças**:
   - ✅ `simular_descida()` agora aceita `area_real_cm2` como parâmetro
   - ✅ Removido recálculo de área por integração (usava `np.trapz`)

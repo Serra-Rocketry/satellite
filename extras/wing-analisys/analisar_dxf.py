@@ -305,10 +305,15 @@ def simular_descida(R, corda_func, area_real_cm2, masa_pq_kg=0.450, configs=None
     rho_tpu = 1200  # kg/m³ (material das asas)
     espessura = 0.6e-3  # m (6/10 mm)
 
-    # Coeficiente de arrasto (para asa retangular/elíptica em descida)
-    # Cd ≈ 1.0-1.3 para superfícies planas
-    # Usaremos 1.1 como valor intermediário realista
+    # Coeficiente de arrasto
+    # Asas: Cd ≈ 1.0-1.3 para superfícies planas
+    # Usaremos 1.1 como valor intermediário realista para asas
     Cd = 1.1
+
+    # Área frontal do PocketQube (caindo frontal)
+    # Formato padrão: 50×50 mm = 2500 mm² = 25 cm² = 0.0025 m²
+    # Cd ≈ 1.0 para cubo/placa quadrada
+    area_frontal_pq_m2 = 0.0025  # m² (50×50 mm)
 
     # Converter área real de cm² para m²
     area_asa_m2 = area_real_cm2 * 1e-4
@@ -330,20 +335,25 @@ def simular_descida(R, corda_func, area_real_cm2, masa_pq_kg=0.450, configs=None
     def v_terminal_aerodinamica(m_total, n):
         """Velocidade terminal usando fórmula aerodinâmica correta.
 
-        v = √(2*m*g / (ρ*Cd*A*n))
+        v = √(2*m*g / (ρ*Cd*A_total))
 
         Onde:
         - m_total: massa total do objeto (PocketQube + asas)
         - n: número de asas
-        - A: área de cada asa
+        - A_total: área de arrasto total (asas + frontal PocketQube)
         - Cd: coeficiente de arrasto
         - ρ: densidade do ar
         - g: gravidade
 
-        A arrasto total = n * Cd * A (n asas em paralelo)
+        A_total = n_asas × Cd_asa × A_asa + Cd_pq × A_frontal_pq
+
+        Nota: Assumindo Cd similar (~1.0-1.1) para asas e PocketQube,
+        consideramos contribuição aditiva simples.
         """
-        # Área total de arrasto (todas as asas)
-        area_total_m2 = n * area_asa_m2
+        # Área total de arrasto
+        # - n asas com a área extraída do DXF
+        # - Mais a área frontal do PocketQube (50×50 mm)
+        area_total_m2 = n * area_asa_m2 + area_frontal_pq_m2
 
         # v² = 2*m*g / (ρ*Cd*A_total)
         v_sqr = (2 * m_total * g) / (rho_ar * Cd * area_total_m2)
