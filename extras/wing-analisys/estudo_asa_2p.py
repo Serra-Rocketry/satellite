@@ -3,6 +3,14 @@
 
 Análise de configurações de asas rotativas para descida controlada.
 Regulamento: massa entre 400g e 500g.
+
+⚠️  AVISO DE CALIBRAÇÃO:
+    A fórmula de área (0.03 * R²) é um modelo genérico para samaras.
+    Para resultados reais, use dados de asas extraídas de DXF em analisar_dxf.py
+
+    Asa2 real: 30.76 cm² @ R=12.4cm
+    Modelo:     7.68 cm² @ R=16cm
+    Diferença: ~4x (modelo está sub-estimando)
 """
 
 import numpy as np
@@ -22,6 +30,10 @@ g = 9.81
 rho_ar = 1.225
 rho_tpu = 1200
 espessura = 0.6e-3
+Cd = 1.1  # Coeficiente de arrasto para superfícies planas
+
+# Área frontal do PocketQube (caindo frontal, 50×50 mm)
+area_frontal_pq = 0.0025  # m² (25 cm²)
 
 # Massas do regulamento PocketQube 2P
 m_min = 0.400  # kg
@@ -29,14 +41,49 @@ m_max = 0.500  # kg
 m_nominal = 0.450  # kg (valor de referência)
 
 
-def v_terminal(m, R, n, k=3.2):
-    v = k * np.sqrt(m) / (R * np.sqrt(n))
-    return np.clip(v, 1.5, 25.0)
+def v_terminal(m, R, n, Cd_val=None):
+    """Velocidade terminal usando fórmula aerodinâmica.
+
+    Parâmetros:
+    -----------
+    m: massa total em kg
+    R: raio da asa em METROS
+    n: número de asas
+    Cd_val: coeficiente de arrasto (default: global Cd)
+
+    Fórmula: v = √(2*m*g / (ρ*Cd*A_total))
+    onde A_total = n × area_asa + area_frontal_pq
+    """
+    if Cd_val is None:
+        Cd_val = Cd
+
+    # Área de uma asa (samara-like, genérica)
+    # Para samara padrão: A ≈ 0.03 * R²
+    area_asa = 0.03 * R**2  # m²
+    area_total = n * area_asa + area_frontal_pq
+
+    # v = √(2*m*g / (ρ*Cd*A))
+    v_sqr = (2 * m * g) / (rho_ar * Cd_val * area_total)
+    v = np.sqrt(v_sqr)
+
+    return np.clip(v, 0.5, None)  # Sem clamp máximo
 
 
 def massa_asas(R, n):
-    area = 0.03 * R**2
-    return n * area * espessura * rho_tpu
+    """Calcula massa das asas em kg.
+
+    Parâmetros:
+    -----------
+    R: raio em METROS
+    n: número de asas
+
+    Usa modelo genérico de samara: área = 0.03 * R²
+    Volume = área × espessura
+    Massa = densidade × volume
+    """
+    area_por_asa = 0.03 * R**2  # m²
+    volume_total = n * area_por_asa * espessura
+    return volume_total * rho_tpu  # kg
 
 
 def massa_total(m_pq, R, n):

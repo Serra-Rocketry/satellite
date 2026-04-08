@@ -3,6 +3,16 @@
 
 Análise de configurações de asas rotativas para descida controlada.
 Sem paraquedas - confiando apenas na autorrotação samara.
+
+⚠️  AVISO DE CALIBRAÇÃO:
+    A fórmula de área (0.03 * R²) é um modelo genérico para samaras.
+    Para resultados reais, use dados de asas extraídas de DXF em analisar_dxf.py
+
+    Asa2 real: 30.76 cm² @ R=12.4cm
+    Modelo:     7.68 cm² @ R=16cm
+    Diferença: ~4x (modelo está sub-estimando)
+
+    IMPACTO: Velocidades calculadas são ~2x MAIORES do que deveriam ser!
 """
 
 import numpy as np
@@ -11,30 +21,51 @@ from scipy.optimize import minimize_scalar
 # === CONSTANTES ===
 g = 9.81
 rho_ar = 1.225
+Cd = 1.1  # Coeficiente de arrasto para superfícies planas
+area_frontal_pq = 0.0025  # m² (50×50 mm = 25 cm²)
 
 
 # === MODELO DE VELOCIDADE TERMINAL (SAMARA) ===
-def v_terminal_samara(m, R, n, k=3.2):
-    """Modelo empírico para velocidade terminal de samara.
+def v_terminal_samara(m, R, n, Cd_val=None):
+    """Modelo aerodinâmico para velocidade terminal de samara.
 
     Args:
         m: massa total (kg)
-        R: raio da asa (m)
+        R: raio da asa (METROS)
         n: número de asas
-        k: constante empírica (ajustada com testes)
+        Cd_val: coeficiente de arrasto (default: global Cd)
 
     Returns:
         Velocidade terminal (m/s)
+
+    Fórmula: v = √(2*m*g / (ρ*Cd*A_total))
+    onde A_total = n × area_asa + area_frontal_pq
     """
-    # v ∝ √m / (R·√n)
-    v = k * np.sqrt(m) / (R * np.sqrt(n))
-    return np.clip(v, 1.5, 20.0)
+    if Cd_val is None:
+        Cd_val = Cd
+
+    # Área de cada asa (formato samara otimizado)
+    area_asa = 0.03 * R**2  # m²
+    area_total = n * area_asa + area_frontal_pq
+
+    # v = √(2*m*g / (ρ*Cd*A))
+    v_sqr = (2 * m * g) / (rho_ar * Cd_val * area_total)
+    v = np.sqrt(v_sqr)
+
+    return np.clip(v, 0.5, None)  # Sem clamp máximo
 
 
 def massa_asas(R, n, esp=0.6e-3, rho_tpu=1200):
     """Massa total das asas de TPU.
 
+    Args:
+        R: raio da asa (METROS)
+        n: número de asas
+        esp: espessura (default: 0.6 mm)
+        rho_tpu: densidade TPU (default: 1200 kg/m³)
+
     Área de cada asa ≈ 0.03·R² (formato samara otimizado)
+    Massa = n × área × espessura × densidade
     """
     area_por_asa = 0.03 * R**2  # m²
     return n * area_por_asa * esp * rho_tpu
@@ -225,7 +256,7 @@ if configs_viaveis:
     Corda máxima:      ~{melhor["R"] * 100 * 2.5:.0f} mm (estimada)
     Espessura:         0.6 mm
     Material:          TPU 95A
-    Massa por asa:     {melhor["m"] * 1000 / melhor["n"] - 350:.1f} g
+    Massa por asa:     {(melhor["m"] * 1000 - 350) / melhor["n"]:.1f} g
 """)
 
     # Verificar se atende critérios
