@@ -16,6 +16,8 @@ from scipy.interpolate import interp1d
 def extrair_contorno_dxf(caminho_dxf):
     """Extrai contorno (polilinha, spline ou linhas) do DXF.
 
+    Interpola splines em alta resolução para obter contorno suave.
+
     Returns:
         pontos: lista de (x, y) do contorno
     """
@@ -35,24 +37,59 @@ def extrair_contorno_dxf(caminho_dxf):
         print(f"  Encontrado POLYLINE: {len(pontos)} pontos")
         return pontos
 
-    # Procurar por splines
+    # Procurar por splines e interpolar
     splines = list(msp.query("SPLINE"))
     if splines:
-        print(f"  ⚠ Encontradas {len(splines)} SPLINE(s)...")
-        for i, spline in enumerate(splines):
-            try:
-                # Usar control points das splines
+        print(f"  Encontradas {len(splines)} SPLINE(s), interpolando...")
+
+        try:
+            from scipy.interpolate import splprep, splev
+
+            for i, spline in enumerate(splines):
+                try:
+                    # Obter control points das splines
+                    cpts = np.array(list(spline.control_points))[:, :2]  # Apenas X, Y
+
+                    if len(cpts) < 3:
+                        print(f"    ⚠ SPLINE {i}: muito poucos pontos ({len(cpts)})")
+                        continue
+
+                    # Usar splprep para interpolar a spline
+                    # s=0 significa passar exatamente pelos pontos (smoothing spline)
+                    try:
+                        tck, u = splprep(
+                            cpts.T, s=None, k=min(3, len(cpts) - 1), per=False
+                        )
+
+                        # Gerar muitos pontos interpolados
+                        u_interp = np.linspace(0, 1, max(100, len(cpts) * 10))
+                        pontos_interp = splev(u_interp, tck)
+
+                        # Converter de volta para lista de tuplas
+                        pontos_spline = list(zip(pontos_interp[0], pontos_interp[1]))
+                        print(
+                            f"    SPLINE {i}: {len(cpts)} control points → {len(pontos_spline)} interpolados"
+                        )
+                        pontos.extend(pontos_spline)
+                    except Exception as e:
+                        print(f"    ⚠ Erro interpolando SPLINE {i}: {e}")
+                        # Fallback: usar control points diretos
+                        pontos_spline = [(pt[0], pt[1]) for pt in cpts]
+                        pontos.extend(pontos_spline)
+
+                except Exception as e:
+                    print(f"    ⚠ Erro ao extrair SPLINE {i}: {e}")
+
+        except ImportError:
+            print("    ⚠ scipy não disponível, usando control points diretos")
+            for i, spline in enumerate(splines):
                 cpts = list(spline.control_points)
                 pontos_spline = [(pt[0], pt[1]) for pt in cpts]
                 print(f"    SPLINE {i}: {len(pontos_spline)} control points")
                 pontos.extend(pontos_spline)
-            except Exception as e:
-                print(f"    ⚠ Erro ao extrair spline {i}: {e}")
 
         if pontos:
-            # Ordenar por X para reconstruir contorno em ordem
-            pontos.sort(key=lambda p: p[0])
-            print(f"  ✓ Total: {len(pontos)} pontos de splines")
+            print(f"  ✓ Total: {len(pontos)} pontos (splines interpoladas)")
 
     # Se ainda não achou, procurar por linhas individuais
     if not pontos:
@@ -111,15 +148,21 @@ def conectar_linhas(linhas):
 def analisar_geometria_asa(pontos):
     """Analisa contorno para extrair raio e distribuição de corda.
 
-    Assume que a asa está no plano XY com:
-    - X = raio (eixo radial)
-    - Y = corda/2 (meia-espessura acima e abaixo)
+    Calcula área usando Polygon (Shoelace formula) para maior precisão.
 
     Returns:
         dict com R, corda_func, estatísticas
     """
     if not pontos:
         raise ValueError("Nenhum ponto no contorno")
+
+    try:
+        from shapely.geometry import Polygon
+
+        usar_shapely = True
+    except ImportError:
+        usar_shapely = False
+        print("  ⚠ shapely não disponível, usando integração numérica")
 
     pts_array = np.array(pontos)
     x_coords = pts_array[:, 0]
@@ -131,9 +174,31 @@ def analisar_geometria_asa(pontos):
 
     print(f"\n📐 Geometria extraída:")
     print(f"  X (raio): {x_min:.2f} a {R:.2f} mm")
-    print(f"  Y (meia-corda): {np.min(y_coords):.2f} a {np.max(y_coords):.2f} mm")
+    print(f"  Y: {np.min(y_coords):.2f} a {np.max(y_coords):.2f} mm")
 
-    # Separar lado superior e inferior
+    # Calcular área real do contorno
+    if usar_shapely:
+        # Fechar contorno se necessário
+        pontos_fechados = list(pontos)
+        if pontos_fechados[0] != pontos_fechados[-1]:
+            pontos_fechados.append(pontos_fechados[0])
+
+        poly = Polygon(pontos_fechados)
+        area_mm2 = poly.area
+        area_real_cm2 = area_mm2 / 100
+    else:
+        # Fallback: shoelace formula manualmente
+        area_mm2 = 0
+        for i in range(len(pontos) - 1):
+            area_mm2 += (
+                pontos[i][0] * pontos[i + 1][1] - pontos[i + 1][0] * pontos[i][1]
+            )
+        area_mm2 = abs(area_mm2) / 2
+        area_real_cm2 = area_mm2 / 100
+
+    print(f"  Área do contorno: {area_real_cm2:.2f} cm² ({area_mm2:.0f} mm²)")
+
+    # Separar lado superior e inferior para corda
     # Ordenar por X para reconstruir perfil
     indices_sorted = np.argsort(x_coords)
     x_sorted = x_coords[indices_sorted]
@@ -160,7 +225,6 @@ def analisar_geometria_asa(pontos):
         y_volta = -y_sorted[::-1]
 
     # Interpolar corda em função de r
-    # Corda = máximo entre y_ida e |y_volta|
     x_comum = np.linspace(0, R, 200)
 
     try:
@@ -200,14 +264,22 @@ def analisar_geometria_asa(pontos):
     # Estatísticas
     corda_max = np.max(corda_total)
     r_corda_max = x_comum[np.argmax(corda_total)]
-    area_aproximada = np.trapz(corda_total, x_comum) / 1000  # Converter para cm²
 
     stats = {
         "R_mm": float(R),
         "corda_max_mm": float(corda_max),
         "r_corda_max_mm": float(r_corda_max),
-        "area_aprox_cm2": float(area_aproximada),
+        "area_real_cm2": float(area_real_cm2),
         "num_pontos_contorno": len(pontos),
+    }
+
+    return {
+        "R": R,
+        "corda_func": corda_func,
+        "x_comum": x_comum,
+        "corda_total": corda_total,
+        "stats": stats,
+        "pontos_originais": pontos,
     }
 
     return {
@@ -371,7 +443,7 @@ def gerar_relatorio(caminho_dxf, geom, resultados, output_dir=None):
         f.write(
             f"  Posição corda máx:      {stats['r_corda_max_mm']:.1f} mm ({stats['r_corda_max_mm'] / stats['R_mm'] * 100:.0f}% do raio)\n"
         )
-        f.write(f"  Área aproximada:        {stats['area_aprox_cm2']:.2f} cm²\n")
+        f.write(f"  Área real do contorno:  {stats['area_real_cm2']:.2f} cm²\n")
         f.write(f"  Pontos no contorno:     {stats['num_pontos_contorno']}\n\n")
 
         f.write("🔬 SIMULAÇÕES DE DESCIDA\n")
