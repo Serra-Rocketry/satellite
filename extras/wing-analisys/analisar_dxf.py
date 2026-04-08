@@ -282,22 +282,16 @@ def analisar_geometria_asa(pontos):
         "pontos_originais": pontos,
     }
 
-    return {
-        "R": R,
-        "corda_func": corda_func,
-        "x_comum": x_comum,
-        "corda_total": corda_total,
-        "stats": stats,
-        "pontos_originais": pontos,
-    }
 
-
-def simular_descida(R, corda_func, masa_pq_kg=0.450, configs=None):
+def simular_descida(R, corda_func, area_real_cm2, masa_pq_kg=0.450, configs=None):
     """Simula descida com múltiplas configurações.
+
+    Usa fórmula aerodinâmica correta: v = √(2*m*g / (ρ*Cd*A))
 
     Args:
         R: raio em mm
         corda_func: função corda(r) em mm
+        area_real_cm2: área real da asa em cm² (extraída do DXF via Shapely)
         masa_pq_kg: massa do pocketqube em kg
         configs: lista de (num_asas, raio_config_mm) ou None para auto
 
@@ -306,26 +300,58 @@ def simular_descida(R, corda_func, masa_pq_kg=0.450, configs=None):
     """
 
     # Constantes físicas
-    g = 9.81
-    rho_tpu = 1200  # kg/m³
-    espessura = 0.6e-3  # m
+    g = 9.81  # m/s²
+    rho_ar = 1.225  # kg/m³ (ar ao nível do mar)
+    rho_tpu = 1200  # kg/m³ (material das asas)
+    espessura = 0.6e-3  # m (6/10 mm)
+
+    # Coeficiente de arrasto (para asa retangular/elíptica em descida)
+    # Cd ≈ 1.0-1.3 para superfícies planas
+    # Usaremos 1.1 como valor intermediário realista
+    Cd = 1.1
+
+    # Converter área real de cm² para m²
+    area_asa_m2 = area_real_cm2 * 1e-4
 
     def massa_asas(R_config, n):
-        """Calcula massa das asas em kg."""
-        # Integrar corda para obter área
-        r_vals = np.linspace(1, R_config - 1, 100)
-        c_vals = np.array([corda_func(r) for r in r_vals])
+        """Calcula massa das asas em kg.
 
-        # Área em mm², converter para m²
-        area_mm2 = np.trapz(c_vals, r_vals)
-        area_m2 = area_mm2 * 1e-6
+        Usa a área real extraída do DXF, escalada proporcionalmente
+        se o raio for diferente de R.
+        """
+        # Se raio é diferente, escalar área proporcionalmente
+        # Área ∝ R² para geometria similar
+        escala_raio = (R_config / R) ** 2
+        area_escalada_m2 = area_asa_m2 * escala_raio
 
-        return n * area_m2 * espessura * rho_tpu
+        # Massa = ρ * volume = ρ * área * espessura
+        return n * area_escalada_m2 * espessura * rho_tpu
 
-    def v_terminal(m_total, R_config, n, k=3.2):
-        """Velocidade terminal em m/s."""
-        v = k * np.sqrt(m_total) / (R_config * 1e-3 * np.sqrt(n))
-        return np.clip(v, 1.5, 25.0)
+    def v_terminal_aerodinamica(m_total, n):
+        """Velocidade terminal usando fórmula aerodinâmica correta.
+
+        v = √(2*m*g / (ρ*Cd*A*n))
+
+        Onde:
+        - m_total: massa total do objeto (PocketQube + asas)
+        - n: número de asas
+        - A: área de cada asa
+        - Cd: coeficiente de arrasto
+        - ρ: densidade do ar
+        - g: gravidade
+
+        A arrasto total = n * Cd * A (n asas em paralelo)
+        """
+        # Área total de arrasto (todas as asas)
+        area_total_m2 = n * area_asa_m2
+
+        # v² = 2*m*g / (ρ*Cd*A_total)
+        v_sqr = (2 * m_total * g) / (rho_ar * Cd * area_total_m2)
+        v = np.sqrt(v_sqr)
+
+        # Clamp apenas ao mínimo (sem asas deveria cair rápido)
+        # Máximo depende da aplicação real
+        return np.clip(v, 0.5, None)
 
     def energia_impacto(m, v):
         """Energia de impacto em Joules."""
@@ -363,7 +389,7 @@ def simular_descida(R, corda_func, masa_pq_kg=0.450, configs=None):
             espaco_min = R_config * 1e-3 / n_asas
             cabe = espaco_min <= 0.05
 
-            v0 = v_terminal(m_total, R_config, n_asas)
+            v0 = v_terminal_aerodinamica(m_total, n_asas)
             E = energia_impacto(m_total, v0)
             omega = velocidade_rotacao(R_config, v0)
 
@@ -560,7 +586,11 @@ def main():
     # Simular
     print(f"\n⚙️ Rodando simulações...")
     resultados = simular_descida(
-        geom["R"], geom["corda_func"], masa_pq_kg=0.450, configs=None
+        geom["R"],
+        geom["corda_func"],
+        geom["stats"]["area_real_cm2"],
+        masa_pq_kg=0.450,
+        configs=None,
     )
 
     # Gerar relatório

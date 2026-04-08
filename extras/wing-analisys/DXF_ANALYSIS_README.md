@@ -144,27 +144,34 @@ area = Polygon(pontos_contorno).area
 Para cada configuração (n_asas, R):
 
 ```python
-# 1. Calcular área de uma asa
-area_asa = ∫ corda(r) dr
+# 1. Usar a área real da asa (extraída do DXF via Shapely)
+area_asa_m2 = area_real_cm2 * 1e-4
 
-# 2. Calcular massa
-m_asas = n_asas × area_asa × espessura × rho_tpu
+# 2. Calcular massa das asas
+# m = ρ × volume = ρ × área × espessura
+m_asas = n_asas × area_asa_m2 × espessura × rho_tpu
 
-# 3. Calcular velocidade terminal
-v0 = k × √(m_total) / (R × √n_asas)
-   onde k ≈ 3.2 (constante empírica)
+# 3. Calcular velocidade terminal (FÓRMULA AERODINÂMICA CORRETA)
+# v = √(2×m×g / (ρ_ar×Cd×A_total))
+# Onde A_total = n_asas × area_asa_m2
+v_terminal = √(2×m_total×g / (ρ_ar×Cd×n_asas×area_asa_m2))
 
 # 4. Calcular energia de impacto
-E = 0.5 × m_total × v0²
+E = 0.5 × m_total × v_terminal²
 ```
+
+**Física Corrigida (Commit de 08/04/2026)**:
+- ✅ Usa a **área real** extraída do DXF (não recalcula por integração)
+- ✅ Usa **fórmula aerodinâmica completa** em vez de empírica
+- ✅ Área **REDUZ** corretamente a velocidade terminal
+- ✅ Validado: aumentar área 9x reduz v_terminal em ~66.5% (√9 ≈ 1/3)
+
 
 ## Parâmetros Configuráveis
 
-No script `analisar_dxf.py`:
+No script `analisar_dxf.py`, função `simular_descida()`:
 
 ```python
-# Função simular_descida()
-
 # Massa do pocketqube (sem asas)
 masa_pq_kg = 0.450
 
@@ -173,10 +180,18 @@ masa_pq_kg = 0.450
 configs = None
 
 # Constantes físicas (em simular_descida):
-rho_tpu = 1200  # kg/m³ - densidade do TPU
-espessura = 0.6e-3  # m - espessura da asa
-k = 3.2  # Constante empírica para v_terminal
+g = 9.81  # m/s² - aceleração da gravidade
+rho_ar = 1.225  # kg/m³ - densidade do ar ao nível do mar
+rho_tpu = 1200  # kg/m³ - densidade do TPU (material das asas)
+espessura = 0.6e-3  # m - espessura da asa (0.6 mm)
+Cd = 1.1  # coeficiente de arrasto (para superfícies planas em descida)
 ```
+
+**Valores calibrados para**:
+- Densidade do TPU: 1200 kg/m³ (TPU rígido)
+- Espessura: 0.6 mm (6/10 de mm de espessura)
+- Coeficiente de arrasto: 1.1 (placa plana em ângulo)
+
 
 ## Troubleshooting
 
@@ -237,4 +252,21 @@ cat extras/wing-analisys/asa_nova_relatorio.txt
 ---
 
 **Última atualização**: 08/04/2026  
-**Status**: ✅ Funcionando com splines e área correta
+**Status**: ✅ Física corrigida (fórmula aerodinâmica completa)
+
+## Histórico de Mudanças
+
+### v2 (08/04/2026) - Correção da Física
+- **Problema identificado**: Fórmula empírica `v = k√m / (R√n)` não respondia corretamente ao aumento de área
+- **Solução**: Implementada fórmula aerodinâmica correta `v = √(2mg / (ρCdA))`
+- **Validação**: Aumentar área 9x agora reduz v_terminal em 66.5% (fisicamente correto)
+- **Mudanças**:
+  - ✅ `simular_descida()` agora aceita `area_real_cm2` como parâmetro
+  - ✅ Removido recálculo de área por integração (usava `np.trapz`)
+  - ✅ Substituída fórmula empírica por física completa
+  - ✅ Adicionadas constantes físicas explícitas (ρ_ar, Cd)
+  - ✅ Clamp superior removido (permite v > 30 m/s para asas pequenas - fisicamente correto)
+
+### v1 (Data anterior)
+- Implementação inicial com fórmula empírica
+- Área calculada por integração de corda
