@@ -1,0 +1,504 @@
+# -*- coding: utf-8 -*-
+"""Análise de asas a partir de arquivo DXF
+
+Extrai geometria de um DXF e roda simulações de descida.
+Processo reverso de gerar_dxf_asa.py
+"""
+
+import ezdxf
+import numpy as np
+import matplotlib.pyplot as plt
+from pathlib import Path
+import json
+from scipy.interpolate import interp1d
+
+
+def extrair_contorno_dxf(caminho_dxf):
+    """Extrai contorno (polilinha, spline ou linhas) do DXF.
+
+    Returns:
+        pontos: lista de (x, y) do contorno
+    """
+    doc = ezdxf.readfile(caminho_dxf)
+    msp = doc.modelspace()
+
+    pontos = []
+
+    # Procurar por polylines ou lwpolylines
+    for entity in msp.query("LWPOLYLINE"):
+        pontos = list(entity.get_points())
+        print(f"  Encontrado LWPOLYLINE: {len(pontos)} pontos")
+        return pontos
+
+    for entity in msp.query("POLYLINE"):
+        pontos = [(pt[0], pt[1]) for pt in entity.points()]
+        print(f"  Encontrado POLYLINE: {len(pontos)} pontos")
+        return pontos
+
+    # Procurar por splines
+    splines = list(msp.query("SPLINE"))
+    if splines:
+        print(f"  ⚠ Encontradas {len(splines)} SPLINE(s)...")
+        for i, spline in enumerate(splines):
+            try:
+                # Usar control points das splines
+                cpts = list(spline.control_points)
+                pontos_spline = [(pt[0], pt[1]) for pt in cpts]
+                print(f"    SPLINE {i}: {len(pontos_spline)} control points")
+                pontos.extend(pontos_spline)
+            except Exception as e:
+                print(f"    ⚠ Erro ao extrair spline {i}: {e}")
+
+        if pontos:
+            # Ordenar por X para reconstruir contorno em ordem
+            pontos.sort(key=lambda p: p[0])
+            print(f"  ✓ Total: {len(pontos)} pontos de splines")
+
+    # Se ainda não achou, procurar por linhas individuais
+    if not pontos:
+        print("  ⚠ Procurando por linhas...")
+        linhas = []
+        for entity in msp.query("LINE"):
+            p1 = (entity.dxf.start[0], entity.dxf.start[1])
+            p2 = (entity.dxf.end[0], entity.dxf.end[1])
+            linhas.append((p1, p2))
+
+        if linhas:
+            print(f"  Encontradas {len(linhas)} linhas, conectando...")
+            pontos = conectar_linhas(linhas)
+
+    return pontos
+
+
+def conectar_linhas(linhas):
+    """Conecta linhas desconexas em ordem."""
+    if not linhas:
+        return []
+
+    pontos = [linhas[0][0]]
+    usadas = {0}
+
+    while len(usadas) < len(linhas):
+        atual = pontos[-1]
+        encontrou = False
+
+        for i, (p1, p2) in enumerate(linhas):
+            if i in usadas:
+                continue
+
+            dist1 = np.sqrt((atual[0] - p1[0]) ** 2 + (atual[1] - p1[1]) ** 2)
+            dist2 = np.sqrt((atual[0] - p2[0]) ** 2 + (atual[1] - p2[1]) ** 2)
+
+            if dist1 < dist2:
+                if dist1 < 1e-3:  # Tolerância
+                    pontos.append(p2)
+                    usadas.add(i)
+                    encontrou = True
+                    break
+            else:
+                if dist2 < 1e-3:
+                    pontos.append(p1)
+                    usadas.add(i)
+                    encontrou = True
+                    break
+
+        if not encontrou:
+            break
+
+    return pontos
+
+
+def analisar_geometria_asa(pontos):
+    """Analisa contorno para extrair raio e distribuição de corda.
+
+    Assume que a asa está no plano XY com:
+    - X = raio (eixo radial)
+    - Y = corda/2 (meia-espessura acima e abaixo)
+
+    Returns:
+        dict com R, corda_func, estatísticas
+    """
+    if not pontos:
+        raise ValueError("Nenhum ponto no contorno")
+
+    pts_array = np.array(pontos)
+    x_coords = pts_array[:, 0]
+    y_coords = pts_array[:, 1]
+
+    # Encontrar raio máximo
+    R = np.max(x_coords)
+    x_min = np.min(x_coords)
+
+    print(f"\n📐 Geometria extraída:")
+    print(f"  X (raio): {x_min:.2f} a {R:.2f} mm")
+    print(f"  Y (meia-corda): {np.min(y_coords):.2f} a {np.max(y_coords):.2f} mm")
+
+    # Separar lado superior e inferior
+    # Ordenar por X para reconstruir perfil
+    indices_sorted = np.argsort(x_coords)
+    x_sorted = x_coords[indices_sorted]
+    y_sorted = y_coords[indices_sorted]
+
+    # Detectar mudança de direção em X para separar lados
+    dx = np.diff(x_sorted)
+    mudanca_idx = np.where(dx < 0)[0]
+
+    if len(mudanca_idx) > 0:
+        # Contorno vai e volta (típico de uma asa)
+        ponto_mudanca = mudanca_idx[0]
+
+        x_ida = x_sorted[: ponto_mudanca + 1]
+        y_ida = y_sorted[: ponto_mudanca + 1]
+
+        x_volta = x_sorted[ponto_mudanca:]
+        y_volta = y_sorted[ponto_mudanca:]
+    else:
+        # Contorno monótono em X - assumir simetria
+        x_ida = x_sorted
+        y_ida = y_sorted
+        x_volta = x_sorted[::-1]
+        y_volta = -y_sorted[::-1]
+
+    # Interpolar corda em função de r
+    # Corda = máximo entre y_ida e |y_volta|
+    x_comum = np.linspace(0, R, 200)
+
+    try:
+        f_ida = interp1d(x_ida, np.abs(y_ida), kind="linear", fill_value="extrapolate")
+        y_ida_interp = f_ida(x_comum)
+    except:
+        y_ida_interp = np.zeros_like(x_comum)
+
+    try:
+        f_volta = interp1d(
+            x_volta, np.abs(y_volta), kind="linear", fill_value="extrapolate"
+        )
+        y_volta_interp = f_volta(x_comum)
+    except:
+        y_volta_interp = np.zeros_like(x_comum)
+
+    # Corda total = soma dos dois lados
+    corda_total = y_ida_interp + y_volta_interp
+    corda_total = np.clip(corda_total, 0, None)
+
+    # Criar função interpoladora
+    def corda_func(r):
+        """Corda em função do raio r (em mm)."""
+        if np.isscalar(r):
+            if r <= 0 or r >= R:
+                return 0.0
+            idx = int((r / R) * (len(x_comum) - 1))
+            return corda_total[idx]
+        else:
+            resultado = np.zeros_like(r, dtype=float)
+            for i, r_val in enumerate(r):
+                if 0 < r_val < R:
+                    idx = int((r_val / R) * (len(x_comum) - 1))
+                    resultado[i] = corda_total[idx]
+            return resultado
+
+    # Estatísticas
+    corda_max = np.max(corda_total)
+    r_corda_max = x_comum[np.argmax(corda_total)]
+    area_aproximada = np.trapz(corda_total, x_comum) / 1000  # Converter para cm²
+
+    stats = {
+        "R_mm": float(R),
+        "corda_max_mm": float(corda_max),
+        "r_corda_max_mm": float(r_corda_max),
+        "area_aprox_cm2": float(area_aproximada),
+        "num_pontos_contorno": len(pontos),
+    }
+
+    return {
+        "R": R,
+        "corda_func": corda_func,
+        "x_comum": x_comum,
+        "corda_total": corda_total,
+        "stats": stats,
+        "pontos_originais": pontos,
+    }
+
+
+def simular_descida(R, corda_func, masa_pq_kg=0.450, configs=None):
+    """Simula descida com múltiplas configurações.
+
+    Args:
+        R: raio em mm
+        corda_func: função corda(r) em mm
+        masa_pq_kg: massa do pocketqube em kg
+        configs: lista de (num_asas, raio_config_mm) ou None para auto
+
+    Returns:
+        lista de resultados por configuração
+    """
+
+    # Constantes físicas
+    g = 9.81
+    rho_tpu = 1200  # kg/m³
+    espessura = 0.6e-3  # m
+
+    def massa_asas(R_config, n):
+        """Calcula massa das asas em kg."""
+        # Integrar corda para obter área
+        r_vals = np.linspace(1, R_config - 1, 100)
+        c_vals = np.array([corda_func(r) for r in r_vals])
+
+        # Área em mm², converter para m²
+        area_mm2 = np.trapz(c_vals, r_vals)
+        area_m2 = area_mm2 * 1e-6
+
+        return n * area_m2 * espessura * rho_tpu
+
+    def v_terminal(m_total, R_config, n, k=3.2):
+        """Velocidade terminal em m/s."""
+        v = k * np.sqrt(m_total) / (R_config * 1e-3 * np.sqrt(n))
+        return np.clip(v, 1.5, 25.0)
+
+    def energia_impacto(m, v):
+        """Energia de impacto em Joules."""
+        return 0.5 * m * v**2
+
+    def velocidade_rotacao(R_config, v0):
+        """RPM de rotação."""
+        omega = v0 / (0.065 * R_config * 1e-3)
+        return np.minimum(omega, 120)
+
+    if configs is None:
+        # Auto-gerar configurações razoáveis
+        configs = []
+        for n_asas in [2, 3, 4, 6]:
+            configs.append((n_asas, R))
+            if R > 100:
+                configs.append((n_asas, R * 0.8))
+            if R < 100:
+                configs.append((n_asas, R * 1.2))
+
+    resultados = []
+
+    print(f"\n🔬 Simulações de descida (m_pq = {masa_pq_kg * 1000:.0f}g):")
+    print(
+        f"{'Config':<15} | {'v₀ (m/s)':>8} | {'E (J)':>7} | {'ω (RPM)':>8} | {'m_total (g)':>10}"
+    )
+    print("-" * 70)
+
+    for n_asas, R_config in configs:
+        try:
+            m_asas = massa_asas(R_config, n_asas)
+            m_total = masa_pq_kg + m_asas
+
+            # Verificar se cabe dobrado (simplicidade)
+            espaco_min = R_config * 1e-3 / n_asas
+            cabe = espaco_min <= 0.05
+
+            v0 = v_terminal(m_total, R_config, n_asas)
+            E = energia_impacto(m_total, v0)
+            omega = velocidade_rotacao(R_config, v0)
+
+            config_str = f"{n_asas}×R{R_config:.0f}mm"
+            status = "✓" if cabe else "✗"
+
+            print(
+                f"{config_str:<15} | {v0:>8.2f} | {E:>7.1f} | {omega:>8.0f} | {m_total * 1000:>10.0f}"
+            )
+
+            resultados.append(
+                {
+                    "n_asas": n_asas,
+                    "R_mm": R_config,
+                    "m_asas_g": m_asas * 1000,
+                    "m_total_g": m_total * 1000,
+                    "v_terminal_ms": v0,
+                    "energia_J": E,
+                    "rpm": omega,
+                    "cabe_dobrado": cabe,
+                }
+            )
+        except Exception as e:
+            print(f"  ⚠ Erro em config {n_asas}×R{R_config}mm: {e}")
+
+    return resultados
+
+
+def gerar_relatorio(caminho_dxf, geom, resultados, output_dir=None):
+    """Gera relatório em texto e JSON."""
+
+    if output_dir is None:
+        output_dir = Path(caminho_dxf).parent
+    else:
+        output_dir = Path(output_dir)
+
+    output_dir.mkdir(exist_ok=True)
+
+    # Nome do arquivo de saída
+    nome_base = Path(caminho_dxf).stem
+
+    # Arquivo JSON com resultados
+    json_path = output_dir / f"{nome_base}_analise.json"
+
+    # Converter tipos especiais para JSON
+    resultados_json = []
+    for res in resultados:
+        res_copy = dict(res)
+        res_copy["cabe_dobrado"] = bool(
+            res_copy["cabe_dobrado"]
+        )  # Converter numpy bool
+        resultados_json.append(res_copy)
+
+    json_data = {
+        "arquivo_dxf": str(caminho_dxf),
+        "geometria": geom["stats"],
+        "simulacoes": resultados_json,
+    }
+
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(json_data, f, indent=2, ensure_ascii=False)
+
+    print(f"\n💾 JSON salvo: {json_path}")
+
+    # Arquivo de texto com relatório
+    txt_path = output_dir / f"{nome_base}_relatorio.txt"
+    with open(txt_path, "w", encoding="utf-8") as f:
+        f.write("=" * 80 + "\n")
+        f.write(f"ANÁLISE DE ASA - {Path(caminho_dxf).name}\n")
+        f.write("=" * 80 + "\n\n")
+
+        f.write("📐 GEOMETRIA\n")
+        f.write("-" * 80 + "\n")
+        stats = geom["stats"]
+        f.write(f"  Raio máximo (R):        {stats['R_mm']:.1f} mm\n")
+        f.write(f"  Corda máxima:           {stats['corda_max_mm']:.1f} mm\n")
+        f.write(
+            f"  Posição corda máx:      {stats['r_corda_max_mm']:.1f} mm ({stats['r_corda_max_mm'] / stats['R_mm'] * 100:.0f}% do raio)\n"
+        )
+        f.write(f"  Área aproximada:        {stats['area_aprox_cm2']:.2f} cm²\n")
+        f.write(f"  Pontos no contorno:     {stats['num_pontos_contorno']}\n\n")
+
+        f.write("🔬 SIMULAÇÕES DE DESCIDA\n")
+        f.write("-" * 80 + "\n")
+        f.write(
+            f"{'Config':<20} | {'v₀ (m/s)':>8} | {'E (J)':>7} | {'ω (RPM)':>8} | {'m (g)':>9}\n"
+        )
+        f.write("-" * 80 + "\n")
+
+        for res in resultados:
+            config_str = f"{res['n_asas']}×R{res['R_mm']:.0f}mm"
+            f.write(
+                f"{config_str:<20} | {res['v_terminal_ms']:>8.2f} | {res['energia_J']:>7.1f} | {res['rpm']:>8.0f} | {res['m_total_g']:>9.0f}\n"
+            )
+
+        f.write("\n" + "=" * 80 + "\n")
+        f.write("RECOMENDAÇÕES\n")
+        f.write("=" * 80 + "\n")
+
+        # Encontrar melhor config
+        melhor = min(resultados, key=lambda x: x["v_terminal_ms"])
+        f.write(f"\n✓ Configuração com menor v₀:\n")
+        f.write(f"  {melhor['n_asas']}×R{melhor['R_mm']:.0f}mm\n")
+        f.write(f"  v₀ = {melhor['v_terminal_ms']:.2f} m/s\n")
+        f.write(f"  E = {melhor['energia_J']:.1f} J\n")
+        f.write(f"  Cabe dobrado: {'Sim ✓' if melhor['cabe_dobrado'] else 'Não ✗'}\n")
+
+    print(f"📄 Relatório salvo: {txt_path}")
+
+    return json_path, txt_path
+
+
+def plotar_geometria(geom, nome_asa="Asa", output_dir=None):
+    """Plota geometria e corda da asa."""
+
+    if output_dir is None:
+        output_dir = Path.cwd()
+    else:
+        output_dir = Path(output_dir)
+
+    output_dir.mkdir(exist_ok=True)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+    # Contorno original
+    pts = np.array(geom["pontos_originais"])
+    ax1.plot(pts[:, 0], pts[:, 1], "b-", linewidth=2, label="Contorno")
+    ax1.fill(pts[:, 0], pts[:, 1], alpha=0.2)
+    ax1.set_xlabel("Raio r (mm)")
+    ax1.set_ylabel("Meia-corda y (mm)")
+    ax1.set_title(f"{nome_asa} - Contorno do DXF")
+    ax1.grid(True, alpha=0.3)
+    ax1.axis("equal")
+    ax1.legend()
+
+    # Distribuição de corda
+    x = geom["x_comum"]
+    c = geom["corda_total"]
+    ax2.plot(x, c, "r-", linewidth=2)
+    ax2.fill_between(x, 0, c, alpha=0.3, color="red")
+    ax2.set_xlabel("Raio r (mm)")
+    ax2.set_ylabel("Corda (mm)")
+    ax2.set_title(f"{nome_asa} - Distribuição de corda")
+    ax2.grid(True, alpha=0.3)
+
+    # Marcar corda máxima
+    r_max = geom["stats"]["r_corda_max_mm"]
+    c_max = geom["stats"]["corda_max_mm"]
+    ax2.plot(
+        r_max, c_max, "go", markersize=10, label=f"Max: {c_max:.1f}mm @ {r_max:.0f}mm"
+    )
+    ax2.legend()
+
+    plt.tight_layout()
+
+    output_path = output_dir / f"{nome_asa}_geometria.png"
+    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    print(f"📊 Gráfico salvo: {output_path}")
+    plt.close()
+
+
+def main():
+    """Script principal."""
+
+    # Arquivo a analisar
+    caminho_dxf = "extras/wing-analisys/Asa2.DXF"
+
+    print("=" * 80)
+    print("ANÁLISE DE ASA A PARTIR DE DXF")
+    print("=" * 80)
+
+    # Extrair contorno
+    print(f"\n📂 Lendo: {caminho_dxf}")
+    try:
+        pontos = extrair_contorno_dxf(caminho_dxf)
+        print(f"  ✓ Contorno extraído: {len(pontos)} pontos")
+    except Exception as e:
+        print(f"  ✗ Erro ao ler DXF: {e}")
+        return
+
+    # Analisar geometria
+    print(f"\n🔬 Analisando geometria...")
+    try:
+        geom = analisar_geometria_asa(pontos)
+        print(f"  ✓ Geometria analisada com sucesso")
+    except Exception as e:
+        print(f"  ✗ Erro na análise: {e}")
+        return
+
+    # Plotar
+    nome_asa = Path(caminho_dxf).stem
+    plotar_geometria(geom, nome_asa=nome_asa, output_dir=Path(caminho_dxf).parent)
+
+    # Simular
+    print(f"\n⚙️ Rodando simulações...")
+    resultados = simular_descida(
+        geom["R"], geom["corda_func"], masa_pq_kg=0.450, configs=None
+    )
+
+    # Gerar relatório
+    print(f"\n📝 Gerando relatório...")
+    gerar_relatorio(caminho_dxf, geom, resultados, output_dir=Path(caminho_dxf).parent)
+
+    print("\n" + "=" * 80)
+    print("✅ Análise concluída!")
+    print("=" * 80)
+
+
+if __name__ == "__main__":
+    main()
