@@ -53,10 +53,9 @@ Este projeto visa desenvolver um pocketQube capaz de determinar sua posição at
 1. **PocketQube Satélite (Formato 1P)**
    - ESP32-C3 Super Mini (single-core)
    - Módulo LoRa 915MHz (SX1276/SX1278)
-   - Módulo GPS (NEO-6M/NEO-7M ou similar)
-    - Sensor BME280 (pressão, temperatura, umidade)
-    - Sensor ICM-20602 (acelerômetro 3-eixos, giroscópio 3-eixos)
-    - Módulo GPS NEO-8M (latitude, longitude, altitude, velocidade)
+   - Sensor BME280 (pressão, temperatura, umidade)
+   - Sensor ICM-20602 (acelerômetro 3-eixos, giroscópio 3-eixos)
+   - Módulo GPS NEO-8M (latitude, longitude, altitude, velocidade)
    - Servo motor para freio aerodinâmico tipo samara (estudado em `extras/wing-analisys/`)
    - Cartão SD para armazenamento (testes em `test/sd/`)
    - LEDs de status (GPS lock, LoRa activity, flight state)
@@ -65,7 +64,7 @@ Este projeto visa desenvolver um pocketQube capaz de determinar sua posição at
    - Beacon 1: Ground Station (base fixa) - gateway USB para PC
    - Beacon 2: Posição configurável (fixo ou móvel)
    - Beacon 3: Posição configurável (fixo ou móvel)
-   - Hardware: ESP32-C3 Super Mini + GPS (NEO-6M/NEO-7M) + LoRa 915MHz
+   - Hardware: ESP32-C3 Super Mini + GPS NEO-8M + LoRa 915MHz
    - Interface: LED (força de sinal PWM) + Buzzer (tom variável) + Botão modo
    - **Modos de operação**:
      - **Modo Estação Fixa**: Posição conhecida para triangulação experimental
@@ -174,8 +173,8 @@ Este é o foco principal inicial. O freio samara é crítico para a missão - se
 - [x] Comunicação UART: **GPS NEO-8M (posição/altitude)**
 - [x] Pinagem otimizada para ESP32-C3: GPIO 8 (SDA), GPIO 9 (SCL)
 - [x] Logging em LittleFS com formato CSV estruturado
+- [x] Integração com GPS NEO-8M (validação de altitude e posição)
 - [ ] Integração com SD Card (para mais espaço de dados)
-- [ ] Integração com GPS NEO-6M (para validação de altitude)
 
 **Código Embarcado** (690 linhas total em testes):
 - ✅ `sensores_unificado_v3.ino` (490 linhas) - Integração completa ICM-20602 + BME280 + GPS NEO-8M
@@ -257,7 +256,7 @@ Este é o foco principal inicial. O freio samara é crítico para a missão - se
 
 #### 3.2 Protótipo dos Beacons
 - [ ] Design modular para flexibilidade de configuração
-- [ ] Interface GPS com precisão adequada (NEO-6M/NEO-7M)
+- [ ] Interface GPS com precisão adequada (NEO-8M)
 - [ ] Botão para alternar entre modo fixo e modo busca
 - [ ] LED indicador de força de sinal (busca ativa)
 - [ ] Buzzer feedback em modo busca
@@ -277,10 +276,9 @@ Este é o foco principal inicial. O freio samara é crítico para a missão - se
 │   │   ├── lora_manager.cpp        // TX/RX LoRa (síncrono)
 │   │   └── protocol_handler.cpp    // Máquina de estados sequencial
 │   ├── sensors/                    
-│   │   ├── bmp280_driver.cpp       // I2C pressure/temp
-│   │   ├── aht10_driver.cpp        // I2C humidity/temp
-│   │   ├── icm20602_driver.cpp     // I2C IMU (menor footprint que MPU6050)
-│   │   └── gps_driver.cpp          // UART GPS parsing
+│   │   ├── bme280_driver.cpp        // I2C pressure/temp/humidity
+│   │   ├── icm20602_driver.cpp      // I2C IMU
+│   │   └── gps_driver.cpp           // UART GPS parsing
 │   ├── positioning/                
 │   │   ├── rssi_triangulation.cpp  // Algoritmo RSSI
 │   │   ├── position_filter.cpp     // Filtros Kalman
@@ -328,7 +326,7 @@ Este é o foco principal inicial. O freio samara é crítico para a missão - se
   - Checksum e validação de dados
 
 - [ ] **Coleta de Sensores**:
-  - Interface I2C para BMP280, AHT10 e MPU6050
+  - Interface I2C para BME280 e ICM-20602
   - Calibração e compensação de temperatura
   - Fusão de dados do acelerômetro e giroscópio (filtro complementar ou Kalman)
   - Média móvel para redução de ruído
@@ -369,7 +367,7 @@ Este é o foco principal inicial. O freio samara é crítico para a missão - se
 
 #### 5.1 Testes de Bancada (Checklist em `test/`)
 - [ ] Validação individual de cada sensor
-  - Sensores: BMP280, AHT10, ICM-20602 (ver `test/` para testes unificados)
+  - Sensores: BME280, ICM-20602, NEO-8M (ver `test/` para testes unificados)
   - Comunicação I2C (teste pré-SD disponível em `test/checklist_bancada_pre_sd.md`)
 - [ ] Teste de aquisição e precisão do GPS
 - [ ] Testes de comunicação LoRa ponto-a-ponto
@@ -499,9 +497,8 @@ typedef struct {
 } beacon_message_t;
 
 typedef struct {
-    float temperature_bmp;              // Temperatura BMP280 (°C)
+    float temperature;                  // Temperatura BME280 (°C)
     float pressure;                     // Pressão (hPa)
-    float temperature_aht;              // Temperatura AHT10 (°C)
     float humidity;                     // Umidade (%)
     float accel_x, accel_y, accel_z;    // Aceleração (m/s²)
     float gyro_x, gyro_y, gyro_z;       // Velocidade angular (°/s)
@@ -531,7 +528,7 @@ typedef struct {
 - **Transmissão LoRa**: ~120mA @ 20dBm (burst)
 - **Recepção LoRa**: ~12mA
 - **GPS**: ~25mA (aquisição), ~20mA (tracking)
-- **Sensores I2C**: ~3mA (BMP280 + AHT10 + ICM-20602)
+- **Sensores I2C**: ~3mA (BME280 + ICM-20602)
 - **SD Card**: ~50-100mA (escrita), ~20mA (idle)
 - **Servo Samara**: ~100-500mA (acionamento, <5s)
 - **ESP32-C3 deep sleep**: ~5µA
@@ -597,8 +594,8 @@ O sistema de recuperação utiliza um freio aerodinâmico inspirado nas **sement
 
 ### Princípio de Funcionamento
 1. **Detecção de Apogeu**: Sistema detecta altitude máxima através de:
-   - Pressão (BMP280) mostrando tendência de aumento
-   - Aceleração vertical (MPU6050) próxima de zero ou negativa
+   - Pressão (BME280) mostrando tendência de aumento
+   - Aceleração vertical (ICM-20602) próxima de zero ou negativa
    
 2. **Acionamento**: Servo-motor ou mecanismo de mola libera as pás do freio
 
@@ -712,9 +709,8 @@ void search_mode() {
 ### Bibliotecas Arduino Necessárias
 - `LoRa.h` ou `RadioLib` - Comunicação LoRa
 - `TinyGPS++.h` ou `Adafruit_GPS.h` - Módulo GPS
-- `Adafruit_BMP280.h` - Sensor de pressão
-- `AHTxx.h` - Sensor de umidade
-- `MPU6050.h` ou `Adafruit_MPU6050.h` - Acelerômetro e giroscópio
+- `Adafruit_BME280.h` - Sensor de pressão, temperatura e umidade
+- `Adafruit_ICM20602.h` - Acelerômetro e giroscópio
 - `SD.h` - Cartão SD
 - `ArduinoJson.h` - Serialização de dados
 - `Servo.h` - Controle do mecanismo do freio samara
@@ -757,19 +753,19 @@ Testes e checklists para integração incremental de componentes.
 
 **Arquivos principais**:
 - `checklist_bancada_pre_sd.md` - Procedimento para validar sensores antes de integração SD
-- `sensores_unificado/sensores_unificado.ino` - **Código completo integrando ICM20602 + BMP280** (274 linhas)
-  - Leitura simultânea de aceleração, giroscópio, pressão e altitude
+- `sensores_unificado/sensores_unificado_v3.ino` - **Código completo integrando ICM-20602 + BME280 + GPS NEO-8M** (490 linhas)
+  - Leitura simultânea de aceleração, giroscópio, pressão, temperatura, umidade, altitude e GPS
   - Logging em LittleFS com CSV estruturado
   - Suporte a ESP32 e ESP32-C3
+- `gps_neo8m/gps_neo8m.ino` - Teste isolado do GPS NEO-8M com parser NMEA (280 linhas)
+- `bme280_completo/bme280_completo.ino` - Teste completo do BME280 com temperatura/umidade (220 linhas)
 - `icm20602/icm20602.ino` - Teste isolado do IMU (76 linhas)
-- `bmp280/bmp280.ino` - Teste isolado do sensor de pressão (67 linhas)
-- `bmp280_spiffs/bmp280_spiffs.ino` - Integração BMP280 + SPIFFS (173 linhas)
 - `sd/sd.ino` - Teste de interface SD (100 linhas)
 
 **Status**: Sensores com SPIFFS/LittleFS validados
 - ✅ **ICM20602**: Leitura raw de aceleração e giroscópio com conversão para m/s² e rad/s
-- ✅ **BMP280**: Pressão e altitude com calibração de 1013.25 hPa
-- ✅ Logging contínuo em CSV: `millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m`
+- ✅ **BME280**: Pressão, temperatura, umidade e altitude com calibração de 1013.25 hPa
+- ✅ Logging contínuo em CSV: `millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m,temperatura_C,umidade_pct`
 - ✅ Sem instabilidade em testes de 10-15 minutos
 - ⏳ Migração para SD Card em progresso
 

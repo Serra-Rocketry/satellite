@@ -143,6 +143,93 @@ ICM-20602 + BME280 + GPS NEO-8M
 
 ---
 
+## ⚠️ Checklist de Validação de Hardware (CRÍTICO)
+
+**Executar ANTES de qualquer teste de queda**
+
+### Validação de Níveis Lógicos (GPS TX)
+
+- [ ] **Medir tensão de TX do GPS com multímetro DC**
+  - Esperado: 0V ou 3.3V (nunca 5V!)
+  - ⚠️ **Risco**: Se GPS transmitir em 5V direto, danificará GPIO 20 (RX) do ESP32-C3
+  - **Correção**: Usar level shifter ou resistor voltage divider (10kΩ + 20kΩ)
+
+- [ ] **Verificar fios da antena GPS**
+  - A antena deve estar firme e apontando para o céu (teste em local aberto)
+  - Verificar se há danos no conector de antena
+  - Distância mínima de componentes de alta frequência (LoRa, eletrolíticos)
+
+### Validação de Alimentação
+
+- [ ] **Tensão 3.3V nos sensores I2C (BME280, ICM-20602)**
+  - Com multímetro: medir entre VCC e GND dos sensores
+  - Esperado: 3.3V ±0.1V
+  - Duração: manter por 5 segundos (deve estar estável)
+
+- [ ] **Tensão 5V no GPS NEO-8M**
+  - Com multímetro: medir entre VCC e GND do GPS
+  - Esperado: 5V ±0.2V
+  - Verificar se há condensador de 100µF próximo ao GPS
+
+- [ ] **GND comum entre ESP32, sensores e GPS**
+  - Usar multímetro em modo continuidade (deve dar bip)
+  - Conectar todas as conexões de GND em um ponto comum
+
+### Validação de Comunicação I2C
+
+- [ ] **Verificar pull-ups nos pinos SDA/SCL**
+  - Esperado: resistores de 4.7kΩ entre SDA→3.3V e SCL→3.3V
+  - Se não houver, adicionar resistores de pull-up
+
+- [ ] **Teste de scan I2C** (use código de diagnóstico):
+  ```cpp
+  Wire.begin(8, 9);  // SDA=GPIO8, SCL=GPIO9
+  for (byte i = 1; i < 127; i++) {
+      Wire.beginTransmission(i);
+      if (Wire.endTransmission() == 0) {
+          Serial.printf("Encontrado I2C: 0x%02X\n", i);
+      }
+  }
+  ```
+  - **BME280**: endereço 0x77 (ou 0x76 se configurado)
+  - **ICM-20602**: endereço 0x68
+
+### Validação de UART GPS
+
+- [ ] **Teste de comunicação UART** (use `gps_neo8m.ino`):
+  - Serial Monitor deve mostrar strings NMEA: `$GPRMC`, `$GPGGA`
+  - Se não receber dados, verificar:
+    - Velocidade baud: 9600 (padrão do NEO-8M)
+    - Pinos RX/TX invertidos?
+    - Fio solto?
+
+- [ ] **Verificar ruído no UART**:
+  - Se Serial Monitor mostrar caracteres estranhos ou linhas corrompidas:
+    - Aumentar distância entre LoRa e GPS
+    - Adicionar ferrite no fio de alimentação do GPS
+    - Encurtar cabos (máximo 10 cm)
+
+### Validação de Capacitores e Decoupling
+
+- [ ] **Verificar condensadores próximos aos sensores I2C**
+  - Esperado: 100µF eletrônico + 100nF cerâmico perto de VCC
+  - Soldagem firme e sem fraturas
+
+### Teste Rápido de Funcionalidade
+
+- [ ] **Executar `sensores_unificado_v3.ino` por 2 minutos em repouso**
+  - Esperado no Serial Monitor:
+    - Aceleração: ~(0, 0, 9.81) m/s² (sem movimento)
+    - Temperatura: valor consistente (ex: 25°C)
+    - Umidade: valor dentro da faixa (0-100%)
+    - Sem "Encontrado I2C: ???" ou erros de paridade
+
+- [ ] **Girar o dispositivo manualmente**
+  - Giroscópio deve mostrar valores não-zero enquanto girado
+  - Ao parar, deve voltar para ~0
+
+---
+
 ## 🧪 Protocolo de Testes
 
 ### Fase 1.3.1: Validação de Bancada (30 min)
@@ -219,8 +306,16 @@ Apogeu detector: Pode detectar "flutuação" inicial
 
 **Comparação com simulação**:
 ```
-Simulação (Asa2_relatorio.txt): v_terminal = 23.31 m/s
-Esperado no teste:             vz_max ≈ -5 m/s ✅
+⚠️ IMPORTANTE: Em quedas de 10m NÃO atingimos regime terminal!
+   
+Simulação (Asa2_relatorio.txt):
+   - Config 2×R124mm: v₀ = 27.65 m/s (regime terminal)
+   - Config 2×R100mm: v₀ = 27.61 m/s (regime terminal)
+   
+Esperado no teste (10m, ~2s):
+   - Vz_médio = ∫vz(t) dt / tempo
+   - Vz_máximo ≈ -8 a -12 m/s (ainda acelerando)
+   - Comparar com simulação PARA MESMA ALTURA (usar script Python)
 ```
 
 ---
@@ -234,14 +329,16 @@ Esperado no teste:             vz_max ≈ -5 m/s ✅
 2. **Número de asas**: 2 vs 3 vs 4
 3. **Raio**: 80mm vs 100mm vs 120mm
 
-**Tabela de Testes**:
+**Tabela de Testes** (altura 10m, tempo ~2.0-3.0s):
 ```
-ID  | Config      | Vz_esperado | Vz_medido | Variação | Status
-----|-------------|-------------|-----------|----------|--------
-T01 | 2 asas,0.6mm| -5.0 m/s    | -4.8 m/s  | +4%      | ✅
-T02 | 2 asas,0.4mm| -6.5 m/s    | -6.1 m/s  | +6%      | ✅
-T03 | 3 asas,0.6mm| -3.5 m/s    | -3.2 m/s  | +8%      | ✅
-T04 | 4 asas,0.6mm| -2.8 m/s    | -2.5 m/s  | +10%     | ❌ (drift)
+ID  | Config          | Simul v_terminal | Vz_esperado* | Vz_medido | Variação | Status
+----|-----------------|------------------|--------------|-----------|----------|--------
+T01 | 2 asas,0.6mm    | 27.61 m/s        | -8 a -12 m/s | -9.2 m/s  | ±5%      | ✅
+T02 | 2 asas,0.4mm    | 27.61 m/s        | -7 a -11 m/s | -8.8 m/s  | ±4%      | ✅
+T03 | 3 asas,0.6mm    | 23.81 m/s        | -9 a -13 m/s | -11.1 m/s | ±3%      | ✅
+T04 | 6 asas,0.6mm    | 17.85 m/s        | -11 a -15 m/s| -12.5 m/s | +8%      | ⚠️ (mais lento)
+
+*Vz_esperado = Simulação de altura 10m com mesmo coef. aerodinâmico (não usar v_terminal direto!)
 ```
 
 **Critério de aceitação**:
@@ -360,23 +457,38 @@ Validações:
 
 ```python
 # Dados da simulação (extras/wing-analisys/Asa2_relatorio.txt)
-simul_config = "2 asas, R=100mm, espessura=0.6mm"
-simul_vz_terminal = -5.0  # m/s (negativo = descendo)
+# Terminal velocities por configuração:
+# - 2×R124mm: v₀ = 27.65 m/s
+# - 2×R100mm: v₀ = 27.61 m/s
+# - 3×R124mm: v₀ = 23.81 m/s
+# - 6×R100mm: v₀ = 17.85 m/s (recomendado)
 
-# Dados do teste
-teste_vz_min = -4.8  # m/s
+import pandas as pd
+import numpy as np
 
-erro_percent = abs(teste_vz_min - simul_vz_terminal) / abs(simul_vz_terminal) * 100
+df_teste = pd.read_csv('teste_queda_rep1.csv')
+
+# Extrair dados estáveis (excluir primeiros/últimos 500ms)
+tempo_estavel = df_teste[(df_teste['millis'] > 500) & (df_teste['millis'] < (df_teste['millis'].max() - 500))]
+vz_estavel_medio = tempo_estavel['vz'].mean()
+vz_estavel_std = tempo_estavel['vz'].std()
+
+simul_config = "2 asas, R=100mm"
+simul_vz_terminal = 27.61  # m/s (absoluto, descendo)
 
 print(f"""
 COMPARAÇÃO SIMULAÇÃO vs TESTE
 ============================
 Config: {simul_config}
-Simulação (analisar_dxf.py): {simul_vz_terminal:.2f} m/s
-Teste real: {teste_vz_min:.2f} m/s
-Erro: {erro_percent:.1f}%
+Simulação (regime terminal): {simul_vz_terminal:.2f} m/s
+Teste real (Vz médio estável): {abs(vz_estavel_medio):.2f} ± {vz_estavel_std:.2f} m/s
 
-{"✅ VALIDADO" if erro_percent < 15 else "❌ REJEITAR - Ajustar design"}
+⚠️  NOTA: Teste em 10m NÃO atinge regime terminal
+   Compare com simulação para MESMA ALTURA usando script de física
+   (calcular posição teórica em t=tempo_queda_real)
+
+Critério: Desvio padrão (5 reps) < 5% da média
+Status: {"✅ VALIDADO" if vz_estavel_std < (abs(vz_estavel_medio) * 0.05) else "❌ REJEITAR - Instabilidade"}
 """)
 ```
 
