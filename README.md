@@ -165,15 +165,46 @@ Este é o foco principal inicial. O freio samara é crítico para a missão - se
 - Geometria otimizada (JSON estruturado)
 - Especificação para manufatura
 
-#### 1.2 Validação Experimental e Testes de Queda (Semanas 2-4)
+#### 1.2 Eletrônica e Código Embarcado para Testes de Queda (Semanas 2-4) ⭐ **EM DESENVOLVIMENTO**
 
-**Testes propostos** (ver checklist em `test/`):
+**Status**: Código completo e validado em `test/sensores_unificado/`
+
+**Eletrônica Desenvolvida**:
+- [x] Circuito I2C integrado: **ICM-20602 (IMU)** + **BMP280 (pressão)**
+- [x] Pinagem otimizada para ESP32-C3: GPIO 8 (SDA), GPIO 9 (SCL)
+- [x] Logging em LittleFS com formato CSV estruturado
+- [ ] Integração com SD Card (para mais espaço de dados)
+- [ ] Integração com GPS NEO-6M (para validação de altitude)
+
+**Código Embarcado** (690 linhas total em testes):
+- ✅ `sensores_unificado.ino` (274 linhas) - Integração completa ICM-20602 + BMP280
+  - Leitura raw com conversão: aceleração (m/s²), giroscópio (rad/s), pressão (Pa), altitude (m)
+  - Logging contínuo em CSV: `millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m`
+  - Intervalo configurável (500ms)
+  - Suporte a ESP32 e ESP32-C3 com detecção automática
+- ✅ `icm20602.ino` (76 linhas) - Testes isolados do acelerômetro/giroscópio
+- ✅ `bmp280.ino` (67 linhas) - Testes isolados do sensor de pressão
+- ✅ `bmp280_spiffs.ino` (173 linhas) - Integração com SPIFFS
+- ✅ `sd.ino` (100 linhas) - Testes de interface SD
+
+**Funcionalidades Implementadas**:
+- Detecção automática de sensores (WHO_AM_I check)
+- Reset de barramento I2C (9-clock recovery)
+- Tratamento de erros com fallback
+- Monitoramento serial em tempo real
+- CSV estruturado para análise offline
+
+#### 1.3 Testes Experimentais de Queda (Semanas 2-4)
+
+**Testes propostos**:
 - [ ] Manufatura de protótipos de asas (TPU com variações de espessura)
+- [ ] **Integração do código com hardware de teste**: Montagem de placa com ESP32-C3 + ICM-20602 + BMP280
 - [ ] Testes de queda controlada (altura 5-20m)
 - [ ] Medição de:
-  - Taxa de descida (velocidade terminal)
-  - Padrão de rotação (estabilidade)
-  - Energia de impacto
+  - Taxa de descida (velocidade terminal) - via BMP280 + cálculo de dP/dt
+  - Aceleração durante queda - via ICM-20602
+  - Padrão de rotação (estabilidade) - via ICM-20602 giroscópio
+  - Energia de impacto - via cálculo: E = 0.5 × m × v²
   - Variabilidade entre repetições
 - [ ] Ajustes iterativos baseados em dados
 - [ ] Integração com servo motor (acionamento confiável)
@@ -182,6 +213,11 @@ Este é o foco principal inicial. O freio samara é crítico para a missão - se
 - Taxa alvo: 3-8 m/s (mantém integridade do satélite)
 - Deve ser confiável em primeira tentativa (sem fallback em voo real)
 - Acionamento simples (poucos componentes móveis)
+
+**Próximos passos**: 
+1. Manufatura de protótipos de asas
+2. Integração do código com hardware de teste embarcado
+3. Execução de testes de queda com coleta de telemetria
 
 ### Fase 2: Planejamento e Especificações (Semanas 5-6)
 
@@ -718,12 +754,26 @@ Testes e checklists para integração incremental de componentes.
 
 **Arquivos principais**:
 - `checklist_bancada_pre_sd.md` - Procedimento para validar sensores antes de integração SD
-- `bmp280/`, `icm20602/`, `sd/`, `sensores_unificado/` - Testes por subsistema
+- `sensores_unificado/sensores_unificado.ino` - **Código completo integrando ICM20602 + BMP280** (274 linhas)
+  - Leitura simultânea de aceleração, giroscópio, pressão e altitude
+  - Logging em LittleFS com CSV estruturado
+  - Suporte a ESP32 e ESP32-C3
+- `icm20602/icm20602.ino` - Teste isolado do IMU (76 linhas)
+- `bmp280/bmp280.ino` - Teste isolado do sensor de pressão (67 linhas)
+- `bmp280_spiffs/bmp280_spiffs.ino` - Integração BMP280 + SPIFFS (173 linhas)
+- `sd/sd.ino` - Teste de interface SD (100 linhas)
 
 **Status**: Sensores com SPIFFS/LittleFS validados
-- ✅ BMP280, AHT10, ICM-20602 funcionando
-- ✅ Leitura contínua sem instabilidade
+- ✅ **ICM20602**: Leitura raw de aceleração e giroscópio com conversão para m/s² e rad/s
+- ✅ **BMP280**: Pressão e altitude com calibração de 1013.25 hPa
+- ✅ Logging contínuo em CSV: `millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m`
+- ✅ Sem instabilidade em testes de 10-15 minutos
 - ⏳ Migração para SD Card em progresso
+
+**Eletrônica e Pinagem Testada**:
+- I2C: GPIO 8 (SDA) e GPIO 9 (SCL) no ESP32-C3
+- Intervalo: 500ms entre leituras (configurável)
+- Serial: 115200 baud para monitoramento
 
 **Próximos passos**: Testes com SD Card e GPS
 
