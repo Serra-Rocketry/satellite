@@ -2,7 +2,7 @@
 
 ## 📋 Visão Geral
 
-Este guia detalha como implementar e executar os testes experimentais de queda do freio aerodinâmico usando o código melhorado em `sensores_unificado_v2_melhorado.ino`.
+Este guia detalha como implementar e executar os testes experimentais de queda do freio aerodinâmico usando o código integrado em `sensores_unificado_v3.ino`.
 
 **Objetivos**:
 1. Validar modelos aerodinâmicos do `extras/wing-analisys/`
@@ -18,18 +18,25 @@ Este guia detalha como implementar e executar os testes experimentais de queda d
 ### Componentes Eletrônicos
 - [ ] **Microcontrolador**: ESP32-C3 Super Mini (ou ESP32)
 - [ ] **IMU**: ICM-20602 (acelerômetro + giroscópio)
-- [ ] **Barômetro**: BMP280 (pressão/altitude)
+- [ ] **Sensor Barométrico**: BME280 (pressão/temperatura/umidade)
+- [ ] **GPS**: NEO-8M (posição/altitude/velocidade)
 - [ ] **Armazenamento**: LittleFS integrado (não precisa SD externo para testes iniciais)
 - [ ] **Conectores**: I2C com pull-ups (4.7kΩ normalmente já estão na placa)
 - [ ] **Bateria**: USB powerbank 5V para alimentação
 
 ### Pinagem (ESP32-C3)
 ```
-I2C:
-  SDA → GPIO 8
+I2C Sensors:
+  SDA → GPIO 8  (BME280 + ICM-20602)
   SCL → GPIO 9
   GND → GND
   VCC → 3.3V
+
+GPS UART:
+  RX → GPIO 20  (recebe dados do GPS NEO-8M)
+  TX → GPIO 21  (envia comandos para GPS)
+  GND → GND
+  VCC → 5V
 
 Serial Debug:
   TX → USB (nativo)
@@ -49,9 +56,10 @@ Serial Debug:
 │  Servo Motor (opcional para     │
 │  fase 2 - acionamento)          │
 ├─────────────────────────────────┤
-│  Cápsula com sensores:          │
-│  - ESP32-C3 + ICM20602 + BMP280 │
-│  - Bateria USB powerbank        │
+│  Cápsula com sensores:              │
+│  - ESP32-C3 + ICM-20602 + BME280 +  │
+│  - GPS NEO-8M                       │
+│  - Bateria USB powerbank            │
 │  - Proteção: foam/cápsula       │
 └─────────────────────────────────┘
 ```
@@ -71,18 +79,20 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 
 ### 2. Bibliotecas Necessárias
 ```
-- Adafruit_BMP280 (via Arduino Library Manager)
+- Adafruit_BME280 (via Arduino Library Manager)
+- Adafruit_Sensor (via Arduino Library Manager)
 - Wire (built-in)
 - FS (built-in)
 - LittleFS (built-in no ESP32)
+- HardwareSerial (built-in)
 ```
 
 ### 3. Preparação do Código
 ```bash
 cd test/sensores_unificado/
 
-# Copiar versão melhorada para testes
-cp sensores_unificado_v2_melhorado.ino sensores_unificado_TESTE.ino
+# Usar versão v3 com todos os componentes
+# sensores_unificado_v3.ino - integra ICM-20602 + BME280 + GPS NEO-8M
 
 # Ou usar diretamente em Arduino IDE
 ```
@@ -92,10 +102,11 @@ cp sensores_unificado_v2_melhorado.ino sensores_unificado_TESTE.ino
 ## ⚙️ Configuração e Upload
 
 ### 1. Conectar Hardware
-1. Montagem de protoboard com ICM-20602 e BMP280
-2. Conectar GPIO 8 (SDA) e GPIO 9 (SCL)
-3. Alimentar com 3.3V e GND
-4. Conectar ESP32-C3 via USB-C
+1. Montagem de protoboard com ICM-20602, BME280 e GPS NEO-8M
+2. Conectar GPIO 8 (SDA) e GPIO 9 (SCL) para sensores I2C
+3. Conectar GPIO 20 (RX) e GPIO 21 (TX) para GPS UART
+4. Alimentar com 3.3V (sensores I2C e ICM), 5V (GPS) e GND
+5. Conectar ESP32-C3 via USB-C
 
 ### 2. Arduino IDE
 ```
@@ -114,15 +125,20 @@ Sketch → Upload (ou Ctrl+U)
 Tools → Serial Monitor (115200 baud)
 
 Esperado ver:
-=== Teste Unificado de Sensores v2 (MELHORADO) ===
-✅ ICM20602 encontrado!
-✅ BMP280 inicializado com sucesso!
-✅ LittleFS montado com sucesso!
+=== Teste Unificado de Sensores v3 ===
+ICM-20602 + BME280 + GPS NEO-8M
+✓ ICM20602 encontrado!
+✓ BME280 inicializado!
+✓ GPS UART inicializado!
+✓ LittleFS montado!
 === Taxa de Aquisição: 20 Hz (50 ms) ===
 === Iniciando Leituras ===
 
-[50] A: 0.12 -0.05 9.81 | G: 0.0001 0.0002 0.0003 | P: 101325 | Alt: 45.23 | Vz: 0.00 | Rot: 0.0003
-[100] A: 0.10 -0.03 9.81 | G: 0.0000 0.0001 0.0002 | P: 101325 | Alt: 45.23 | Vz: 0.00 | Rot: 0.0002
+[50] A: 0.12 -0.05 9.81 | T:25.34 U:45.23 | Alt: 45.23 Vz: 0.00 | GPS: ...
+[100] A: 0.10 -0.03 9.81 | T:25.34 U:45.23 | Alt: 45.23 Vz: 0.00 | GPS: ...
+(Aguardando GPS fix...)
+
+[5000] A: 0.12 -0.05 9.81 | T:25.34 U:45.23 | Alt: 45.23 Vz: 0.00 | GPS: OK
 ```
 
 ---
@@ -172,12 +188,12 @@ Aceleração durante queda: ~9.81 m/s² (gravidade)
 
 **CSV típico**:
 ```
-millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m,vz_ms,mag_giroscopia_rads
-0,0.1,-0.05,10.0,0.0,0.0,0.0,101325,50.0,0.0,0.0
-50,-0.2,0.15,10.2,-0.001,0.001,0.002,101320,49.96,-0.08,0.0024
-100,-0.3,0.10,9.9,0.0,0.001,0.001,101315,49.92,-0.16,0.0014
+millis,ax,ay,az,gx,gy,gz,pressao_Pa,altura_m,temperatura_C,umidade_pct,vz,mag_giroscopia,lat,lon,alt_gps
+0,0.1,-0.05,10.0,0.0,0.0,0.0,101325,50.0,25.3,45.2,0.0,0.0,-23.5521,-46.6333,52.3
+50,-0.2,0.15,10.2,-0.001,0.001,0.002,101320,49.96,25.3,45.2,-0.08,0.0024,-23.5521,-46.6333,52.3
+100,-0.3,0.10,9.9,0.0,0.001,0.001,101315,49.92,25.3,45.2,-0.16,0.0014,-23.5521,-46.6333,52.3
 ... (cada 50ms por ~1400ms)
-1400,-0.1,0.05,-5.0,0.001,0.0,0.0,100800,35.0,-14.3,0.0015
+1400,-0.1,0.05,-5.0,0.001,0.0,0.0,100800,35.0,25.2,45.8,-14.3,0.0015,-23.5520,-46.6334,35.2
 ```
 
 ---
@@ -437,8 +453,15 @@ Semana 3:
 
 ## 🆘 Troubleshooting
 
+### "GPS mostra apenas pontos (... em vez de OK)"
+- [ ] GPS precisa de 30-60 segundos para primeiro fix
+- [ ] Ficar em local aberto (mais de 45° de céu visível)
+- [ ] Verificar antena GPS - deve estar apontando para cima
+- [ ] Problema: GPS perto de grandes estruturas metálicas → afastar 10m
+- [ ] Se permanecer como "..." por > 2 min: verificar UART RX/TX nos pinos 20/21
+
 ### "Apogeu não é detectado"
-- [ ] Verificar if `altura` está aumentando no início
+- [ ] Verificar se `altura` está aumentando no início
 - [ ] Aumentar altura de queda (maior Vz para detectar)
 - [ ] Verificar threshold: `if (vz < -0.5)` - ajustar se necessário
 
@@ -446,16 +469,22 @@ Semana 3:
 - [ ] Verificar conexão I2C (pull-ups OK?)
 - [ ] Reset barramento: ligar/desligar power
 - [ ] Verificar solda nos pinos
+- [ ] Para GPS: verificar se está recebendo serial (coloque breakpoint na UART)
 
 ### "Velocidade vertical não muda"
-- [ ] Verificar if `millis_anterior` está sendo atualizado
+- [ ] Verificar se `millis_anterior` está sendo atualizado
 - [ ] Aumentar altura de queda
-- [ ] Verificar se BMP280 está calibrado (1013.25 hPa correto?)
+- [ ] Verificar se BME280 está calibrado (1013.25 hPa correto?)
 
 ### "ESP32 não grava dados"
 - [ ] Verificar if LittleFS está montado (Serial output)
 - [ ] Tentar formatar LittleFS: Menu → Tools → Erase All Flash Contents
 - [ ] Testar com Serial Monitor (não via CSV)
+
+### "BME280 mostra pressão constantemente igual"
+- [ ] Verificar endereço I2C: é 0x76 ou 0x77? (SDO=GND vs VCC)
+- [ ] Se o jumper SDO não está conectado, tente 0x77
+- [ ] Validar com teste isolado: `test/bme280_completo/bme280_completo.ino`
 
 ---
 
@@ -466,8 +495,9 @@ Semana 3:
    - Testar confiabilidade
 
 2. **Integração de GPS**
-   - Validação cruzada de altitude GPS vs BMP280
-   - Registrar posição de pouso
+    - Validação cruzada de altitude GPS vs BME280
+    - Registrar posição de pouso
+    - Testar confiabilidade em ambiente aberto
 
 3. **Refinamento de Detecção de Apogeu**
    - Usar dados reais dos testes para calibração

@@ -10,17 +10,22 @@ test/
 ├── ANALISE_CODIGO_TESTES.md            ← Análise técnica do sensores_unificado.ino
 ├── GUIA_IMPLEMENTACAO_FASE_1_3.md      ← Guia completo para testes de queda
 ├── checklist_bancada_pre_sd.md         ← Checklist para validação pré-SD
-├── bmp280/                             ← Teste isolado do BMP280
+├── bme280_completo/                    ← Teste completo do BME280 (novo)
+│   └── bme280_completo.ino
+├── bmp280/                             ← Teste isolado do BMP280 (legado)
 │   └── bmp280.ino
-├── bmp280_spiffs/                      ← Teste BMP280 + SPIFFS/LittleFS
+├── bmp280_spiffs/                      ← Teste BMP280 + SPIFFS/LittleFS (legado)
 │   └── bmp280_spiffs.ino
+├── gps_neo8m/                          ← Teste do GPS NEO-8M UART (novo)
+│   └── gps_neo8m.ino
 ├── icm20602/                           ← Teste isolado do ICM-20602
 │   └── icm20602.ino
 ├── sd/                                 ← Teste de interface SD
 │   └── sd.ino
 └── sensores_unificado/                 ← ⭐ INTEGRAÇÃO COMPLETA
     ├── sensores_unificado.ino          ← v1 (original, funcional)
-    └── sensores_unificado_v2_melhorado.ino  ← v2 (RECOMENDADO para Fase 1.3)
+    ├── sensores_unificado_v2_melhorado.ino  ← v2 (melhorado)
+    └── sensores_unificado_v3.ino       ← v3 (RECOMENDADO: GPS + BME280 + ICM-20602)
 ```
 
 ## 🎯 Propósito de Cada Teste
@@ -38,12 +43,12 @@ test/
   millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m
   ```
 
-**Próximo**: Usar v2 melhorada para testes de queda (veja abaixo)
+**Próximo**: Usar v3 com GPS integrado para testes atuais (veja abaixo)
 
 ---
 
-### 2. **sensores_unificado_v2_melhorado.ino** (402 linhas) ⭐ NOVO
-**Status**: ✅ Pronto para Fase 1.3  
+### 2. **sensores_unificado_v2_melhorado.ino** (402 linhas)
+**Status**: ✅ Funcional  
 **Descrição**: Versão melhorada com recomendações críticas implementadas
 
 **Melhorias Implementadas**:
@@ -60,9 +65,9 @@ millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m,vz_ms,ma
 ```
 
 **Quando usar**:
-- Testes de queda (Fase 1.3) ← RECOMENDADO
+- Testes de queda sem GPS (ambiente indoor)
 - Validação de freio aerodinâmico
-- Coleta de dados experimentais
+- Coleta de dados experimentais básicos
 
 **Analise automática**: Serial Monitor mostra:
 ```
@@ -76,21 +81,125 @@ millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m,vz_ms,ma
 
 ---
 
-### 3. **bmp280.ino** (67 linhas)
+### 3. **sensores_unificado_v3.ino** (490 linhas) ⭐ RECOMENDADO AGORA
+**Status**: ✅ Pronto para Fase 1.3  
+**Descrição**: Integração completa com GPS NEO-8M + BME280 (com umidade) + ICM-20602
+
+**Componentes Integrados**:
+- ✅ ICM-20602 via I2C (acelerômetro + giroscópio)
+- ✅ BME280 via I2C (pressão + temperatura + umidade) - substitui BMP280 + AHT
+- ✅ GPS NEO-8M via UART (posição + altitude + velocidade + número de satélites)
+- ✅ Toda a funcionalidade da v2 (Vz, apogeu, validação, etc)
+
+**Pinagem (ESP32-C3)**:
+```
+I2C (SDA=GPIO8, SCL=GPIO9):
+  - ICM-20602
+  - BME280
+
+UART (RX=GPIO20, TX=GPIO21):
+  - GPS NEO-8M (9600 baud)
+```
+
+**CSV Output** (15 colunas):
+```
+millis,ax,ay,az,gx,gy,gz,pressao_Pa,altura_m,temperatura_C,umidade_pct,vz,mag_giroscopia,lat,lon,alt_gps
+```
+
+**Quando usar**:
+- ⭐ Testes de queda com validação GPS (Fase 1.3) - ATUAL
+- Validação cruzada de altitude (BMP280 vs GPS)
+- Coleta de posição de pouso
+- Análise completa com contexto geográfico
+
+**Analise automática**: Serial Monitor mostra:
+```
+=== Teste Unificado de Sensores v3 ===
+ICM-20602 + BME280 + GPS NEO-8M
+✓ ICM20602 encontrado!
+✓ BME280 inicializado!
+✓ GPS UART inicializado!
+
+[50] A: 0.12 -0.05 9.81 | T:25.34 U:45.23 | Alt: 45.23 Vz: 0.00 | GPS: ...
+[5000] A: 0.12 -0.05 9.81 | T:25.34 U:45.23 | Alt: 45.23 Vz: 0.00 | GPS: OK
+```
+
+**Recurso especial**: Validação cruzada automática de altitude
+```python
+# Pós-processamento dos dados:
+altitude_diferenca = abs(alt_bme280 - alt_gps)
+if altitude_diferenca > 5.0:  # mais que 5m de diferença
+    print("⚠️ Descrepância entre BME280 e GPS detectada!")
+```
+
+### 4. **bme280_completo.ino** (220 linhas) ⭐ NOVO
 **Status**: ✅ Teste isolado  
-**Descrição**: Validar apenas sensor de pressão/altitude
+**Descrição**: Teste completo do BME280 (pressão + temperatura + umidade)
+
+- Teste detalhado com cálculos avançados
+- Calcula ponto de orvalho e índice de calor
+- Converte para diferentes unidades (Pa, hPa, mbar)
+- Validação de dados e detecção de erro
+- **CSV Output**:
+  ```
+  Temperatura: 25.34 °C
+  Pressão: 101325 Pa (1013.25 hPa)
+  Umidade: 45.23 % RH
+  Altitude: 45.23 m (ISA)
+  Ponto orvalho: 14.56 °C
+  Índice calor: 26.78 °C
+  ```
+
+**Uso**: Validar BME280 completo (substitui BMP280 + AHT em v3)
+
+---
+
+### 5. **gps_neo8m.ino** (280 linhas) ⭐ NOVO
+**Status**: ✅ Teste isolado  
+**Descrição**: Teste completo do GPS NEO-8M com parser NMEA
+
+**Funcionalidades**:
+- Parser NMEA completo com validação de checksum
+- Processa sentença $GPRMC (posição + velocidade)
+- Processa sentença $GPGGA (altitude + satélites + DOP)
+- Processa sentença $GPGSA (tipo de fix + VDOP)
+- Converte coordenadas NMEA (ddmm.mmmm) para decimais
+- Monitoramento de qualidade de sinal
+
+**Serial Output**:
+```
+--- Status GPS ---
+Satélites vistos: 8
+Fix quality: GPS fix
+Fix type: 3D
+Latitude: -23.552140
+Longitude: -46.633400
+Altitude: 750.23 m
+Velocidade: 0.00 km/h
+Curso: 0.0°
+HDOP: 1.2 | VDOP: 1.5
+Tempo desde último fix: 523 ms
+```
+
+**Uso**: Validar GPS isolado ou debugar problemas de UART
+
+---
+
+### 6. **bmp280.ino** (67 linhas)
+**Status**: ✅ Teste isolado (legado)  
+**Descrição**: Validar apenas sensor de pressão/altitude BMP280 (antigo)
 
 - Teste simples sem gravação
 - Ideal para debug de hardware I2C
 - Verifica WHO_AM_I do BMP280 (0x76)
 
-**Uso**: Diagnosticar problemas de conexão I2C
+**Uso**: Diagnosticar problemas de conexão I2C (use bme280_completo.ino para BME280 novo)
 
 ---
 
-### 4. **bmp280_spiffs.ino** (173 linhas)
+### 7. **bmp280_spiffs.ino** (173 linhas)
 **Status**: ✅ Teste de integração SPIFFS  
-**Descrição**: BMP280 com logging em LittleFS/SPIFFS
+**Descrição**: BMP280 com logging em LittleFS/SPIFFS (legado)
 
 - Coleta dados de pressão e altitude
 - Salva em CSV via SPIFFS
@@ -98,7 +207,7 @@ millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m,vz_ms,ma
 
 ---
 
-### 5. **icm20602.ino** (76 linhas)
+### 8. **icm20602.ino** (76 linhas)
 **Status**: ✅ Teste isolado  
 **Descrição**: Validar apenas acelerômetro + giroscópio
 
@@ -110,7 +219,7 @@ millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m,vz_ms,ma
 
 ---
 
-### 6. **sd.ino** (100 linhas)
+### 9. **sd.ino** (100 linhas)
 **Status**: ✅ Teste de interface SD  
 **Descrição**: Validar comunicação com módulo SD externo
 

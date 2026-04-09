@@ -15,7 +15,7 @@ Este projeto visa desenvolver um pocketQube capaz de determinar sua posição at
 - **Modo de busca ativa**: Beacons móveis podem ser usados para localizar e recuperar o satélite
 - **Visualização em tempo real**: Sistema de monitoramento com Leaflet mostrando todas as posições
 - **Comunicação sequencial**: Protocolo ordenado entre satélite e beacons terrestres
-- **Sensores embarcados**: BMP280 (pressão/temperatura), AHT10 (umidade/temperatura) e MPU6050 (acelerômetro/giroscópio)
+- **Sensores embarcados**: BME280 (pressão/temperatura/umidade), ICM-20602 (acelerômetro/giroscópio) e GPS NEO-8M (posição/altitude)
 - **Freio aerodinâmico tipo samara**: Sistema de recuperação inspirado em sementes de árvores para descida controlada
 - **Armazenamento local**: Logging em cartão SD para backup de dados
 - **Flexibilidade**: Suporte a configurações variáveis de beacons (fixos ou móveis)
@@ -54,9 +54,9 @@ Este projeto visa desenvolver um pocketQube capaz de determinar sua posição at
    - ESP32-C3 Super Mini (single-core)
    - Módulo LoRa 915MHz (SX1276/SX1278)
    - Módulo GPS (NEO-6M/NEO-7M ou similar)
-   - Sensor BMP280 (pressão, temperatura)
-   - Sensor AHT10 (umidade, temperatura)
-   - Sensor ICM-20602 (acelerômetro 3-eixos, giroscópio 3-eixos)
+    - Sensor BME280 (pressão, temperatura, umidade)
+    - Sensor ICM-20602 (acelerômetro 3-eixos, giroscópio 3-eixos)
+    - Módulo GPS NEO-8M (latitude, longitude, altitude, velocidade)
    - Servo motor para freio aerodinâmico tipo samara (estudado em `extras/wing-analisys/`)
    - Cartão SD para armazenamento (testes em `test/sd/`)
    - LEDs de status (GPS lock, LoRa activity, flight state)
@@ -87,7 +87,7 @@ O ESP32-C3 é single-core com 400KB de RAM, requerendo otimização cuidadosa de
 #### Estratégia de Execução
 **Single Task com Scheduler Cooperativo**
 - **Loop Principal**: Máquina de estados coordena todas as operações
-  - Leitura de sensores I2C (BMP280, AHT10, ICM-20602)
+  - Leitura de sensores I2C (BME280, ICM-20602)
   - Comunicação LoRa com beacons (sequencial, ~1Hz)
   - GPS parsing (UART2, contínuo)
   - Logging em SD (batched para eficiência)
@@ -170,14 +170,17 @@ Este é o foco principal inicial. O freio samara é crítico para a missão - se
 **Status**: Código completo e validado em `test/sensores_unificado/`
 
 **Eletrônica Desenvolvida**:
-- [x] Circuito I2C integrado: **ICM-20602 (IMU)** + **BMP280 (pressão)**
+- [x] Circuito I2C integrado: **ICM-20602 (IMU)** + **BME280 (pressão/temperatura/umidade)**
+- [x] Comunicação UART: **GPS NEO-8M (posição/altitude)**
 - [x] Pinagem otimizada para ESP32-C3: GPIO 8 (SDA), GPIO 9 (SCL)
 - [x] Logging em LittleFS com formato CSV estruturado
 - [ ] Integração com SD Card (para mais espaço de dados)
 - [ ] Integração com GPS NEO-6M (para validação de altitude)
 
 **Código Embarcado** (690 linhas total em testes):
-- ✅ `sensores_unificado.ino` (274 linhas) - Integração completa ICM-20602 + BMP280
+- ✅ `sensores_unificado_v3.ino` (490 linhas) - Integração completa ICM-20602 + BME280 + GPS NEO-8M
+- ✅ `gps_neo8m.ino` (280 linhas) - Teste isolado do GPS com parser NMEA
+- ✅ `bme280_completo.ino` (220 linhas) - Teste completo do BME280
   - Leitura raw com conversão: aceleração (m/s²), giroscópio (rad/s), pressão (Pa), altitude (m)
   - Logging contínuo em CSV: `millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m`
   - Intervalo configurável (500ms)
@@ -198,10 +201,10 @@ Este é o foco principal inicial. O freio samara é crítico para a missão - se
 
 **Testes propostos**:
 - [ ] Manufatura de protótipos de asas (TPU com variações de espessura)
-- [ ] **Integração do código com hardware de teste**: Montagem de placa com ESP32-C3 + ICM-20602 + BMP280
+- [ ] **Integração do código com hardware de teste**: Montagem de placa com ESP32-C3 + ICM-20602 + BME280 + GPS NEO-8M
 - [ ] Testes de queda controlada (altura 5-20m)
 - [ ] Medição de:
-  - Taxa de descida (velocidade terminal) - via BMP280 + cálculo de dP/dt
+  - Velocidade vertical (dh/dt) - via BME280 + GPS altitude + cálculo de derivada
   - Aceleração durante queda - via ICM-20602
   - Padrão de rotação (estabilidade) - via ICM-20602 giroscópio
   - Energia de impacto - via cálculo: E = 0.5 × m × v²
@@ -438,7 +441,7 @@ Este é o foco principal inicial. O freio samara é crítico para a missão - se
 | | DIO0 | 3 | Interrupt LoRa |
 | **GPS UART** | TX | 21 | UART |
 | | RX | 20 | UART |
-| **I2C Sensors** | SDA | 8 | BMP280 + AHT10 + ICM-20602 |
+| **I2C Sensors** | SDA | 8 | BME280 + ICM-20602 |
 | | SCL | 9 | I2C Clock |
 | **Servo Samara** | PWM | 11 | Controle do freio |
 | **Status LEDs** | LED1 | 1 | GPS Lock |
