@@ -13,6 +13,14 @@
 #define INTERVAL 500  // Intervalo de leitura em ms
 #define FILE_NAME "/dados_bmp280.csv"
 
+#if CONFIG_IDF_TARGET_ESP32C3
+#define I2C_SDA_PIN 8
+#define I2C_SCL_PIN 9
+#else
+#define I2C_SDA_PIN 21
+#define I2C_SCL_PIN 22
+#endif
+
 // ============= Variáveis Globais =============
 
 Adafruit_BMP280 bmp;
@@ -54,7 +62,7 @@ bool setupSPIFFS() {
   // Exibe informações sobre o espaço
   size_t total = SPIFFS.totalBytes();
   size_t used = SPIFFS.usedBytes();
-  Serial.printf("SPIFFS: %d bytes total, %d bytes usados\n", total, used);
+  Serial.printf("SPIFFS: %u bytes total, %u bytes usados\n", (unsigned)total, (unsigned)used);
   
   return true;
 }
@@ -84,7 +92,7 @@ void appendFile(const char *path, const char *message) {
     Serial.println("Falha ao abrir arquivo para anexar.");
     return;
   }
-  if (file.print(String(message) + "\n")) {
+  if (file.println(message)) {
     Serial.println("Dados anexados.");
   } else {
     Serial.println("Falha ao anexar mensagem.");
@@ -124,7 +132,7 @@ void setup() {
   Serial.println("\n\n=== Teste BMP280 com SPIFFS ===\n");
 
   // Inicializa I2C
-  Wire.begin(21, 22);
+  Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   delay(100);
 
   // Inicializa BMP280

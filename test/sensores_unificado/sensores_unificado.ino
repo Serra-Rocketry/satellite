@@ -9,6 +9,14 @@
 #include "LittleFS.h"
 #include <Adafruit_BMP280.h>
 
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+#define I2C_SDA_PIN 8
+#define I2C_SCL_PIN 9
+#else
+#define I2C_SDA_PIN 21
+#define I2C_SCL_PIN 22
+#endif
+
 // ============= Configurações dos Sensores =============
 
 // ICM20602
@@ -197,21 +205,18 @@ void logData(unsigned long current_millis) {
   }
 }
 
-#define SDA_PIN 21
-#define SCL_PIN 22
-
 void resetI2C() {
-  pinMode(SDA_PIN, INPUT_PULLUP);
-  pinMode(SCL_PIN, OUTPUT);
+  pinMode(I2C_SDA_PIN, INPUT_PULLUP);
+  pinMode(I2C_SCL_PIN, OUTPUT);
 
   for (int i = 0; i < 9; i++) {
-    digitalWrite(SCL_PIN, HIGH);
+    digitalWrite(I2C_SCL_PIN, HIGH);
     delayMicroseconds(5);
-    digitalWrite(SCL_PIN, LOW);
+    digitalWrite(I2C_SCL_PIN, LOW);
     delayMicroseconds(5);
   }
 
-  pinMode(SCL_PIN, INPUT_PULLUP);
+  pinMode(I2C_SCL_PIN, INPUT_PULLUP);
 }
 
 // ============= Setup =============
@@ -221,13 +226,13 @@ void setup() {
   delay(1000);
   Serial.println("\n\n=== Teste Unificado de Sensores ===\n");
 
-  Wire.begin(21, 22);
+  Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   delay(100);
 
-  // icm_ok = setupICM20602();
+  icm_ok = setupICM20602();
 
   resetI2C();
-  Wire.begin(21, 22);
+  Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
 
   bmp_ok = setupBMP280();
 
