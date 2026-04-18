@@ -5,6 +5,7 @@
 O código em `sensores_unificado/sensores_unificado.ino` implementa coleta integrada de dados de **ICM-20602 (IMU)** e **BMP280 (pressão/altitude)** com logging em CSV via LittleFS.
 
 **Métricas**:
+
 - **Linhas de código**: 274
 - **Sensores integrados**: 2 (ICM-20602, BMP280)
 - **Output**: CSV com 9 colunas de telemetria
@@ -16,6 +17,7 @@ O código em `sensores_unificado/sensores_unificado.ino` implementa coleta integ
 ## ✅ Pontos Fortes
 
 ### 1. **Suporte Multi-Plataforma**
+
 ```cpp
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
 #define I2C_SDA_PIN 8
@@ -25,37 +27,45 @@ O código em `sensores_unificado/sensores_unificado.ino` implementa coleta integ
 #define I2C_SCL_PIN 22
 #endif
 ```
+
 - Detecta plataforma em compile-time
 - Pinagem automática (ESP32 vs ESP32-C3)
 - ✅ Excelente para testes portáveis
 
 ### 2. **ICM-20602 Raw I2C**
+
 ```cpp
 int16_t ax_raw = icm_read16(0x3B);  // Aceleração X
 int16_t gx_raw = icm_read16(0x43);  // Giroscópio X
 ```
+
 - **Vantagem**: Sem dependência de biblioteca externa (menor memória)
-- **Conversão correta**: 
+- **Conversão correta**:
   - Aceleração: `* (9.80665 / 16384.0)` → m/s² ✅
   - Giroscópio: `* (π / (180 * 131))` → rad/s ✅
 
 ### 3. **BMP280 com Calibração**
+
 ```cpp
 altura = bmp.readAltitude(1013.25);  // Pressão ao nível do mar
 ```
+
 - Usa pressão de referência fixa (1013.25 hPa)
 - ✅ Bom para testes em curtos períodos
 
 ### 4. **Logging Estruturado em CSV**
+
 ```
 millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m
 1000,0.12,0.05,9.81,0.0001,0.0002,0.0003,101325,45.23
 ```
+
 - ✅ Formato facilita pós-processamento
 - ✅ Timestamps absolutos para sincronização
 - ✅ Precisão de 2 casas decimais para aceleração
 
 ### 5. **Reset I2C com Clock Recovery**
+
 ```cpp
 void resetI2C() {
   for (int i = 0; i < 9; i++) {
@@ -66,14 +76,17 @@ void resetI2C() {
   }
 }
 ```
+
 - ✅ Recupera barramento travado (9-clock recovery I2C)
 - Essencial para confiabilidade em campo
 
 ### 6. **Detecção de Sensores**
+
 ```cpp
 uint8_t who = icm_readReg(0x75);  // ICM20602 WHO_AM_I = 0x12
 if (who == 0x12) { ... }
 ```
+
 - ✅ Valida presença do sensor antes de usar
 - Previne crashes por hardware desconectado
 
@@ -88,6 +101,7 @@ if (who == 0x12) { ... }
 **Código atual**: Apenas coleta altitude instantânea
 
 **Sugestão**:
+
 ```cpp
 // Adicionar após readSensors()
 float calcularTaxaDescent() {
@@ -122,6 +136,7 @@ float calcularTaxaDescent() {
 **Código atual**: Apenas coleta giroscópio raw (rad/s)
 
 **Sugestão** - Adicionar magnitude de rotação:
+
 ```cpp
 float magnitude_giroscopia = sqrt(gx*gx + gy*gy + gz*gz);
 // Se magnitude_giroscopia > threshold → está em autogiro
@@ -133,12 +148,14 @@ float magnitude_giroscopia = sqrt(gx*gx + gy*gy + gz*gz);
 
 **Problema**: Pressão de referência (1013.25 hPa) é fixa - não adequada para locais em altitude
 
-**Código atual**: 
+**Código atual**:
+
 ```cpp
 altura = bmp.readAltitude(1013.25);  // Fixo!
 ```
 
 **Sugestão**:
+
 ```cpp
 // Ler pressão de referência de um GPS acurado ou config
 void calibrateAltitude() {
@@ -157,6 +174,7 @@ void calibrateAltitude() {
 **Problema**: Não detecta eventos críticos automaticamente
 
 **Sugestão** - Adicionar flags:
+
 ```cpp
 struct EventoQueda {
   bool apogeu_detectado;        // Vz mudou de + para -
@@ -171,6 +189,7 @@ struct EventoQueda {
 **Problema**: Valores inválidos não são detectados
 
 **Código atual**:
+
 ```cpp
 String data_string = String(ax, 2) + "," + String(ay, 2) + ...
 ```
@@ -178,6 +197,7 @@ String data_string = String(ax, 2) + "," + String(ay, 2) + ...
 **Risco**: Se sensor falhar, produz valores corrupting CSV
 
 **Sugestão**:
+
 ```cpp
 bool validarDados(float ax, float ay, float az, float pressao) {
   if (isnan(ax) || isnan(ay) || isnan(az)) return false;
@@ -192,6 +212,7 @@ bool validarDados(float ax, float ay, float az, float pressao) {
 **Problema**: Arquivo CSV pode ser corrompido sem aviso
 
 **Sugestão**:
+
 ```cpp
 // Adicionar coluna extra: checksum
 uint16_t calcularChecksum(float ax, float ay, float az, ...) {
@@ -208,12 +229,14 @@ uint16_t calcularChecksum(float ax, float ay, float az, ...) {
 
 **Problema**: Taxa de aquisição de 2 Hz é baixa para testes dinâmicos
 
-**Contexto**: 
+**Contexto**:
+
 - Queda de 20m com v_terminal 5 m/s = 4s de queda
 - Em 4s, apenas 8 amostras!
 - Se pico de aceleração ocorre entre amostras, é perdido
 
 **Sugestão**:
+
 ```cpp
 #define INTERVAL 50  // 20 Hz melhor para testes dinâmicos
 // Ou ainda melhor: usar timer ISR para 100 Hz (10ms)
@@ -224,6 +247,7 @@ uint16_t calcularChecksum(float ax, float ay, float az, ...) {
 **Problema**: Não há correlação com altitude real do GPS
 
 **Para Fase 1.3 (testes de queda)**:
+
 ```cpp
 // Adicionar:
 #include <TinyGPS++.h>
@@ -256,26 +280,26 @@ TinyGPSPlus gps;
 
 ### 🟡 IMPORTANTE (Implementar para Fase 4)
 
-4. **Detecção de apogeu automática**
+1. **Detecção de apogeu automática**
    - Dispara servo motor automaticamente
    - ~30 linhas de código
    - Impacto: Muito Alto
 
-5. **Integração com GPS**
+2. **Integração com GPS**
    - Validação cruzada de altitude
    - ~50 linhas de código
    - Impacto: Alto
 
-6. **Cálculo de ângulo de rotação**
+3. **Cálculo de ângulo de rotação**
    - Análise de estabilidade do freio
    - ~40 linhas de código
    - Impacto: Médio
 
 ### 🟢 OPCIONAL (Nice-to-have)
 
-7. Checksum em CSV
-8. Calibração automática de BMP280
-9. Logging de eventos em arquivo separado
+1. Checksum em CSV
+2. Calibração automática de BMP280
+3. Logging de eventos em arquivo separado
 
 ---
 
@@ -283,17 +307,20 @@ TinyGPSPlus gps;
 
 ### Para Testes de Queda (Fase 1.3)
 
-**Semana 1**: 
+**Semana 1**:
+
 - [ ] Aumentar taxa de aquisição para 50ms
 - [ ] Implementar cálculo de Vz (velocidade vertical)
 - [ ] Adicionar validação de dados
 
 **Semana 2**:
+
 - [ ] Integrar GPS para validação de altitude
 - [ ] Detectar apogeu automaticamente
 - [ ] Testar com primeira série de quedas
 
 **Semana 3**:
+
 - [ ] Análise de dados coletados
 - [ ] Ajustar parâmetros de detecção
 - [ ] Iteração com servo motor
@@ -332,7 +359,7 @@ plt.show()
 
 ## 📚 Referências
 
-- **Registers ICM-20602**: 
+- **Registers ICM-20602**:
   - 0x3B-0x3D: Aceleração raw
   - 0x43-0x47: Giroscópio raw
   - 0x75: WHO_AM_I = 0x12

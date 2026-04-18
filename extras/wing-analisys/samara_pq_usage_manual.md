@@ -32,16 +32,15 @@ Saídas padrão em `extras/wing-analisys/`:
 
 ## 3) Como analisar outros arquivos DXF
 
-### 3.1 Análise geométrica isolada (script auxiliar)
+### 3.1 Analise geometrica isolada (sem script auxiliar)
 
-Use:
+Atualmente nao existe `analisar_dxf.py` no repositorio.
+Para inspecionar apenas geometria e area, use a classe `DxfWingProfile` diretamente:
 
 ```bash
 source .venv/bin/activate
-python extras/wing-analisys/analisar_dxf.py
+python -c "import importlib.util; p='extras/wing-analisys/samara_pq_simulation.py'; s=importlib.util.spec_from_file_location('m', p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); prof=m.DxfWingProfile('extras/wing-analisys/Asa2.DXF'); print('r0_m=', round(prof.r0_m,6)); print('rf_m=', round(prof.rf_m,6)); print('area_one_wing_m2=', round(prof.area_one_wing_m2,8))"
 ```
-
-Para trocar o arquivo, ajuste o caminho no próprio script `analisar_dxf.py`.
 
 ### 3.2 Rodar simulação com outro DXF sem alterar o código-fonte
 
@@ -102,7 +101,7 @@ Para comparações justas, mantenha constantes:
 
 Mude apenas um fator por vez (`radius_scale`, `n_wings`, ou geometria).
 
-## 8) Solução de problemas comum
+## 8) Solucao de problemas comum
 
 1. **Erro de arquivo DXF não encontrado**
    - Verifique maiúsculas/minúsculas (Linux diferencia `Asa2.DXF` de `asa2.dxf`).
@@ -112,6 +111,7 @@ Mude apenas um fator por vez (`radius_scale`, `n_wings`, ou geometria).
 
 3. **Dependência ausente (`ezdxf`)**
    - Instale no `.venv`:
+
      ```bash
      .venv/bin/pip install ezdxf
      ```

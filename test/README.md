@@ -31,6 +31,7 @@ test/
 ## 🎯 Propósito de Cada Teste
 
 ### 1. **sensores_unificado.ino** (274 linhas)
+
 **Status**: ✅ Funcional, produção  
 **Descrição**: Integração completa de ICM-20602 (IMU) + BMP280 (pressão/altitude)
 
@@ -39,6 +40,7 @@ test/
 - Suporte automático a ESP32 e ESP32-C3
 - Taxa: 500ms (2 Hz)
 - **CSV Output**:
+
   ```
   millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m
   ```
@@ -48,10 +50,12 @@ test/
 ---
 
 ### 2. **sensores_unificado_v2_melhorado.ino** (402 linhas)
+
 **Status**: ✅ Funcional  
 **Descrição**: Versão melhorada com recomendações críticas implementadas
 
 **Melhorias Implementadas**:
+
 - ✅ Taxa aumentada: 50ms (20 Hz) - melhor captura de eventos
 - ✅ Cálculo de velocidade vertical (Vz = dh/dt)
 - ✅ Detecção automática de apogeu
@@ -60,16 +64,19 @@ test/
 - ✅ Estrutura de eventos para análise
 
 **CSV Output** (11 colunas):
+
 ```
 millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m,vz_ms,mag_giroscopia_rads
 ```
 
 **Quando usar**:
+
 - Testes de queda sem GPS (ambiente indoor)
 - Validação de freio aerodinâmico
 - Coleta de dados experimentais básicos
 
 **Analise automática**: Serial Monitor mostra:
+
 ```
 [50] A: 0.12 -0.05 9.81 | G: 0.0001 0.0002 0.0003 | P: 101325 | Alt: 45.23 | Vz: 0.00 | Rot: 0.0003
 
@@ -82,16 +89,19 @@ millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m,vz_ms,ma
 ---
 
 ### 3. **sensores_unificado_v3.ino** (490 linhas) ⭐ RECOMENDADO AGORA
+
 **Status**: ✅ Pronto para Fase 1.3  
 **Descrição**: Integração completa com GPS NEO-8M + BME280 (com umidade) + ICM-20602
 
 **Componentes Integrados**:
+
 - ✅ ICM-20602 via I2C (acelerômetro + giroscópio)
 - ✅ BME280 via I2C (pressão + temperatura + umidade) - substitui BMP280 + AHT
 - ✅ GPS NEO-8M via UART (posição + altitude + velocidade + número de satélites)
 - ✅ Toda a funcionalidade da v2 (Vz, apogeu, validação, etc)
 
 **Pinagem (ESP32-C3)**:
+
 ```
 I2C (SDA=GPIO8, SCL=GPIO9):
   - ICM-20602
@@ -102,17 +112,20 @@ UART (RX=GPIO20, TX=GPIO21):
 ```
 
 **CSV Output** (15 colunas):
+
 ```
 millis,ax,ay,az,gx,gy,gz,pressao_Pa,altura_m,temperatura_C,umidade_pct,vz,mag_giroscopia,lat,lon,alt_gps
 ```
 
 **Quando usar**:
+
 - ⭐ Testes de queda com validação GPS (Fase 1.3) - ATUAL
 - Validação cruzada de altitude (BMP280 vs GPS)
 - Coleta de posição de pouso
 - Análise completa com contexto geográfico
 
 **Analise automática**: Serial Monitor mostra:
+
 ```
 === Teste Unificado de Sensores v3 ===
 ICM-20602 + BME280 + GPS NEO-8M
@@ -125,6 +138,7 @@ ICM-20602 + BME280 + GPS NEO-8M
 ```
 
 **Recurso especial**: Validação cruzada automática de altitude
+
 ```python
 # Pós-processamento dos dados:
 altitude_diferenca = abs(alt_bme280 - alt_gps)
@@ -133,6 +147,7 @@ if altitude_diferenca > 5.0:  # mais que 5m de diferença
 ```
 
 ### 4. **bme280_completo.ino** (220 linhas) ⭐ NOVO
+
 **Status**: ✅ Teste isolado  
 **Descrição**: Teste completo do BME280 (pressão + temperatura + umidade)
 
@@ -141,6 +156,7 @@ if altitude_diferenca > 5.0:  # mais que 5m de diferença
 - Converte para diferentes unidades (Pa, hPa, mbar)
 - Validação de dados e detecção de erro
 - **CSV Output**:
+
   ```
   Temperatura: 25.34 °C
   Pressão: 101325 Pa (1013.25 hPa)
@@ -155,10 +171,12 @@ if altitude_diferenca > 5.0:  # mais que 5m de diferença
 ---
 
 ### 5. **gps_neo8m.ino** (280 linhas) ⭐ NOVO
+
 **Status**: ✅ Teste isolado  
 **Descrição**: Teste completo do GPS NEO-8M com parser NMEA
 
 **Funcionalidades**:
+
 - Parser NMEA completo com validação de checksum
 - Processa sentença $GPRMC (posição + velocidade)
 - Processa sentença $GPGGA (altitude + satélites + DOP)
@@ -167,6 +185,7 @@ if altitude_diferenca > 5.0:  # mais que 5m de diferença
 - Monitoramento de qualidade de sinal
 
 **Serial Output**:
+
 ```
 --- Status GPS ---
 Satélites vistos: 8
@@ -186,6 +205,7 @@ Tempo desde último fix: 523 ms
 ---
 
 ### 6. **bmp280.ino** (67 linhas)
+
 **Status**: ✅ Teste isolado (legado)  
 **Descrição**: Validar apenas sensor de pressão/altitude BMP280 (antigo)
 
@@ -198,6 +218,7 @@ Tempo desde último fix: 523 ms
 ---
 
 ### 7. **bmp280_spiffs.ino** (173 linhas)
+
 **Status**: ✅ Teste de integração SPIFFS  
 **Descrição**: BMP280 com logging em LittleFS/SPIFFS (legado)
 
@@ -208,6 +229,7 @@ Tempo desde último fix: 523 ms
 ---
 
 ### 8. **icm20602.ino** (76 linhas)
+
 **Status**: ✅ Teste isolado  
 **Descrição**: Validar apenas acelerômetro + giroscópio
 
@@ -220,6 +242,7 @@ Tempo desde último fix: 523 ms
 ---
 
 ### 9. **sd.ino** (100 linhas)
+
 **Status**: ✅ Teste de interface SD  
 **Descrição**: Validar comunicação com módulo SD externo
 
@@ -232,18 +255,21 @@ Tempo desde último fix: 523 ms
 ## 📋 Checklist de Validação
 
 ### Pré-Testes
+
 - [ ] ESP32-C3 + ICM-20602 + BMP280 montados
 - [ ] I2C conectado: GPIO 8 (SDA), GPIO 9 (SCL)
 - [ ] Arduino IDE preparado com bibliotecas
 - [ ] Serial Monitor configurado (115200 baud)
 
 ### Durante Testes
+
 - [ ] Carregar código (v1 original ou v2 melhorada)
 - [ ] Monitorar Serial: dados aparecem?
 - [ ] CSV sendo gravado em LittleFS?
 - [ ] Sem crashes ou reboots?
 
 ### Pós-Testes
+
 - [ ] Extrair arquivo CSV
 - [ ] Analisar com script Python (veja `GUIA_IMPLEMENTACAO_FASE_1_3.md`)
 - [ ] Comparar com simulação (se aplicável)
@@ -253,6 +279,7 @@ Tempo desde último fix: 523 ms
 ## 🔧 Setup Rápido
 
 ### 1. Hardware
+
 ```
 ESP32-C3 + Protoboard
 ├─ ICM-20602 I2C
@@ -270,6 +297,7 @@ ESP32-C3 + Protoboard
 ```
 
 ### 2. Software
+
 ```bash
 # Arduino IDE
 1. Tools → Board: "ESP32-C3 Dev Module"
@@ -281,6 +309,7 @@ ESP32-C3 + Protoboard
 ```
 
 ### 3. Validação
+
 ```
 Serial Monitor deve mostrar:
 ✅ ICM20602 encontrado!
@@ -296,6 +325,7 @@ Serial Monitor deve mostrar:
 ## 📚 Documentação Relacionada
 
 ### Documentos Técnicos
+
 - **`ANALISE_CODIGO_TESTES.md`** (347 linhas)
   - Análise técnica do sensores_unificado.ino
   - 8 áreas de melhoria identificadas
@@ -311,6 +341,7 @@ Serial Monitor deve mostrar:
   - Critérios de aprovação
 
 ### Simulação de Asas
+
 - **`../extras/wing-analisys/`**
   - Análise de geometria de asas
   - Simulação de descida
@@ -321,16 +352,19 @@ Serial Monitor deve mostrar:
 ## 🚀 Recomendações por Fase
 
 ### Fase 1.2 (Desenvolvimento em Progresso)
+
 - ✅ Usar `sensores_unificado.ino` (v1) - funciona, validado
 - ✅ Validar com checklist em `checklist_bancada_pre_sd.md`
 - ⏳ Começar testes com v2 em bancada
 
 ### Fase 1.3 (Próximo: Testes de Queda)
+
 - 🚀 Usar `sensores_unificado_v2_melhorado.ino` (v2) - RECOMENDADO
 - 🚀 Seguir guia completo: `GUIA_IMPLEMENTACAO_FASE_1_3.md`
 - 🚀 4 fases de testes: Bancada → Baseline → Asa → Iteração
 
 ### Fase 2+ (Integração)
+
 - Usar código v2 como base para firmware completo
 - Adicionar: LoRa, GPS, servo motor, state machine
 - Integrar em `firmware/main.cpp`

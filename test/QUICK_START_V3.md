@@ -11,6 +11,7 @@ Procurar e instalar:
 ```
 
 Já estão built-in:
+
 - `Wire` (I2C)
 - `HardwareSerial` (UART)
 - `LittleFS` (Storage)
@@ -22,6 +23,7 @@ Já estão built-in:
 **Arquivo**: `test/gps_neo8m/gps_neo8m.ino`
 
 **Hardware**:
+
 ```
 GPS NEO-8M          ESP32-C3
 VCC (5V)     ──────► 5V
@@ -31,11 +33,13 @@ TX (comando) ──────► GPIO 21 (TX)
 ```
 
 **Setup Arduino IDE**:
+
 - Board: ESP32-C3
 - Upload Speed: 921600
 - Port: /dev/ttyACM0
 
 **Serial Output Esperado**:
+
 ```
 === Teste GPS NEO-8M ===
 ✓ GPS UART inicializado
@@ -60,6 +64,7 @@ HDOP: 1.2 | VDOP: 1.5
 ```
 
 **Troubleshooting**:
+
 - Sem dados: Verificar UART RX/TX (pinos 20/21)
 - Sem fix por > 2 min: Ficar em local aberto (céu > 45°)
 - Dados erráticos: Verificar alimentação 5V do GPS
@@ -71,6 +76,7 @@ HDOP: 1.2 | VDOP: 1.5
 **Arquivo**: `test/bme280_completo/bme280_completo.ino`
 
 **Hardware**:
+
 ```
 BME280           ESP32-C3
 VCC (3.3V) ─────► 3.3V
@@ -81,6 +87,7 @@ SCL        ─────► GPIO 9
 ```
 
 **Serial Output Esperado**:
+
 ```
 === Teste BME280 ===
 Procurando BME280 no endereço 0x76
@@ -101,6 +108,7 @@ Ponto orvalho: 14.56 °C
 ```
 
 **Troubleshooting**:
+
 - Sensor não encontrado: Verificar I2C (pinos 8/9), tentar endereço 0x77
 - Valores constantes: Reset I2C (desligar/ligar power)
 - Dados NaN: Verificar solda/conexão
@@ -112,6 +120,7 @@ Ponto orvalho: 14.56 °C
 **Arquivo**: `test/sensores_unificado/sensores_unificado_v3.ino`
 
 **Hardware Completo**:
+
 ```
 I2C Sensors (SDA=GPIO8, SCL=GPIO9):
 ├─ ICM-20602 (0x69)
@@ -134,6 +143,7 @@ UART GPS (RX=GPIO20, TX=GPIO21):
 ```
 
 **Serial Output Esperado**:
+
 ```
 === Teste Unificado de Sensores v3 ===
 ICM-20602 + BME280 + GPS NEO-8M
@@ -162,6 +172,7 @@ Storage:  ✓ OK
 ```
 
 **CSV Gerado** (LittleFS):
+
 ```
 arquivo: /sensores_v3.csv
 
@@ -174,6 +185,7 @@ Exemplo:
 ```
 
 **Como Acessar Dados**:
+
 1. Arduino IDE → Tools → LittleFS → Upload Data
 2. Aguardar testes
 3. Arduino IDE → Tools → Serial Monitor
@@ -193,6 +205,7 @@ Exemplo:
    - Extrair CSV do LittleFS
 
 3. **Análise de Dados**:
+
    ```bash
    # Pós-processamento (Python)
    python analise_queda.py sensores_v3.csv
@@ -209,6 +222,7 @@ Exemplo:
 ## ⚙️ Configurações Importantes
 
 **v3.ino - Principais #defines**:
+
 ```cpp
 #define INTERVAL_MS 50              // Taxa: 20 Hz
 #define MAX_ACCEL_G 50.0            // Validação: aceleração suspeita > 5g
@@ -218,6 +232,7 @@ Exemplo:
 ```
 
 **Calibração de Altitude**:
+
 ```cpp
 #define PRESSAO_MAR_PA 101325.0     // Ajustar se necessário
 // Usar valor local de P0 para maior precisão

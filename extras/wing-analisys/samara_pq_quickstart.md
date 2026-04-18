@@ -5,7 +5,7 @@ Guia rápido com comandos prontos para os fluxos mais comuns.
 ## 1) Ativar ambiente
 
 ```bash
-cd /home/vinicius/Documentos/Projetos/satellite
+cd /home/viniciusmonnerat/Documentos/Projetos/satellite
 source .venv/bin/activate
 ```
 

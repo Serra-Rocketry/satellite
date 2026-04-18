@@ -5,6 +5,7 @@
 Este guia detalha como implementar e executar os testes experimentais de queda do freio aerodinâmico usando o código integrado em `sensores_unificado_v3.ino`.
 
 **Objetivos**:
+
 1. Validar modelos aerodinâmicos do `extras/wing-analisys/`
 2. Medir taxa de descida real vs. simulada
 3. Detectar padrão de rotação (estabilidade)
@@ -16,6 +17,7 @@ Este guia detalha como implementar e executar os testes experimentais de queda d
 ## 🔧 Hardware Necessário
 
 ### Componentes Eletrônicos
+
 - [ ] **Microcontrolador**: ESP32-C3 Super Mini (ou ESP32)
 - [ ] **IMU**: ICM-20602 (acelerômetro + giroscópio)
 - [ ] **Sensor Barométrico**: BME280 (pressão/temperatura/umidade)
@@ -25,6 +27,7 @@ Este guia detalha como implementar e executar os testes experimentais de queda d
 - [ ] **Bateria**: USB powerbank 5V para alimentação
 
 ### Pinagem (ESP32-C3)
+
 ```
 I2C Sensors:
   SDA → GPIO 8  (BME280 + ICM-20602)
@@ -44,6 +47,7 @@ Serial Debug:
 ```
 
 ### Estrutura Mecânica de Teste
+
 ```
 ┌─────────────────────────────────┐
 │  Suporte estrutural (3D print)  │
@@ -69,6 +73,7 @@ Serial Debug:
 ## 🚀 Pré-Requisitos de Software
 
 ### 1. Arduino IDE Setup
+
 ```bash
 # Adicionar board manager URL:
 https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
@@ -78,6 +83,7 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 ```
 
 ### 2. Bibliotecas Necessárias
+
 ```
 - Adafruit_BME280 (via Arduino Library Manager)
 - Adafruit_Sensor (via Arduino Library Manager)
@@ -88,6 +94,7 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 ```
 
 ### 3. Preparação do Código
+
 ```bash
 cd test/sensores_unificado/
 
@@ -102,6 +109,7 @@ cd test/sensores_unificado/
 ## ⚙️ Configuração e Upload
 
 ### 1. Conectar Hardware
+
 1. Montagem de protoboard com ICM-20602, BME280 e GPS NEO-8M
 2. Conectar GPIO 8 (SDA) e GPIO 9 (SCL) para sensores I2C
 3. Conectar GPIO 20 (RX) e GPIO 21 (TX) para GPS UART
@@ -109,6 +117,7 @@ cd test/sensores_unificado/
 5. Conectar ESP32-C3 via USB-C
 
 ### 2. Arduino IDE
+
 ```
 Tools → Board: ESP32-C3 (ou ESP32 se usar DevKit)
 Tools → Upload Speed: 921600
@@ -116,11 +125,13 @@ Tools → Port: /dev/ttyACM0 (ESP32-C3) ou /dev/ttyUSB0 (ESP32)
 ```
 
 ### 3. Upload
+
 ```
 Sketch → Upload (ou Ctrl+U)
 ```
 
 ### 4. Monitorar Serial
+
 ```
 Tools → Serial Monitor (115200 baud)
 
@@ -182,6 +193,7 @@ ICM-20602 + BME280 + GPS NEO-8M
   - Se não houver, adicionar resistores de pull-up
 
 - [ ] **Teste de scan I2C** (use código de diagnóstico):
+
   ```cpp
   Wire.begin(8, 9);  // SDA=GPIO8, SCL=GPIO9
   for (byte i = 1; i < 127; i++) {
@@ -191,6 +203,7 @@ ICM-20602 + BME280 + GPS NEO-8M
       }
   }
   ```
+
   - **BME280**: endereço 0x77 (ou 0x76 se configurado)
   - **ICM-20602**: endereço 0x68
 
@@ -237,6 +250,7 @@ ICM-20602 + BME280 + GPS NEO-8M
 **Objetivo**: Confirmar que hardware está funcionando e dados são coletados
 
 **Procedimento**:
+
 1. [ ] Deixar rodando por 2 minutos em repouso
 2. [ ] Verificar Serial Monitor: dados consistentes?
 3. [ ] Manualmente mover para cima/baixo
@@ -253,11 +267,13 @@ ICM-20602 + BME280 + GPS NEO-8M
 **Objetivo**: Estabelecer baseline de queda (referência)
 
 **Setup**:
+
 - Altura: 10 metros (primeiro teste)
 - Local: Area aberta, sem obstáculos
 - Repetições: 5×
 
 **Procedimento por repetição**:
+
 1. [ ] Resetar ESP32
 2. [ ] Deixar gravando (Serial Monitor aberto)
 3. [ ] **Iniciar queda de 10m**: largar manualmente
@@ -266,6 +282,7 @@ ICM-20602 + BME280 + GPS NEO-8M
 6. [ ] Salvar como `teste_baseline_rep1.csv`
 
 **Análise esperada**:
+
 ```
 Tempo de queda: ~1.4 segundos (v = √(2gh) = 14 m/s)
 Vz final (fundo): ~-14 m/s
@@ -274,6 +291,7 @@ Aceleração durante queda: ~9.81 m/s² (gravidade)
 ```
 
 **CSV típico**:
+
 ```
 millis,ax,ay,az,gx,gy,gz,pressao_Pa,altura_m,temperatura_C,umidade_pct,vz,mag_giroscopia,lat,lon,alt_gps
 0,0.1,-0.05,10.0,0.0,0.0,0.0,101325,50.0,25.3,45.2,0.0,0.0,-23.5521,-46.6333,52.3
@@ -290,6 +308,7 @@ millis,ax,ay,az,gx,gy,gz,pressao_Pa,altura_m,temperatura_C,umidade_pct,vz,mag_gi
 **Objetivo**: Validar freio - compare vs baseline
 
 **Setup**:
+
 - Asa: Config conforme `extras/wing-analisys/` (ex: 2 asas, R=100mm)
 - Altura: 10 metros (mesmo que baseline)
 - Repetições: 5×
@@ -297,6 +316,7 @@ millis,ax,ay,az,gx,gy,gz,pressao_Pa,altura_m,temperatura_C,umidade_pct,vz,mag_gi
 **Procedimento**: Idêntico ao baseline, mas com asa acoplada
 
 **Análise esperada** (se freio funciona):
+
 ```
 Tempo de queda: ~2.0-3.0 segundos (mais lento!)
 Vz final: ~-5 m/s (muito menor que -14 m/s)
@@ -305,6 +325,7 @@ Apogeu detector: Pode detectar "flutuação" inicial
 ```
 
 **Comparação com simulação**:
+
 ```
 ⚠️ IMPORTANTE: Em quedas de 10m NÃO atingimos regime terminal!
    
@@ -325,11 +346,13 @@ Esperado no teste (10m, ~2s):
 **Objetivo**: Otimizar design - testar diferentes configs
 
 **Testes propostos**:
+
 1. **Espessura**: 0.4mm vs 0.6mm vs 0.8mm
 2. **Número de asas**: 2 vs 3 vs 4
 3. **Raio**: 80mm vs 100mm vs 120mm
 
 **Tabela de Testes** (altura 10m, tempo ~2.0-3.0s):
+
 ```
 ID  | Config          | Simul v_terminal | Vz_esperado* | Vz_medido | Variação | Status
 ----|-----------------|------------------|--------------|-----------|----------|--------
@@ -342,6 +365,7 @@ T04 | 6 asas,0.6mm    | 17.85 m/s        | -11 a -15 m/s| -12.5 m/s | +8%      |
 ```
 
 **Critério de aceitação**:
+
 - Vz_medido dentro de ±15% da simulação
 - Estabilidade em 5 repetições (desvio padrão < 5%)
 - Sem danos visíveis à asa
@@ -353,12 +377,14 @@ T04 | 6 asas,0.6mm    | 17.85 m/s        | -11 a -15 m/s| -12.5 m/s | +8%      |
 ### 1. Extrair CSV do LittleFS
 
 **Opção A**: Via Serial Monitor
+
 ```
 # Após teste, copiar todo output do Serial Monitor
 # Salvar como: teste_queda_rep1.csv
 ```
 
 **Opção B**: Via terminal (direto do Arduino)
+
 ```bash
 # Em Arduino IDE, Tools > Serial Monitor
 # Copiar dados linha por linha
@@ -497,22 +523,28 @@ Status: {"✅ VALIDADO" if vz_estavel_std < (abs(vz_estavel_medio) * 0.05) else 
 ## 🔄 Iteração e Ajustes
 
 ### Se Vz for TOO FAST (>-8 m/s)
+
 → Aumentar área das asas
-  - Aumentar raio: 100mm → 120mm
-  - Aumentar espessura: 0.6mm → 0.8mm
-  - Adicionar mais asas: 2 → 3 ou 4
+
+- Aumentar raio: 100mm → 120mm
+- Aumentar espessura: 0.6mm → 0.8mm
+- Adicionar mais asas: 2 → 3 ou 4
 
 ### Se Vz for TOO SLOW (<-2 m/s)
+
 → Diminuir área das asas
-  - Diminuir raio: 100mm → 80mm
-  - Diminuir espessura: 0.6mm → 0.4mm
-  - Menos asas: 4 → 3 ou 2
+
+- Diminuir raio: 100mm → 80mm
+- Diminuir espessura: 0.6mm → 0.4mm
+- Menos asas: 4 → 3 ou 2
 
 ### Se Padrão for INSTÁVEL (Rotação inconsistente)
+
 → Revisar design mecânico
-  - Verificar simetria das asas
-  - Aumentar raio para estabilizar (momento angular maior)
-  - Testar em altura maior (mais tempo para estabilizar)
+
+- Verificar simetria das asas
+- Aumentar raio para estabilizar (momento angular maior)
+- Testar em altura maior (mais tempo para estabilizar)
 
 ---
 
@@ -540,6 +572,7 @@ Semana 3:
 ## 📝 Checklist de Execução
 
 ### Pré-Teste
+
 - [ ] Hardware montado e testado
 - [ ] Código v2 melhorado carregado
 - [ ] Serial Monitor funcionando
@@ -548,6 +581,7 @@ Semana 3:
 - [ ] Câmera de vídeo preparada (opcional - para análise visual)
 
 ### Durante Teste
+
 - [ ] Anotar: configuração, altura, peso, clima
 - [ ] Realizar 5 repetições idênticas
 - [ ] Monitorar Serial para eventos (Apogeu?)
@@ -555,6 +589,7 @@ Semana 3:
 - [ ] Fotografar/Filmar cada queda
 
 ### Pós-Teste
+
 - [ ] Extrair CSV do ESP32
 - [ ] Executar script de análise Python
 - [ ] Comparar com simulação
@@ -566,6 +601,7 @@ Semana 3:
 ## 🆘 Troubleshooting
 
 ### "GPS mostra apenas pontos (... em vez de OK)"
+
 - [ ] GPS precisa de 30-60 segundos para primeiro fix
 - [ ] Ficar em local aberto (mais de 45° de céu visível)
 - [ ] Verificar antena GPS - deve estar apontando para cima
@@ -573,27 +609,32 @@ Semana 3:
 - [ ] Se permanecer como "..." por > 2 min: verificar UART RX/TX nos pinos 20/21
 
 ### "Apogeu não é detectado"
+
 - [ ] Verificar se `altura` está aumentando no início
 - [ ] Aumentar altura de queda (maior Vz para detectar)
 - [ ] Verificar threshold: `if (vz < -0.5)` - ajustar se necessário
 
 ### "Dados erráticos ou NaN"
+
 - [ ] Verificar conexão I2C (pull-ups OK?)
 - [ ] Reset barramento: ligar/desligar power
 - [ ] Verificar solda nos pinos
 - [ ] Para GPS: verificar se está recebendo serial (coloque breakpoint na UART)
 
 ### "Velocidade vertical não muda"
+
 - [ ] Verificar se `millis_anterior` está sendo atualizado
 - [ ] Aumentar altura de queda
 - [ ] Verificar se BME280 está calibrado (1013.25 hPa correto?)
 
 ### "ESP32 não grava dados"
+
 - [ ] Verificar if LittleFS está montado (Serial output)
 - [ ] Tentar formatar LittleFS: Menu → Tools → Erase All Flash Contents
 - [ ] Testar com Serial Monitor (não via CSV)
 
 ### "BME280 mostra pressão constantemente igual"
+
 - [ ] Verificar endereço I2C: é 0x76 ou 0x77? (SDO=GND vs VCC)
 - [ ] Se o jumper SDO não está conectado, tente 0x77
 - [ ] Validar com teste isolado: `test/bme280_completo/bme280_completo.ino`

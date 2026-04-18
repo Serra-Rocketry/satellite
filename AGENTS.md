@@ -1,6 +1,7 @@
 # AGENTS.md - PocketQube LoRa Triangulation
 
 ## Build/Upload Commands
+
 ```bash
 pio run                          # Build all
 pio run -e satellite_esp32      # Satellite (ESP32)
@@ -15,6 +16,7 @@ pio device monitor -b 115200    # Serial monitor
 ```
 
 ## Architecture
+
 - **Satellite**: ESP32 DevKit V1 (dual-core) - Core 0 for LoRa/SD, Core 1 for sensors/fusion
 - **Beacons/GS**: ESP32-C3 (single-core, 400KB RAM - smaller than ESP32)
 - **Build**: PlatformIO with Arduino framework
@@ -27,12 +29,14 @@ pio device monitor -b 115200    # Serial monitor
 | Beacon | 4,5,6,7,10,3 | 20,21 | - | LED:1, Buzzer:8, Button:2 |
 
 ## Key Conventions
+
 - **Language**: C++ (C++11), Portuguese comments/docs
 - **Naming**: snake_case functions/variables, SCREAMING_SNAKE_CASE defines, PascalCase classes
 - **Memory**: Avoid heap (new/malloc) - use static buffers, ESP32-C3 stack max 2048 bytes
 - **Multi-core**: Use `xTaskCreatePinnedToCore()` with core 0 or 1, protect shared data with mutexes
 
 ## Critical Constraints
+
 - ESP32-C3: 400KB RAM, 4KB default stack - be conservative
 - GPS: min 4 satellites for 3D fix, prefer 6+
 - LoRa: 915MHz, check all return values, implement retry with backoff
