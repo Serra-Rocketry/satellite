@@ -1,21 +1,28 @@
 // Inclusão de bibliotecas
 #include "FS.h"
-#include "LittleFS.h"
+#include "SD.h"
+#include "SPI.h"
 
 // Definições de pinos e constantes
 #define INTERVAL 200
+#define CS_PIN 5      // Pino do cartão SD
 
 // Variáveis globais
 unsigned long previous_millis = 0;
 String file_name = "Dados.csv"; // Nome do arquivo para salvar os dados
 String file_dir = "";
 
-// Setup da memória LittleFS
-bool setupLittleFS()
+// Setup do cartão SD
+bool setupSD()
 {
-    if (!LittleFS.begin(true))
+    if (!SD.begin(CS_PIN))
     {
-        Serial.println("Erro ao montar LittleFS.");
+        Serial.println("Erro ao montar SD.");
+        return false;
+    }
+    if (SD.cardType() == CARD_NONE)
+    {
+        Serial.println("Cartão SD não encontrado.");
         return false;
     }
     return true; // Retorna true se tudo ocorreu bem
@@ -31,7 +38,7 @@ void logData(unsigned long current_millis)
 // Escreve os dados no arquivo - escrita
 bool writeFile(const String &path, const String &data_string)
 {
-    File file = LittleFS.open(path, FILE_WRITE);
+    File file = SD.open(path, FILE_WRITE);
     if (!file) // Se houver falha ao abrir o arquivo
     {
         Serial.println("Falha ao abrir arquivo para gravação.");
@@ -54,10 +61,11 @@ bool writeFile(const String &path, const String &data_string)
 // Escreve os dados no arquivo - anexação
 void appendFile(const String &path, const String &message)
 {
-    File file = LittleFS.open(path, FILE_APPEND);
+    File file = SD.open(path, FILE_APPEND);
     if (!file) // Se houver falha ao abrir o arquivo
     {
         Serial.println("Falha ao abrir arquivo para anexar.");
+        //sujestão: colocar um return aqui pq ainda chama o file close mesmo quando inválido
     }
     if (file.print(message + "\n")) // Se a escrita no arquivo for bem-sucedida
     {
@@ -66,7 +74,6 @@ void appendFile(const String &path, const String &message)
     else // Se houver falha na escrita
     {
         Serial.println("Falha ao anexar mensagem.");
-        file.close();
     }
     file.close();
 }
@@ -80,8 +87,9 @@ void setup()
     file_dir = "/" + file_name; // Diretório do arquivo de dados
     Serial.print("Salvando dados em: ");
     Serial.println(file_dir);
+
     String data_header = "millis,lat,lon,sat,alt,data,hora,altp,p,ax,ay,az,gx,gy,gz"; // Cabeçalho do arquivo
-    if (!(setupLittleFS() && writeFile(file_dir, data_header)))                  // Inicia a memória interna
+    if (!(setupSD() && writeFile(file_dir, data_header)))                               // Inicia o cartão SD
     {
         Serial.println("Erro no sistema de arquivos!");
         delay(3000);
@@ -92,7 +100,7 @@ void setup()
 void loop()
 {
     unsigned long current_millis = millis();
-    if (current_millis - previous_millis >= INTERVAL) // A cada 100ms
+    if (current_millis - previous_millis >= INTERVAL) // A cada 200ms (vc tinha comentado a cada 100ms mas o intervalo ta 200, não sei oq ta errado o intervalo, o comentario ou teu amigo aqui)
     {
         logData(current_millis);
         previous_millis = current_millis;
