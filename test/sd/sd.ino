@@ -7,10 +7,24 @@
 #define INTERVAL 200
 #define CS_PIN 5      // Pino do cartão SD
 
-// Variáveis globais
-unsigned long previous_millis = 0;
-String file_name = "Dados.csv"; // Nome do arquivo para salvar os dados
-String file_dir = "";
+//determinando nome
+String file_name = "";
+String file_dir  = "";
+
+// Gera nome único incrementando índice: /Dados_001.csv, /Dados_002.csv ...
+String generateFileName()
+{
+    for (int i = 1; i <= 999; i++)
+    {
+        char candidate[32];
+        snprintf(candidate, sizeof(candidate), "/Dados_%03d.csv", i);
+
+        if (!SD.exists(candidate))
+            return String(candidate);
+    }
+
+    return "/Dados_overflow.csv";
+}
 
 // Setup do cartão SD
 bool setupSD()
@@ -59,23 +73,23 @@ bool writeFile(const String &path, const String &data_string)
 }
 
 // Escreve os dados no arquivo - anexação
-void appendFile(const String &path, const String &message)
+bool appendFile(const String &path, const String &message)
 {
     File file = SD.open(path, FILE_APPEND);
     if (!file) // Se houver falha ao abrir o arquivo
     {
         Serial.println("Falha ao abrir arquivo para anexar.");
-        //sujestão: colocar um return aqui pq ainda chama o file close mesmo quando inválido
+        return false;
     }
-    if (file.print(message + "\n")) // Se a escrita no arquivo for bem-sucedida
-    {
+     bool success = file.print(message + "\n");
+    file.close(); // Garante fechamento antes de retornar
+
+    if (success)
         Serial.println("Mensagem anexada.");
-    }
-    else // Se houver falha na escrita
-    {
+    else
         Serial.println("Falha ao anexar mensagem.");
-    }
-    file.close();
+
+    return success;
 }
 
 void setup()
@@ -87,11 +101,22 @@ void setup()
     file_dir = "/" + file_name; // Diretório do arquivo de dados
     Serial.print("Salvando dados em: ");
     Serial.println(file_dir);
+ 
+    String data_header = "millis,lat,lon,sat,alt,data,hora,altp,p,ax,ay,az,gx,gy,gz";
 
-    String data_header = "millis,lat,lon,sat,alt,data,hora,altp,p,ax,ay,az,gx,gy,gz"; // Cabeçalho do arquivo
-    if (!(setupSD() && writeFile(file_dir, data_header)))                               // Inicia o cartão SD
+    if (!setupSD()) 
     {
-        Serial.println("Erro no sistema de arquivos!");
+        Serial.println("Erro ao iniciar o cartão SD!");
+        delay(3000);
+        ESP.restart();
+    }
+
+    // Só escreve o cabeçalho se o arquivo ainda não existir
+    bool file_exists = SD.exists(file_dir);
+
+    if (!file_exists && !writeFile(file_dir, data_header))
+    {
+        Serial.println("Erro ao criar arquivo de dados!");
         delay(3000);
         ESP.restart();
     }
