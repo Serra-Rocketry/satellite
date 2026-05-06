@@ -11,6 +11,8 @@
 String file_name = "";
 String file_dir  = "";
 
+unsigned long previous_millis = 0;
+
 // Gera nome único incrementando índice: /Dados_001.csv, /Dados_002.csv ...
 String generateFileName()
 {
@@ -45,7 +47,10 @@ bool setupSD()
 // Registra e imprime os dados do momento
 void logData(unsigned long current_millis)
 {
-    String data_string = String(current_millis) + ",-22.286898,-42.542294,8,861.80,2025/5/15,12:6:9,0.36,927.76,0.60,-0.01,9.03,-0.01,-0.02,0.02"; // String com os dados atuais
+    char data_string[150];
+    snprintf(data_string, sizeof(data_string),
+         "%lu,-22.286898,-42.542294,8,861.80,2025/5/15,12:6:9,0.36,927.76,0.60,-0.01,9.03,-0.01,-0.02,0.02",
+         current_millis);
     appendFile(file_dir, data_string);
 }
 
@@ -95,21 +100,21 @@ bool appendFile(const String &path, const String &message)
 void setup()
 {
     Serial.begin(115200);
-    delay(10000); // Aguarda a inicialização do Serial
+    delay(1000); // Aguarda a inicialização do Serial
     Serial.println("Iniciando...");
 
-    file_dir = "/" + file_name; // Diretório do arquivo de dados
-    Serial.print("Salvando dados em: ");
-    Serial.println(file_dir);
- 
-    String data_header = "millis,lat,lon,sat,alt,data,hora,altp,p,ax,ay,az,gx,gy,gz";
-
-    if (!setupSD()) 
-    {
+    if (!setupSD()) {
         Serial.println("Erro ao iniciar o cartão SD!");
         delay(3000);
         ESP.restart();
     }
+
+    file_name = generateFileName();
+    file_dir = file_name;
+    Serial.print("Salvando dados em: ");
+    Serial.println(file_dir);
+ 
+    String data_header = "millis,lat,lon,sat,alt,data,hora,altp,p,ax,ay,az,gx,gy,gz";
 
     // Só escreve o cabeçalho se o arquivo ainda não existir
     bool file_exists = SD.exists(file_dir);
@@ -125,7 +130,7 @@ void setup()
 void loop()
 {
     unsigned long current_millis = millis();
-    if (current_millis - previous_millis >= INTERVAL) // A cada 200ms (vc tinha comentado a cada 100ms mas o intervalo ta 200, não sei oq ta errado o intervalo, o comentario ou teu amigo aqui)
+    if (current_millis - previous_millis >= INTERVAL) // A cada 200ms
     {
         logData(current_millis);
         previous_millis = current_millis;
