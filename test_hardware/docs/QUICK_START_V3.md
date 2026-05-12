@@ -20,7 +20,7 @@ Já estão built-in:
 
 ## 📍 Teste GPS Isolado
 
-**Arquivo**: `test/gps_neo8m/gps_neo8m.ino`
+**Arquivo**: `test_hardware/sensor/gps_neo8m/gps_neo8m.ino`
 
 **Hardware**:
 
@@ -73,7 +73,7 @@ HDOP: 1.2 | VDOP: 1.5
 
 ## 🌡️ Teste BME280 Completo
 
-**Arquivo**: `test/sensor/bme280/bme280.ino`
+**Arquivo**: `test_hardware/sensor/bme280/bme280.ino`
 
 **Hardware**:
 
@@ -117,7 +117,7 @@ Ponto orvalho: 14.56 °C
 
 ## ⭐ Teste Integrado v3 (RECOMENDADO)
 
-**Arquivo**: `test/integration/sensor_logging_v3/sensor_logging_v3.ino`
+**Arquivo**: `test_hardware/integration/sensor_logging_v3/sensor_logging_v3.ino`
 
 **Hardware Completo**:
 

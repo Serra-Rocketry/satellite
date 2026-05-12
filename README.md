@@ -8,7 +8,8 @@ e estudo de recuperacao por freio aerodinamico tipo samara.
 - Projeto em desenvolvimento.
 - Foco atual em validacao de sensores e estudo aerodinamico.
 - Estudos de asa em `extras/wing-analisys/`.
-- Testes de bancada em `test/`.
+- Testes de hardware em `test_hardware/`.
+- Testes unitarios nativos em `test/`.
 
 ## Objetivos
 
@@ -40,86 +41,109 @@ satellite/
 |-- README.md
 |-- AGENTS.md
 |-- platformio.ini
-|-- docs/
-|-- firmware/
-|-- hardware/
-|   |-- CDB_bom.md
-|   |-- CDB.pdf
-|   `-- CDB.fzz
-|-- extras/wing-analisys/
-|   |-- src/
-|   |-- geometry/
-|   |-- results/
-|   |-- docs/
-|   |-- guides/
-|   `-- requirements.txt
-`-- test/
-    |-- README.md
-    |-- checklist_bancada_pre_sd.md
-    |-- GUIA_IMPLEMENTACAO_FASE_1_3.md
-    `-- ... (sketches de validacao)
+|-- CHANGELOG.md
+|-- lib/
+|   `-- calc/                 # Modulos de calculo reutilizaveis
+|       |-- SensorData.h
+|       |-- VerticalVelocity.h
+|       |-- ApogeeDetection.h
+|       `-- DataValidation.h
+|-- firmware/                 # Firmware principal (em desenvolvimento)
+|-- test/                     # Testes unitarios nativos (Unity)
+|   |-- test_vz/
+|   |-- test_apogee/
+|   `-- test_validation/
+|-- test_hardware/            # Sketches de validacao de hardware
+|   |-- sensor/               #   Testes isolados de cada sensor
+|   |-- integration/          #   Testes multi-sensor + logging
+|   |-- storage/              #   Testes de sistema de arquivos
+|   `-- docs/                 #   Documentacao dos testes
+|-- extras/
+|   `-- wing-analisys/        # Estudo de asa autorrotativa
+|       |-- src/
+|       |-- geometry/
+|       |-- results/
+|       |-- docs/
+|       `-- guides/
+|-- hardware/                 # Schematics, BOM, PCB
+|-- docs/                     # Documentacao geral
+`-- .opencode/                # Configuracao de ferramentas
 ```
 
-## Build e upload
+## Build e Testes
 
-Comandos principais (PlatformIO):
-
-```bash
-pio run
-pio run -e satellite_esp32
-pio run -e beacon_esp32c3
-pio run -e groundstation_esp32c3
-```
-
-Upload (ajuste a porta serial conforme o dispositivo):
+### Firmware embarcado (ESP32 / ESP32-C3)
 
 ```bash
+pio run                          # Build all
+pio run -e satellite_esp32       # Satellite (ESP32)
+pio run -e beacon_esp32c3        # Beacon (ESP32-C3)
+pio run -e groundstation_esp32c3 # Ground Station (ESP32-C3)
+
+# Upload
 pio run -e satellite_esp32 -t upload --upload-port /dev/ttyUSB0
 pio run -e beacon_esp32c3 -t upload --upload-port /dev/ttyACM0
-```
 
-Monitor serial:
-
-```bash
+# Monitor serial
 pio device monitor -b 115200
 ```
 
+### Testes unitarios nativos (Unity)
+
+```bash
+pio test -e native             # Roda todos os testes nativos
+pio test -e native -v          # Com output detalhado
+```
+
+### Testes de hardware
+
+Os sketches em `test_hardware/` sao compilados e carregados individualmente:
+
+```bash
+# Exemplo: compilar um teste de sensor
+pio run -e groundstation_esp32c3 --project-option="src_dir=test_hardware/sensor/bmp280"
+```
+
+Ou abrir o arquivo `.ino` no VS Code com PlatformIO e clicar em "Upload".
+
 ## Fluxo de desenvolvimento recomendado
 
-1. Validar sensores isolados em `test/`.
-2. Rodar integracao de sensores (`sensores_unificado_v3.ino`).
-3. Executar estudos aerodinamicos em `extras/wing-analisys/`.
-4. Consolidar resultados em documentacao tecnica.
-5. Integrar firmware final em `firmware/`.
+1. Validar sensores isolados em `test_hardware/sensor/`.
+2. Rodar integracao de sensores em `test_hardware/integration/`.
+3. Executar testes unitarios: `pio test -e native`.
+4. Executar estudos aerodinamicos em `extras/wing-analisys/`.
+5. Consolidar resultados em documentacao tecnica.
+6. Integrar firmware final em `firmware/`.
+
+## lib/calc — Modulos de Calculo
+
+Modulos header-only (sem dependencia de hardware) para logica de voo:
+
+| Modulo | Arquivo | Funcao |
+|--------|---------|--------|
+| `VerticalVelocity` | `lib/calc/VerticalVelocity.h` | Velocidade vertical por EMA |
+| `ApogeeDetection` | `lib/calc/ApogeeDetection.h` | Deteccao de apogeu |
+| `DataValidation` | `lib/calc/DataValidation.h` | Validacao de telemetria |
+| `SensorData` | `lib/calc/SensorData.h` | Struct padronizada |
 
 ## Documentacao
 
-- Guia de testes: `test/README.md`.
-- Plano experimental: `test/GUIA_IMPLEMENTACAO_FASE_1_3.md`.
-- Checklist de bancada: `test/checklist_bancada_pre_sd.md`.
-- Estudo de asa: `extras/wing-analisys/README.md`.
-- BOM de hardware: `hardware/CDB_bom.md`.
+- Guia de hardware: `docs/hardware.md`.
+- Arquitetura de software: `docs/software.md`.
+- Documentacao por skill: `.opencode/README.md`.
+- Testes de hardware: `test_hardware/docs/`.
+- Estudo de asa: `extras/wing-analisys/guides/README.md`.
+- BOM: `hardware/CDB_bom.md`.
 
-## Ferramentas de qualidade de documentacao
-
-Rodar markdownlint via npx:
-
-```bash
-npx -y markdownlint-cli "**/*.md"
-```
-
-Opcionalmente, limitar aos docs de projeto (ignorando arquivos de framework):
+## Ferramentas de qualidade
 
 ```bash
-npx -y markdownlint-cli "README.md" "test/**/*.md" "extras/wing-analisys/**/*.md" "hardware/**/*.md"
+# Markdown lint
+npx -y markdownlint-cli "README.md" "docs/**/*.md" "test_hardware/docs/**/*.md" "extras/**/*.md" "hardware/**/*.md"
+
+# Testes nativos
+pio test -e native
 ```
-
-## Roadmap tecnico (alto nivel)
-
-- Fechar validacao de bancada dos sensores.
-- Correlacionar simulacao de asa com testes de queda.
-- Consolidar protocolo de telemetria LoRa em campo.
-- Integrar pipeline de firmware para campanha completa.
 
 ## Time
 

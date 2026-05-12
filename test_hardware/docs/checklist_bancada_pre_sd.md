@@ -1,6 +1,6 @@
 # Checklist de Bancada (Pre-SD)
 
-Use este checklist para validar estabilidade antes de migrar do SPIFFS/LittleFS para modulo SD.
+Use este checklist para validar estabilidade antes de migrar do LittleFS para modulo SD.
 
 ## 1) Preparacao
 
@@ -8,14 +8,14 @@ Use este checklist para validar estabilidade antes de migrar do SPIFFS/LittleFS 
 - [ ] Confirmar pinagem fisica usada no firmware (I2C SDA/SCL, VCC, GND).
 - [ ] Abrir Serial Monitor em `115200`.
 - [ ] Resetar a placa com todos os modulos conectados.
-- [ ] Confirmar esquema de particao atual compativel com SPIFFS/LittleFS.
+- [ ] Confirmar esquema de particao atual compativel com LittleFS.
 
 ## 2) Boot e Inicializacao (Pass/Fail imediato)
 
 - [ ] Inicializacao sem reboot em loop.
 - [ ] Sensores detectados corretamente (BMP e ICM, se habilitado).
 - [ ] Sem `WHO_AM_I = 0xFF`.
-- [ ] SPIFFS/LittleFS monta sem erro.
+- [ ] LittleFS monta sem erro.
 - [ ] Arquivo CSV e cabecalho criados na primeira inicializacao.
 
 ## 3) Teste Continuo (10-15 min)
