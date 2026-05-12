@@ -1,1 +1,27 @@
+# PlatformIO build artifacts
+.pio/
+
+# Python
 __pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# opencode (local IDE config)
+.opencode/
+
+# Obsidian vault config
+.obsidian/
+
+# KiCad autosave
+hardware/CDB/.history/
+hardware/CDB/~*.lck
+
+# macOS
+.DS_Store
+
+# Editor temp files
+*.swp
+*.swo
+*~
