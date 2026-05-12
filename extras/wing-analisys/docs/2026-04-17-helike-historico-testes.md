@@ -139,7 +139,7 @@ Protótipo viável em termos aerodinâmicos, mas com limitações estruturais. D
 
 ### Scripts de Simulação
 
-- **Localização**: `/satellite/extras/wing-analisys/`
+- **Localização**: `/satellite/extras/`
 - **Script principal**: `samara_pq_simulation.py`
 - **Manual de uso**: `samara_pq_usage_manual.md`
 - **Quickstart**: `samara_pq_quickstart.md`
@@ -163,4 +163,4 @@ Protótipo viável em termos aerodinâmicos, mas com limitações estruturais. D
 - [[satellite]] - Projeto satélite principal
 - [[Alba-Orbital-1P]] - Padrão estrutural Alba Orbital
 - `samara_pq_simulation.py` - Pipeline de simulação
-- `/satellite/extras/wing-analisys/` - Diretório de análise
+- `/satellite/extras/` - Diretório de análise

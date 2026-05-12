@@ -1,12 +1,12 @@
 /*
- * Teste BMP280 com Salvamento em SD com Fallback para SPIFFS
- * Tenta SD primeiro, se falhar usa SPIFFS
+ * Teste BMP280 com Salvamento em SD com Fallback para LittleFS
+ * Tenta SD primeiro, se falhar usa LittleFS
  */
 
 #include <Wire.h>
 #include "FS.h"
 #include "SD.h"
-#include "SPIFFS.h"
+#include "LittleFS.h"
 #include <Adafruit_BMP280.h>
 
 // ============= Configurações =============
@@ -24,7 +24,7 @@
 
 // ============= Variáveis Globais =============
 
-enum StorageType { STORAGE_NONE, STORAGE_SD, STORAGE_SPIFFS };
+enum StorageType { STORAGE_NONE, STORAGE_SD, STORAGE_LITTLEFS };
 StorageType storage_type = STORAGE_NONE;
 
 Adafruit_BMP280 bmp;
@@ -52,7 +52,7 @@ bool setupBMP280() {
   return true;
 }
 
-// ============= Inicialização do Storage (SD + SPIFFS) =============
+// ============= Inicialização do Storage (SD + LittleFS) =============
 
 bool setupStorage() {
   // Tenta SD primeiro
@@ -68,14 +68,14 @@ bool setupStorage() {
     return true;
   }
 
-  Serial.println("SD falhou. Tentando SPIFFS...");
+  Serial.println("SD falhou. Tentando LittleFS...");
 
-  // Fallback para SPIFFS
-  if (SPIFFS.begin(true)) {
-    storage_type = STORAGE_SPIFFS;
-    Serial.println("SPIFFS iniciado com sucesso!");
-    Serial.printf("SPIFFS: %u bytes total, %u bytes usados\n",
-      (unsigned)SPIFFS.totalBytes(), (unsigned)SPIFFS.usedBytes());
+  // Fallback para LittleFS
+  if (LittleFS.begin(true)) {
+    storage_type = STORAGE_LITTLEFS;
+    Serial.println("LittleFS iniciado com sucesso!");
+    Serial.printf("LittleFS: %u bytes total, %u bytes usados\n",
+      (unsigned)LittleFS.totalBytes(), (unsigned)LittleFS.usedBytes());
     return true;
   }
 
@@ -93,8 +93,8 @@ String generateFileName(const char* prefix, const char* ext) {
     bool exists = false;
     if (storage_type == STORAGE_SD) {
       exists = SD.exists(candidate);
-    } else if (storage_type == STORAGE_SPIFFS) {
-      exists = SPIFFS.exists(candidate);
+    } else if (storage_type == STORAGE_LITTLEFS) {
+      exists = LittleFS.exists(candidate);
     }
 
     if (!exists) {
@@ -111,8 +111,8 @@ bool writeFile(const char* path, const char* message) {
 
   if (storage_type == STORAGE_SD) {
     file = SD.open(path, FILE_WRITE);
-  } else if (storage_type == STORAGE_SPIFFS) {
-    file = SPIFFS.open(path, FILE_WRITE);
+  } else if (storage_type == STORAGE_LITTLEFS) {
+    file = LittleFS.open(path, FILE_WRITE);
   } else {
     return false;
   }
@@ -138,8 +138,8 @@ void appendFile(const char* path, const char* message) {
 
   if (storage_type == STORAGE_SD) {
     file = SD.open(path, FILE_APPEND);
-  } else if (storage_type == STORAGE_SPIFFS) {
-    file = SPIFFS.open(path, FILE_APPEND);
+  } else if (storage_type == STORAGE_LITTLEFS) {
+    file = LittleFS.open(path, FILE_APPEND);
   } else {
     return;
   }
@@ -183,7 +183,7 @@ String file_path;
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("\n=== Teste BMP280 com SD/SPIFFS Fallback ===\n");
+  Serial.println("\n=== Teste BMP280 com SD/LittleFS Fallback ===\n");
 
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   delay(100);
@@ -213,7 +213,7 @@ void setup() {
   Serial.printf("BMP280: %s\n", bmp_ok ? "OK" : "FALHA");
   Serial.printf("Storage: %s\n",
     storage_type == STORAGE_SD ? "SD" :
-    storage_type == STORAGE_SPIFFS ? "SPIFFS" : "NENHUM");
+    storage_type == STORAGE_LITTLEFS ? "LittleFS" : "NENHUM");
   Serial.printf("Arquivo: %s\n", file_path.c_str());
   Serial.println("\n=== Iniciando Leituras ===\n");
 }

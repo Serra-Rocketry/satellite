@@ -14,7 +14,7 @@ e registro de dados para analise pos-voo.
 
 ## Base de testes atual
 
-- Integracao de sensores: `test/sensores_unificado/`.
+- Integracao de sensores: `test/integration/`.
 - Guia de implementacao: `test/GUIA_IMPLEMENTACAO_FASE_1_3.md`.
 - Estudo aerodinamico acoplado: `extras/wing-analisys/`.
 

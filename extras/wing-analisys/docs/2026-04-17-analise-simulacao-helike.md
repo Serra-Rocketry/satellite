@@ -262,7 +262,7 @@ Parâmetros a validar na próxima queda:
 ### Arquivos de Simulacao
 
 ```
-extras/wing-analisys/
+extras/
 ├── test_1_asa1/
 │   ├── samara_pq_impact_report.json         (data completa)
 │   ├── samara_pq_lrr_report.png             (gráficos de certificação)

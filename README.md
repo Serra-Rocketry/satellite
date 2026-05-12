@@ -46,8 +46,13 @@ satellite/
 |   |-- CDB_bom.md
 |   |-- CDB.pdf
 |   `-- CDB.fzz
-|-- extras/
-|   `-- wing-analisys/
+|-- extras/wing-analisys/
+|   |-- src/
+|   |-- geometry/
+|   |-- results/
+|   |-- docs/
+|   |-- guides/
+|   `-- requirements.txt
 `-- test/
     |-- README.md
     |-- checklist_bancada_pre_sd.md

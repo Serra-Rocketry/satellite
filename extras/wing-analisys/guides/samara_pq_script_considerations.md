@@ -2,7 +2,7 @@
 
 ## 1) Estado atual do pipeline
 
-O script `extras/wing-analisys/samara_pq_simulation.py` está consolidado em um pipeline único com:
+O script `extras/wing-analisys/src/samara_pq_simulation.py` está consolidado em um pipeline único com:
 
 - leitura geométrica via DXF (perfil de asa);
 - dinâmica reduzida com foco em autorrotação (pitch, rotação e descida vertical);

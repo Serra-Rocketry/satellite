@@ -2,7 +2,7 @@
 
 ## 📊 Visão Geral
 
-O código em `sensores_unificado/sensores_unificado.ino` implementa coleta integrada de dados de **ICM-20602 (IMU)** e **BMP280 (pressão/altitude)** com logging em CSV via LittleFS.
+O código em `integration/sensor_logging_lfs/sensor_logging_lfs.ino` implementa coleta integrada de dados de **ICM-20602 (IMU)** e **BMP280 (pressão/altitude)** com logging em CSV via LittleFS.
 
 **Métricas**:
 

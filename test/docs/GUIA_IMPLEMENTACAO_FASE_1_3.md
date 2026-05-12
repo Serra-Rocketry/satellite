@@ -96,7 +96,7 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 ### 3. Preparação do Código
 
 ```bash
-cd test/sensores_unificado/
+cd test/integration/sensor_logging_v3/
 
 # Usar versão v3 com todos os componentes
 # sensores_unificado_v3.ino - integra ICM-20602 + BME280 + GPS NEO-8M
@@ -637,7 +637,7 @@ Semana 3:
 
 - [ ] Verificar endereço I2C: é 0x76 ou 0x77? (SDO=GND vs VCC)
 - [ ] Se o jumper SDO não está conectado, tente 0x77
-- [ ] Validar com teste isolado: `test/bme280_completo/bme280_completo.ino`
+- [ ] Validar com teste isolado: `test/sensor/bme280/bme280.ino`
 
 ---
 

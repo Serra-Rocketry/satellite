@@ -73,7 +73,7 @@ HDOP: 1.2 | VDOP: 1.5
 
 ## 🌡️ Teste BME280 Completo
 
-**Arquivo**: `test/bme280_completo/bme280_completo.ino`
+**Arquivo**: `test/sensor/bme280/bme280.ino`
 
 **Hardware**:
 
@@ -117,7 +117,7 @@ Ponto orvalho: 14.56 °C
 
 ## ⭐ Teste Integrado v3 (RECOMENDADO)
 
-**Arquivo**: `test/sensores_unificado/sensores_unificado_v3.ino`
+**Arquivo**: `test/integration/sensor_logging_v3/sensor_logging_v3.ino`
 
 **Hardware Completo**:
 

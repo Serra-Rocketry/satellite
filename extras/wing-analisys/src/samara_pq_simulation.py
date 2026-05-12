@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
-"""Samara_PQ_Simulation
+"""Samara_PQ_Simulation — Bio-Inspired Autorotative Recovery System (SRAB)
+Serra Rocketry Team — Helike Mission
+
+Usage (pipeline completo com defaults):
+    python src/samara_pq_simulation.py
+
+Sobrescrever parâmetros via CLI:
+    python src/samara_pq_simulation.py --dxf extras/wing-analisys/geometry/Asa2.DXF --n-wings 4 --mass 0.250 --altitude 1000
+    python src/samara_pq_simulation.py --output extras/wing-analisys/results/ --max-step 0.1 --t-max 300
 """
 
+import argparse
 import json
 from pathlib import Path
 
@@ -20,7 +29,39 @@ except ImportError as import_error:
     ) from import_error
 
 
-DEFAULT_DXF_PATH = Path(__file__).resolve().parent / "asa1.dxf"
+# =============================================================================
+# CONFIG — Parâmetros principais da missão
+# Altere aqui para mudar o comportamento padrão do pipeline.
+# Todos os valores podem ser sobrescritos via argumentos CLI (ver --help).
+# =============================================================================
+CONFIG = {
+    # --- Geometria da asa ---
+    "dxf_path": Path(__file__).resolve().parent / "Asa2.DXF",  # arquivo DXF da asa
+    "n_wings": 4,           # número de asas simétricas
+
+    # --- Massa e estrutura ---
+    "mass_kg": 0.250,       # massa total do sistema [kg] (limite regulatório PQ 1P)
+
+    # --- Condições iniciais da simulação ---
+    "altitude_m": 1000.0,   # altitude de liberação [m] (altura do apogeu do foguete)
+    "theta_deg": 20.0,      # ângulo de conicidade inicial [graus]
+    "theta_dot_0": 0.0,     # taxa de variação do pitch inicial [rad/s]
+    "phi_dot_0": 0.1,       # spin inicial [rad/s] (~1 RPM — praticamente parado)
+    "v0_0": 0.0,            # velocidade vertical inicial [m/s] (liberado no apogeu)
+
+    # --- Parâmetros aerodinâmicos ---
+    "f_factor": 0.3,        # fração de inércia de massa ao longo da asa (tensor I_yy)
+    "cd0": 1.0,             # coeficiente de arrasto basal (captura efeito LEV)
+    "rho": 1.225,           # densidade do ar [kg/m³] (nível do mar, ISA)
+
+    # --- Integração numérica ---
+    "t_max": 600.0,         # tempo máximo de simulação [s]
+    "max_step": 0.2,        # passo máximo do integrador RK45 [s]
+
+    # --- Saída ---
+    "output_dir": Path(__file__).resolve().parent,  # diretório de saída dos relatórios
+}
+# =============================================================================
 
 
 class DxfWingProfile:
@@ -178,19 +219,23 @@ class PocketQubeSamaraWing:
     # pylint: disable=too-many-instance-attributes,too-many-arguments,too-many-positional-arguments
     def __init__(
         self,
-        dxf_path=DEFAULT_DXF_PATH,
+        dxf_path=None,
         n_wings=4,
+        mass=0.250,
         radius=None,
         f_factor=0.3,
         cd0=1.0,
+        rho=1.225,
         k_induced=0.0,
         c_damp=0.0,
     ):
+        if dxf_path is None:
+            dxf_path = CONFIG["dxf_path"]
         self.dxf_path = Path(dxf_path)
         self.profile = DxfWingProfile(self.dxf_path)
 
         # 1. Regulatory mass and topology constraints
-        self.mass = 0.250  # 250 g (PocketQube 1P regulatory maximum mass)
+        self.mass = float(mass)   # massa total do sistema [kg]
         self.n_wings = n_wings
 
         # 2. Aerodynamic geometry from DXF profile
@@ -203,7 +248,7 @@ class PocketQubeSamaraWing:
         self.pocketqube_side_m = 0.05
         self.a_face = 0.058 * 0.064
         self.cd_bluff_body = 1.05
-        self.rho = 1.225
+        self.rho = float(rho)
 
         # 4. Corrections and coefficients
         self.f_factor = f_factor
@@ -452,7 +497,7 @@ class PocketQubeLRRVisualizer:
     """Generate LRR-oriented plots from simulation output."""
 
     # pylint: disable=too-few-public-methods
-    def __init__(self, simulation_solution, output_dir="extras/wing-analisys"):
+    def __init__(self, simulation_solution, output_dir="extras/wing-analisys/results"):
         self.t = simulation_solution.t
         self.theta = np.degrees(simulation_solution.y[0])
         self.theta_dot = simulation_solution.y[1]
@@ -529,7 +574,7 @@ class PocketQubeLRRVisualizer:
 
 
 # pylint: disable=too-many-locals
-def plot_frontal_area_system(wing, output_dir="extras/wing-analisys"):
+def plot_frontal_area_system(wing, output_dir="extras/wing-analisys/results"):
     """Save a dimensional frontal-view sketch with body and rotated DXF wings."""
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -876,7 +921,7 @@ class PocketQubeMissionReporter:
         )
         print("=" * 70)
 
-    def save_report_files(self, summary, output_dir="extras/wing-analisys"):
+    def save_report_files(self, summary, output_dir="extras/wing-analisys/results"):
         """Persist report in JSON and TXT files."""
         out_dir = Path(output_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -944,42 +989,129 @@ class PocketQubeMissionReporter:
         print(f"Saved TXT report:  {txt_path}")
 
 
-print("==========================================================")
-print(" LASC POCKETQUBE 1P - SRAB PIPELINE INITIALIZED ")
-print("==========================================================")
+def _parse_args():
+    """Parse optional CLI arguments that override CONFIG values."""
+    parser = argparse.ArgumentParser(
+        description="SRAB — Samara PQ Simulation Pipeline",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    # Geometria
+    parser.add_argument("--dxf", type=Path, metavar="FILE",
+                        help="Arquivo DXF da asa (ex: Asa2.DXF)")
+    parser.add_argument("--n-wings", type=int, metavar="N",
+                        help="Número de asas simétricas")
+    # Massa
+    parser.add_argument("--mass", type=float, metavar="KG",
+                        help="Massa total do sistema [kg]")
+    # Condições iniciais
+    parser.add_argument("--altitude", type=float, metavar="M",
+                        help="Altitude de liberação [m]")
+    parser.add_argument("--theta-deg", type=float, metavar="DEG",
+                        help="Ângulo de conicidade inicial [graus]")
+    parser.add_argument("--phi-dot", type=float, metavar="RAD_S",
+                        help="Spin inicial [rad/s]")
+    parser.add_argument("--v0", type=float, metavar="M_S",
+                        help="Velocidade vertical inicial [m/s]")
+    # Aerodinâmica
+    parser.add_argument("--cd0", type=float, metavar="COEF",
+                        help="Coeficiente de arrasto basal (LEV)")
+    parser.add_argument("--f-factor", type=float, metavar="F",
+                        help="Fração de inércia de massa nas asas")
+    parser.add_argument("--rho", type=float, metavar="KG_M3",
+                        help="Densidade do ar [kg/m³]")
+    # Integração
+    parser.add_argument("--t-max", type=float, metavar="S",
+                        help="Tempo máximo de simulação [s]")
+    parser.add_argument("--max-step", type=float, metavar="S",
+                        help="Passo máximo do integrador RK45 [s]")
+    # Saída
+    parser.add_argument("--output", type=Path, metavar="DIR",
+                        help="Diretório de saída dos relatórios e figuras")
+    return parser.parse_args()
+
+
+def _build_config_from_args(args):
+    """Merge CONFIG defaults with CLI arguments (CLI takes precedence)."""
+    cfg = dict(CONFIG)
+    overrides = {
+        "dxf_path":   args.dxf,
+        "n_wings":    args.n_wings,
+        "mass_kg":    args.mass,
+        "altitude_m": args.altitude,
+        "theta_deg":  args.theta_deg,
+        "phi_dot_0":  args.phi_dot,
+        "v0_0":       args.v0,
+        "cd0":        args.cd0,
+        "f_factor":   args.f_factor,
+        "rho":        args.rho,
+        "t_max":      args.t_max,
+        "max_step":   args.max_step,
+        "output_dir": args.output,
+    }
+    for key, val in overrides.items():
+        if val is not None:
+            cfg[key] = val
+    return cfg
 
 
 def main():
-    """Execute calibration, simulation, and visualization pipeline."""
-    print(f"Using default wing profile: {DEFAULT_DXF_PATH}")
-    sim_t_span = (0.0, 600.0)
-    sim_max_step = 0.2
+    """Execute simulation and visualization pipeline (sem otimizador)."""
+    args = _parse_args()
+    cfg = _build_config_from_args(args)
 
-    wing = PocketQubeSamaraWing(dxf_path=DEFAULT_DXF_PATH, n_wings=4)
-    solver = PocketQubeFlightDynamics(wing)
+    print("==========================================================")
+    print(" LASC POCKETQUBE 1P — SRAB SIMULATION PIPELINE")
+    print("==========================================================")
+    print(f"  DXF:          {cfg['dxf_path']}")
+    print(f"  Asas:         {cfg['n_wings']}")
+    print(f"  Massa:        {cfg['mass_kg']*1000:.0f} g")
+    print(f"  Altitude:     {cfg['altitude_m']:.0f} m")
+    print(f"  Spin inicial: {cfg['phi_dot_0']:.2f} rad/s  "
+          f"({cfg['phi_dot_0']*60/(2*np.pi):.2f} RPM)")
+    print(f"  θ inicial:    {cfg['theta_deg']:.1f}°")
+    print(f"  v₀ inicial:   {cfg['v0_0']:.1f} m/s")
+    print(f"  cd0:          {cfg['cd0']}")
+    print(f"  f_factor:     {cfg['f_factor']}")
+    print(f"  t_max:        {cfg['t_max']:.0f} s  |  max_step: {cfg['max_step']} s")
+    print(f"  Saída:        {cfg['output_dir']}")
+    print("==========================================================\n")
 
-    optimizer = PocketQubeSamaraOptimizer(solver, target_vf=-25.0)
-    optimal_radius = optimizer.optimize_radius_for_impact(
-        n_wings=4,
-        target_impact_vf=-25.0,
-        sim_t_span=sim_t_span,
-        sim_max_step=sim_max_step,
+    # Montar condições iniciais a partir do CONFIG
+    initial_conditions = [
+        np.radians(cfg["theta_deg"]),  # θ — conicidade inicial
+        cfg["theta_dot_0"],             # θ̇ — taxa de pitch inicial
+        cfg["phi_dot_0"],               # φ̇ — spin inicial (≈0 no apogeu)
+        cfg["v0_0"],                    # v₀ — velocidade vertical inicial
+        cfg["altitude_m"],              # z  — altitude inicial
+    ]
+
+    # Montar asa e dinâmica
+    wing = PocketQubeSamaraWing(
+        dxf_path=cfg["dxf_path"],
+        n_wings=cfg["n_wings"],
+        mass=cfg["mass_kg"],
+        f_factor=cfg["f_factor"],
+        cd0=cfg["cd0"],
+        rho=cfg["rho"],
     )
 
-    if optimal_radius is not None:
-        wing.update_geometry(optimal_radius, wing.f_factor, wing.cd0, n_wings=4)
+    solver = PocketQubeFlightDynamics(wing)
+    solution = solver.simulate_drop(
+        initial_conditions=initial_conditions,
+        t_span=(0.0, cfg["t_max"]),
+        max_step=cfg["max_step"],
+    )
 
-        solution = solver.simulate_drop(t_span=sim_t_span, max_step=sim_max_step)
+    # Relatório
+    reporter = PocketQubeMissionReporter(wing, solution)
+    summary = reporter.build_summary()
+    reporter.print_summary(summary)
+    reporter.save_report_files(summary, output_dir=str(cfg["output_dir"]))
 
-        reporter = PocketQubeMissionReporter(wing, solution)
-        summary = reporter.build_summary()
-        reporter.print_summary(summary)
-        reporter.save_report_files(summary)
-
-        plot_frontal_area_system(wing)
-
-        visualizer = PocketQubeLRRVisualizer(solution)
-        visualizer.generate_lrr_report()
+    # Figuras
+    plot_frontal_area_system(wing, output_dir=str(cfg["output_dir"]))
+    visualizer = PocketQubeLRRVisualizer(solution, output_dir=str(cfg["output_dir"]))
+    visualizer.generate_lrr_report()
 
 
 if __name__ == "__main__":

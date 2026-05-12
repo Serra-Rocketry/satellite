@@ -240,12 +240,12 @@ Se o Teste 3 for aprovado, a próxima etapa é otimização geométrica guiada p
 
 Repositório e artefatos:
 
-- \url{<https://github.com/ViniciusCMB/satellite/tree/dev-2026/extras/wing-analisys}>
+- \url{<https://github.com/ViniciusCMB/satellite/tree/dev-2026/extras}>
 
 Estrutura de referência:
 
 ```
-01_Projetos_Ativos/satellite/extras/wing-analisys/
+01_Projetos_Ativos/satellite/extras/
 
 Simulator:
   `-- samara_pq_simulation.py (991 linhas)
