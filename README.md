@@ -20,19 +20,15 @@ e estudo de recuperacao por freio aerodinamico tipo samara.
 
 ## Arquitetura resumida
 
-### Blocos do sistema
-
-- **Satelite**: ESP32 + LoRa + GPS + sensores + armazenamento local.
-- **Beacons terrestres**: ESP32-C3 + LoRa + GPS para apoio de localizacao.
-- **Ground station**: gateway LoRa/USB para monitoramento em PC.
+Plataforma unica: **ESP32-C3 Super Mini**.
 
 ### Sensores e subsistemas principais
 
-- BME280 para pressao, temperatura e umidade.
-- ICM-20602 para aceleracao e rotacao.
-- GPS NEO-8M para posicao e altitude.
-- Modulo LoRa SX127x em 915 MHz.
-- Registro local de dados para pos-processamento.
+- BME280 para pressao, temperatura e umidade (I2C).
+- ICM-20602 para aceleracao e rotacao (I2C).
+- GPS NEO-8M para posicao e altitude (UART).
+- Modulo LoRa SX127x em 915 MHz (SPI).
+- SD + LittleFS fallback para armazenamento local.
 
 ## Estrutura do repositorio
 
@@ -72,17 +68,14 @@ satellite/
 
 ## Build e Testes
 
-### Firmware embarcado (ESP32 / ESP32-C3)
+### Firmware embarcado (ESP32-C3 Super Mini)
 
 ```bash
-pio run                          # Build all
-pio run -e satellite_esp32       # Satellite (ESP32)
-pio run -e beacon_esp32c3        # Beacon (ESP32-C3)
-pio run -e groundstation_esp32c3 # Ground Station (ESP32-C3)
+pio run                           # Build all
+pio run -e groundstation_esp32c3  # ESP32-C3 Super Mini
 
 # Upload
-pio run -e satellite_esp32 -t upload --upload-port /dev/ttyUSB0
-pio run -e beacon_esp32c3 -t upload --upload-port /dev/ttyACM0
+pio run -e groundstation_esp32c3 -t upload --upload-port /dev/ttyACM0
 
 # Monitor serial
 pio device monitor -b 115200

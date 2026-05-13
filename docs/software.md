@@ -36,7 +36,6 @@ Config de build em `platformio.ini` com ambientes separados para satelite,
 beacon e ground station, alem de `[env:native]` para testes unitarios.
 
 ```bash
-pio run -e satellite_esp32       # Firmware do satelite
-pio run -e groundstation_esp32c3 # Ground station
+pio run -e groundstation_esp32c3 # ESP32-C3 Super Mini
 pio test -e native               # Testes unitarios
 ```
