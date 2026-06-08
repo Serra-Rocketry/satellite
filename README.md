@@ -1,7 +1,7 @@
-# PocketQube LoRa Triangulation Mission
+# Helike — PocketQube Mission (#213 - LASC 2026)
 
-Projeto de satelite PocketQube com foco em telemetria LoRa, localizacao por GPS
-e estudo de recuperacao por freio aerodinamico tipo samara.
+Projeto de satelite PocketQube da Serra Rocketry, com foco no Sistema de
+Recuperacao Autorrotativo Bioinspirado (SRAB) e triangulacao LoRa.
 
 ## Status
 
@@ -15,11 +15,12 @@ e estudo de recuperacao por freio aerodinamico tipo samara.
 
 - Coletar telemetria de voo com sensores embarcados.
 - Transmitir dados via LoRa em 915 MHz.
-- Avaliar estrategia de localizacao com GPS e apoio de beacons.
-- Validar recuperacao com arquitetura bioinspirada (samara).
+- Avaliar triangulacao LoRa para localizacao e recuperacao.
+- Validar recuperacao com arquitetura bioinspirada (SRAB/samara).
 
 ## Arquitetura resumida
 
+Missao Helike (#213 - LASC 2026) — Serra Rocketry.
 Plataforma unica: **ESP32-C3 Super Mini**.
 
 ### Sensores e subsistemas principais
@@ -27,7 +28,7 @@ Plataforma unica: **ESP32-C3 Super Mini**.
 - BME280 para pressao, temperatura e umidade (I2C).
 - ICM-20602 para aceleracao e rotacao (I2C).
 - GPS NEO-8M para posicao e altitude (UART).
-- Modulo LoRa SX127x em 915 MHz (SPI).
+- Modulo LoRa RFM95W em 915 MHz (SPI).
 - SD + LittleFS fallback para armazenamento local.
 
 ## Estrutura do repositorio
@@ -72,10 +73,10 @@ satellite/
 
 ```bash
 pio run                           # Build all
-pio run -e groundstation_esp32c3  # ESP32-C3 Super Mini
+pio run -e helike_esp32c3  # ESP32-C3 Super Mini
 
 # Upload
-pio run -e groundstation_esp32c3 -t upload --upload-port /dev/ttyACM0
+pio run -e helike_esp32c3 -t upload --upload-port /dev/ttyACM0
 
 # Monitor serial
 pio device monitor -b 115200
@@ -94,7 +95,7 @@ Os sketches em `test_hardware/` sao compilados e carregados individualmente:
 
 ```bash
 # Exemplo: compilar um teste de sensor
-pio run -e groundstation_esp32c3 --project-option="src_dir=test_hardware/sensor/bmp280"
+pio run -e helike_esp32c3 --project-option="src_dir=test_hardware/sensor/bmp280"
 ```
 
 Ou abrir o arquivo `.ino` no VS Code com PlatformIO e clicar em "Upload".
@@ -140,4 +141,4 @@ pio test -e native
 
 ## Time
 
-Serra Rocketry - PocketQube Mission
+Serra Rocketry — Missao Helike (#213 - LASC 2026)

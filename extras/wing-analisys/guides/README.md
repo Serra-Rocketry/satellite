@@ -1,4 +1,4 @@
-# Wing Analysis (Helike / SRAB)
+# Wing Analysis (Helike #213 - LASC 2026 / SRAB)
 
 Estudo de asa autorrotativa para PocketQube 1P — modelagem aerodinâmica,
 comparação de geometrias DXF, simulação e rastreabilidade técnica.

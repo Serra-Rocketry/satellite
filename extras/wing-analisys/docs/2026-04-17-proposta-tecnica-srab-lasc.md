@@ -13,7 +13,7 @@ related:
 ## Sistema de Recuperação Autorrotativo Bioinspirado para PocketQube 1P
 
 **Notificação obrigatória para utilização de método não-paraquedas**  
-**Equipe Serra Rocketry - Missão Helike - ID #213**
+**Equipe Serra Rocketry - Missao Helike (#213 - LASC 2026)**
 
 ---
 
@@ -203,9 +203,9 @@ Objetivo: integrar eletrônica embarcada e validar simulação contra dados reai
 Hardware embarcado previsto:
 
 - ESP32-C3 (4 g)
-- MPU-6050 (3 g)
-- u-blox MAX-M8 (2.5 g)
-- LoRa32 915 MHz (2 g)
+- ICM-20602 (3 g)
+- NEO-8M (2.5 g)
+- RFM95W 915 MHz (2 g)
 - bateria e suportes (3.5 g)
 - total eletrônico: ~15 g
 

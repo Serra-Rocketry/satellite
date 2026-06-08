@@ -254,7 +254,7 @@ void verificarApogeu(float vz, unsigned long millis_atual) {
       eventos.tempo_apogeu_ms = millis_atual;
       eventos.altitude_max = altura_anterior;
       
-      Serial.printf("\n🎯 APOGEU DETECTADO!\n");
+      Serial.printf("\nAPOGEU DETECTADO!\n");
       Serial.printf("   Tempo: %lu ms\n", eventos.tempo_apogeu_ms);
       Serial.printf("   Altitude: %.2f m\n", eventos.altitude_max);
       Serial.printf("   Vz: %.2f m/s\n\n", vz);

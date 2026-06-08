@@ -1,8 +1,8 @@
 # Análise Técnica - Código de Testes de Queda
 
-## 📊 Visão Geral
+## Visao Geral
 
-O código em `integration/sensor_logging_lfs/sensor_logging_lfs.ino` implementa coleta integrada de dados de **ICM-20602 (IMU)** e **BMP280 (pressão/altitude)** com logging em CSV via LittleFS.
+O código em `test_hardware/integration/sensor_logging_lfs/sensor_logging_lfs.ino` implementa coleta integrada de dados de **ICM-20602 (IMU)** e **BMP280 (pressão/altitude)** com logging em CSV via LittleFS.
 
 **Métricas**:
 
@@ -259,9 +259,9 @@ TinyGPSPlus gps;
 
 ---
 
-## 🔧 Recomendações por Prioridade
+## Recomendacoes por Prioridade
 
-### 🔴 CRÍTICO (Implementar para Fase 1.3)
+### CRITICO (Implementar para Fase 1.3)
 
 1. **Cálculo de taxa de descida** (dh/dt)
    - Necessário para validar freio aerodinâmico
@@ -278,7 +278,7 @@ TinyGPSPlus gps;
    - ~15 linhas de código
    - Impacto: Médio
 
-### 🟡 IMPORTANTE (Implementar para Fase 4)
+### IMPORTANTE (Implementar para Fase 4)
 
 1. **Detecção de apogeu automática**
    - Dispara servo motor automaticamente
@@ -295,7 +295,7 @@ TinyGPSPlus gps;
    - ~40 linhas de código
    - Impacto: Médio
 
-### 🟢 OPCIONAL (Nice-to-have)
+### OPCIONAL (Nice-to-have)
 
 1. Checksum em CSV
 2. Calibração automática de BMP280
@@ -303,7 +303,7 @@ TinyGPSPlus gps;
 
 ---
 
-## 📋 Plano de Próximos Passos
+## Plano de Proximos Passos
 
 ### Para Testes de Queda (Fase 1.3)
 
@@ -327,7 +327,7 @@ TinyGPSPlus gps;
 
 ---
 
-## 🧪 Sugestão: Script Python para Análise
+## Sugestao: Script Python para Analise
 
 Para pós-processar dados de teste:
 
@@ -357,7 +357,7 @@ plt.show()
 
 ---
 
-## 📚 Referências
+## Referencias
 
 - **Registers ICM-20602**:
   - 0x3B-0x3D: Aceleração raw

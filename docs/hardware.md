@@ -2,13 +2,14 @@
 
 ## Visao geral
 
+Missao Helike (#213 - LASC 2026) — Serra Rocketry.
 Plataforma unica: **ESP32-C3 Super Mini** com LoRa 915 MHz, GPS NEO-8M e
 sensores ambientais/inerciais para telemetria e validacao de voo.
 
 ## Componentes principais
 
 - **Microcontrolador**: ESP32-C3 Super Mini (single-core, 400KB RAM).
-- **Radio**: modulo LoRa SX127x (915 MHz).
+- **Radio**: modulo LoRa RFM95W (915 MHz).
 - **Navegacao**: GPS NEO-8M (UART).
 - **Sensores**: BME280 (pressao/temp/umidade) e ICM-20602 (IMU).
 - **Armazenamento**: SD cartao + fallback LittleFS.
@@ -18,7 +19,7 @@ sensores ambientais/inerciais para telemetria e validacao de voo.
 | Interface | Pinos | Componente |
 |-----------|-------|------------|
 | I2C | SDA=GPIO8, SCL=GPIO9 | ICM-20602, BMP280/BME280 |
-| LoRa SPI | MOSI=GPIO7, MISO=GPIO5, SCK=GPIO6, CS=GPIO10, RST=GPIO4, DIO0=GPIO3 | SX127x |
+| LoRa SPI | MOSI=GPIO7, MISO=GPIO5, SCK=GPIO6, CS=GPIO10, RST=GPIO4, DIO0=GPIO3 | RFM95W |
 | GPS UART | TX=GPIO21, RX=GPIO20 | NEO-8M |
 | LED | GPIO1 | Indicador |
 | Buzzer | GPIO8 | Alerta |

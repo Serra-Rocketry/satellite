@@ -9,7 +9,7 @@ venv/
 .venv/
 
 # opencode (local IDE config)
-.opencode/
+# .opencode/
 
 # Obsidian vault config
 .obsidian/

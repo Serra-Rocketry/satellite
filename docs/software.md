@@ -2,13 +2,14 @@
 
 ## Visao geral
 
-O firmware e organizado para coleta de sensores, telemetria LoRa, parse de GPS
-e registro de dados para analise pos-voo.
+Firmware da missao Helike (#213 - LASC 2026) — Serra Rocketry.
+Organizado para coleta de sensores, telemetria LoRa, parse de GPS e registro
+de dados para analise pos-voo.
 
 ## Blocos funcionais
 
 - **Aquisicao de sensores**: ICM-20602 (I2C), BMP280/BME280 (I2C), GPS NEO-8M (UART).
-- **Comunicacao LoRa**: SX127x em 915 MHz para telemetria.
+- **Comunicacao LoRa**: RFM95W em 915 MHz para telemetria.
 - **Tratamento e serializacao**: Validacao, formatacao CSV, JSON para LoRa.
 - **Logging local**: SD com fallback para LittleFS, arquivo persistente com flush periodico.
 - **Calculo**: Modulos em `lib/calc/` — Vz (EMA), deteccao de apogeu, validacao de dados.
@@ -32,10 +33,10 @@ Nao dependem de Arduino, ESP32 ou qualquer hardware — compilaveis em nativo pa
 
 ## Build
 
-Config de build em `platformio.ini` com ambientes separados para satelite,
-beacon e ground station, alem de `[env:native]` para testes unitarios.
+Config de build em `platformio.ini` com ambiente unico ESP32-C3 e
+`[env:native]` para testes unitarios.
 
 ```bash
-pio run -e groundstation_esp32c3 # ESP32-C3 Super Mini
+pio run -e helike_esp32c3 # ESP32-C3 Super Mini
 pio test -e native               # Testes unitarios
 ```

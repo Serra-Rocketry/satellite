@@ -1,5 +1,5 @@
 ---
-title: Histórico de Testes Helike (Campo + Simulação)
+title: Historico de Testes Helike #213 (LASC 2026) (Campo + Simulacao)
 date: 2026-04-17
 captured: 2026-04-17 14:30
 type: reference
@@ -9,11 +9,11 @@ tags: [helike, testes, simulação, aerodinâmica]
 related: []
 ---
 
-# Histórico de Testes - Projeto Helike (com Simulação Computacional)
+# Historico de Testes - Projeto Helike #213 (LASC 2026) (com Simulacao Computacional)
 
 ## Visão Geral
 
-Registro completo do histórico de testes de protótipos do projeto Helike utilizando estrutura básica 1P da Alba Orbital, com validação via simulação aeronáutica (Samara PQ).
+Registro completo do historico de testes de prototipos do projeto Helike #213 (LASC 2026) utilizando estrutura basica 1P da Alba Orbital, com validacao via simulacao aeronautica (Samara PQ).
 
 ---
 

@@ -1,8 +1,8 @@
 # Guia de Implementação - Fase 1.3: Testes Experimentais de Queda
 
-## 📋 Visão Geral
+## Visao Geral
 
-Este guia detalha como implementar e executar os testes experimentais de queda do freio aerodinâmico usando o código integrado em `sensores_unificado_v3.ino`.
+Este guia detalha como implementar e executar os testes experimentais de queda do freio aerodinâmico usando o código integrado em `sensor_logging_v3.ino`.
 
 **Objetivos**:
 
@@ -14,7 +14,7 @@ Este guia detalha como implementar e executar os testes experimentais de queda d
 
 ---
 
-## 🔧 Hardware Necessário
+## Hardware Necessario
 
 ### Componentes Eletrônicos
 
@@ -70,7 +70,7 @@ Serial Debug:
 
 ---
 
-## 🚀 Pré-Requisitos de Software
+## Pre-Requisitos de Software
 
 ### 1. Arduino IDE Setup
 
@@ -99,7 +99,7 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 cd test_hardware/integration/sensor_logging_v3/
 
 # Usar versão v3 com todos os componentes
-# sensores_unificado_v3.ino - integra ICM-20602 + BME280 + GPS NEO-8M
+# sensor_logging_v3.ino - integra ICM-20602 + BME280 + GPS NEO-8M
 
 # Ou usar diretamente em Arduino IDE
 ```
@@ -230,7 +230,7 @@ ICM-20602 + BME280 + GPS NEO-8M
 
 ### Teste Rápido de Funcionalidade
 
-- [ ] **Executar `sensores_unificado_v3.ino` por 2 minutos em repouso**
+- [ ] **Executar `sensor_logging_v3.ino` por 2 minutos em repouso**
   - Esperado no Serial Monitor:
     - Aceleração: ~(0, 0, 9.81) m/s² (sem movimento)
     - Temperatura: valor consistente (ex: 25°C)
@@ -243,7 +243,7 @@ ICM-20602 + BME280 + GPS NEO-8M
 
 ---
 
-## 🧪 Protocolo de Testes
+## Protocolo de Testes
 
 ### Fase 1.3.1: Validação de Bancada (30 min)
 
@@ -329,7 +329,7 @@ Apogeu detector: Pode detectar "flutuação" inicial
 ```
 ⚠️ IMPORTANTE: Em quedas de 10m NÃO atingimos regime terminal!
    
-Simulação (Asa2_relatorio.txt):
+Simulação (`extras/wing-analisys/results/test_2_asa2/samara_pq_impact_report.txt`):
    - Config 2×R124mm: v₀ = 27.65 m/s (regime terminal)
    - Config 2×R100mm: v₀ = 27.61 m/s (regime terminal)
    
@@ -372,7 +372,7 @@ T04 | 6 asas,0.6mm    | 17.85 m/s        | -11 a -15 m/s| -12.5 m/s | +8%      |
 
 ---
 
-## 📊 Análise de Dados
+## Analise de Dados
 
 ### 1. Extrair CSV do LittleFS
 
@@ -482,7 +482,7 @@ Validações:
 ### 3. Comparar com Simulação
 
 ```python
-# Dados da simulação (extras/wing-analisys/Asa2_relatorio.txt)
+# Dados da simulação (extras/wing-analisys/results/test_2_asa2/samara_pq_impact_report.txt)
 # Terminal velocities por configuração:
 # - 2×R124mm: v₀ = 27.65 m/s
 # - 2×R100mm: v₀ = 27.61 m/s
@@ -520,7 +520,7 @@ Status: {"✅ VALIDADO" if vz_estavel_std < (abs(vz_estavel_medio) * 0.05) else 
 
 ---
 
-## 🔄 Iteração e Ajustes
+## Iteracao e Ajustes
 
 ### Se Vz for TOO FAST (>-8 m/s)
 
@@ -548,7 +548,7 @@ Status: {"✅ VALIDADO" if vz_estavel_std < (abs(vz_estavel_medio) * 0.05) else 
 
 ---
 
-## 📅 Cronograma Sugerido
+## Cronograma Sugerido
 
 ```
 Semana 1:
@@ -569,7 +569,7 @@ Semana 3:
 
 ---
 
-## 📝 Checklist de Execução
+## Checklist de Execucao
 
 ### Pré-Teste
 
@@ -598,7 +598,7 @@ Semana 3:
 
 ---
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### "GPS mostra apenas pontos (... em vez de OK)"
 
@@ -641,7 +641,7 @@ Semana 3:
 
 ---
 
-## 📚 Próximos Passos Após Validação
+## Proximos Passos Apos Validacao
 
 1. **Integração de Servo Motor**
    - Disparar em apogeu automático
@@ -663,6 +663,6 @@ Semana 3:
 
 ---
 
-**Status**: 🚀 Pronto para testes  
+**Status**: Pronto para testes
 **Última atualização**: 09/04/2026  
 **Responsável**: Time de Desenvolvimento

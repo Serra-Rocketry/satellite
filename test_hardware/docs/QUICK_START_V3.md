@@ -1,4 +1,4 @@
-# 🚀 Quick Start - Novos Testes (GPS + BME280)
+# Quick Start - Novos Testes (GPS + BME280)
 
 ## Instalação Rápida de Bibliotecas
 
@@ -18,7 +18,7 @@ Já estão built-in:
 
 ---
 
-## 📍 Teste GPS Isolado
+## Teste GPS Isolado
 
 **Arquivo**: `test_hardware/sensor/gps_neo8m/gps_neo8m.ino`
 
@@ -71,7 +71,7 @@ HDOP: 1.2 | VDOP: 1.5
 
 ---
 
-## 🌡️ Teste BME280 Completo
+## Teste BME280 Completo
 
 **Arquivo**: `test_hardware/sensor/bme280/bme280.ino`
 
@@ -193,14 +193,14 @@ Exemplo:
 
 ---
 
-## 🔄 Fluxo de Testes Recomendado
+## Fluxo de Testes Recomendado
 
 1. **Validação Individual** (se houver problemas):
    - `gps_neo8m.ino` → valida GPS UART
-   - `bme280_completo.ino` → valida sensor barométrico
+- `bme280.ino` → valida sensor barométrico
 
 2. **Teste Integrado** (para Fase 1.3):
-   - `sensores_unificado_v3.ino` → coleta tudo junto
+- `sensor_logging_v3.ino` → coleta tudo junto
    - Deixar rodando enquanto executa queda
    - Extrair CSV do LittleFS
 
@@ -208,7 +208,7 @@ Exemplo:
 
    ```bash
    # Pós-processamento (Python)
-   python analise_queda.py sensores_v3.csv
+   python extras/wing-analisys/src/samara_pq_simulation.py
    
    # Gera:
    - Gráfico Vz vs tempo
@@ -240,7 +240,7 @@ Exemplo:
 
 ---
 
-## 🆘 Troubleshooting Rápido
+## Troubleshooting Rapido
 
 | Problema | Solução |
 |----------|---------|

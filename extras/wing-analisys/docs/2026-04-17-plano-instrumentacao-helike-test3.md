@@ -1,5 +1,5 @@
 ---
-title: Plano de Instrumentação - Helike Test #3
+title: Plano de Instrumentacao - Helike #213 (LASC 2026) Test #3
 date: 2026-04-17
 tags: [helike, test-3, instrumentação, eletrônica, validação]
 status: active
@@ -10,7 +10,7 @@ related:
   - "[[satellite]]"
 ---
 
-# Plano de Instrumentação - Helike Test #3
+# Plano de Instrumentacao - Helike #213 (LASC 2026) Test #3
 
 ## Objetivo
 
@@ -44,7 +44,7 @@ Integrar sensores embarcados em Asa2.DXF (design validado) para capturar:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│               Protótipo Helike Test #3                      │
+│               Prototipo Helike #213 (LASC 2026) Test #3     │
 │                  (Alba Orbital 1P)                          │
 ├─────────────────────────────────────────────────────────────┤
 │  [Asa2.DXF]         [Eletrônica Embarcada]         [Body]   │
@@ -53,7 +53,7 @@ Integrar sensores embarcados em Asa2.DXF (design validado) para capturar:
 │ Central Processing Unit:  ESP32 C3 (satellite variant)      │
 ├─────────────────────────────────────────────────────────────┤
 │  IMU (I2C)      │  GPS (UART)     │  LoRa (SPI)             │
-│  MPU-6050       │  u-blox MAX-M8  │  LoRa32 915MHz          │
+│  ICM-20602      │  NEO-8M         │  RFM95W 915MHz          │
 │  ±16g/±2000°/s  │  5+ sat 3D fix  │  10-20 dBm              │
 │  50 Hz          │  1 Hz           │  SF7-SF10 adaptativo    │
 └─────────────────────────────────────────────────────────────┘
@@ -65,9 +65,9 @@ Integrar sensores embarcados em Asa2.DXF (design validado) para capturar:
 |------------|-------|-----------|
 | Estrutura Asa2.DXF | 180 g | 72% |
 | ESP32-C3 (MCU) | 4 g | 1.6% |
-| IMU (MPU-6050) | 3 g | 1.2% |
-| GPS (u-blox MAX-M8) | 2.5 g | 1% |
-| LoRa32 (transceiver) | 2 g | 0.8% |
+| IMU (ICM-20602) | 3 g | 1.2% |
+| GPS (NEO-8M) | 2.5 g | 1% |
+| RFM95W (transceiver) | 2 g | 0.8% |
 | Bateria (LiPo 250mAh) | 1.5 g | 0.6% |
 | Suportes/Cabeamento/SD | 4.5 g | 1.8% |
 | **TOTAL DA ELETRÔNICA** | **~15 g** | **100% do budget eletrônico** |
@@ -78,7 +78,7 @@ Integrar sensores embarcados em Asa2.DXF (design validado) para capturar:
 
 ## Especificação de Sensores
 
-### 1. IMU: MPU-6050 (6DOF)
+### 1. IMU: ICM-20602 (6DOF)
 
 **Função**: Capturar acelerações e velocidade angular durante voo e impacto
 
@@ -110,7 +110,7 @@ Velocidade angular (rotação):
 
 ---
 
-### 2. GPS: u-blox MAX-M8
+### 2. GPS: NEO-8M
 
 **Função**: Rastrear altitude, velocidade, posição durante descida e impacto
 
@@ -120,7 +120,7 @@ Velocidade angular (rotação):
 - Precisão: ±2.5 m (95% confidence)
 - Velocidade vertical: ±0.1 m/s típico
 - Taxa de atualização: **1 Hz** (sincronizar com IMU em software)
-- Interface: UART (115200 baud)
+- Interface: UART (9600 baud)
 - Consumo: ~45 mA ativo
 
 **Dados Esperados**:
@@ -144,7 +144,7 @@ Velocidade vertical (m/s):
 
 ---
 
-### 3. LoRa: LoRa32 (915 MHz)
+### 3. LoRa: RFM95W (915 MHz)
 
 **Função**: Transmitir telemetria em tempo real para ground station
 
@@ -294,7 +294,7 @@ Plotar 4 subplots:
 ```
 Ground Station Hardware:
 ├── Raspberry Pi 4 (ou PC com USB)
-├── LoRa32 receptor (868/915 MHz adaptável)
+├── RFM95W receptor (915 MHz)
 ├── Antenna (dipolo, omnidireccional)
 └── GPS disciplinado (sincronização)
 

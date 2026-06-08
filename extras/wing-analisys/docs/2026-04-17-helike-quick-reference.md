@@ -1,5 +1,5 @@
 ---
-title: Quick Reference - Helike Test #3 Checklist
+title: Quick Reference - Helike #213 (LASC 2026) Test #3 Checklist
 date: 2026-04-17
 tags: [helike, test-3, checklist, referência-rápida]
 status: active
@@ -10,38 +10,38 @@ related:
   - "[[2026-04-17-helike-historico-testes]]"
 ---
 
-# ⚡ Quick Reference - Helike Test #3
+# Quick Reference - Helike #213 (LASC 2026) Test #3
 
-## 🎯 Objetivo
+## Objetivo
 
 Validar simulações Samara PQ com dados reais embarcados em Asa2.DXF.
 
 ---
 
-## 📦 Hardware Requerido (budget de 15g)
+## Hardware Requerido (budget de 15g)
 
 - [ ] ESP32-C3 Microcontroller (4g)
-- [ ] MPU-6050 IMU 6DOF (3g) - aceleração + rotação
-- [ ] u-blox MAX-M8 GPS (2.5g) - altitude + trajetória
-- [ ] LoRa32 915MHz transceiver (2g) - telemetria
+- [ ] ICM-20602 IMU 6DOF (3g) - aceleracao + rotacao
+- [ ] NEO-8M GPS (2.5g) - altitude + trajetoria
+- [ ] RFM95W LoRa 915MHz (2g) - telemetria
 - [ ] LiPo Battery 250mAh (1.5g)
 - [ ] Suportes + cabeamento (4.5g)
 - [ ] **Total da eletrônica: ~15g** ✓
 
 ---
 
-## 🔌 Pinagem ESP32-C3
+## Pinagem ESP32-C3
 
 | Sensor | Pin | Protocolo |
 |--------|-----|-----------|
-| MPU-6050 | GPIO6, GPIO7 | I2C (0x68) |
-| u-blox MAX-M8 | GPIO20, GPIO21 | UART 115200 |
-| LoRa32 | GPIO3,4,5,10,6,7 | SPI |
-| SD Card | GPIO2,4,5,6 | SPI backup |
+| ICM-20602 | GPIO8, GPIO9 | I2C (0x68) |
+| NEO-8M | GPIO20, GPIO21 | UART 9600 |
+| RFM95W | GPIO7, GPIO5, GPIO6, GPIO10, GPIO4, GPIO3 | SPI |
+| SD Card | GPIO2, GPIO4, GPIO5, GPIO6 | SPI backup |
 
 ---
 
-## ✈️ Procedimento de Voo (Timeline)
+## Procedimento de Voo (Timeline)
 
 ```
 T-00:30  Verificação pré-voo (hardware + sensores)
@@ -55,7 +55,7 @@ T+110s   COLETA de dados
 
 ---
 
-## 📊 Validação vs Simulação
+## Validacao vs Simulacao
 
 **Critérios de sucesso** (PASS se erro < 5%):
 
@@ -68,19 +68,19 @@ T+110s   COLETA de dados
 
 ---
 
-## 📅 Deadlines
+## Deadlines
 
 | Data | Milestone | Status |
 |------|-----------|--------|
-| 30/04 | Componentes procurados | ⏳ |
-| 15/05 | Firmware pronto | ⏳ |
-| 22/05 | Testes integração | ⏳ |
-| **24/05** | **VOO TEST #3** | 🎯 |
-| 31/05 | Análise completa | ⏳ |
+| 30/04 | Componentes procurados | PENDENTE |
+| 15/05 | Firmware pronto | PENDENTE |
+| 22/05 | Testes integracao | PENDENTE |
+| **24/05** | **VOO TEST #3** | OK |
+| 31/05 | Analise completa | PENDENTE |
 
 ---
 
-## 🔴 CRÍTICO
+## CRITICO
 
 ✅ **Eletrônica é mandatória** - sem dados reais, a simulação não é validada experimentalmente
 ✅ **Asa2.DXF candidata** - aerodinâmica já validada
@@ -88,7 +88,7 @@ T+110s   COLETA de dados
 
 ---
 
-## 📚 Documentação Relacionada
+## Documentacao Relacionada
 
 Ler em ordem:
 
@@ -96,17 +96,17 @@ Ler em ordem:
 2. [[2026-04-17-analise-simulacao-helike]] (técnico)
 3. [[2026-04-17-plano-instrumentacao-helike-test3]] (detalhado)
 
-## 🔗 Contexto do Projeto
+## Contexto do Projeto
 
 - [[projeto-helike]]
 - [[helike-hub]]
 
 ---
 
-## 🚀 Ação Imediata
+## Acao Imediata
 
 **HOJE**: Revisar plano de instrumentação
 **ESTA SEMANA**: Iniciar sourcing de componentes
 **PRÓXIMA SEMANA**: Preparar ambiente de firmware
 
-> "Sem validação experimental, a simulação permanece hipótese técnica." - Equipe de Engenharia Helike
+> "Sem validacao experimental, a simulacao permanece hipotese tecnica." - Equipe de Engenharia Helike #213 (LASC 2026)

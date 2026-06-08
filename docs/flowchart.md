@@ -17,6 +17,6 @@ flowchart TD
 flowchart LR
     S[Sensores + GPS] --> M[MCU satelite]
     M --> L[LoRa uplink]
-    L --> B[Beacon/Ground station]
+    L --> B[Ground station]
     B --> P[PC / analise]
 ```

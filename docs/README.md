@@ -5,7 +5,7 @@ Diretorio central para documentacao de arquitetura, processo e operacao.
 ## Objetivo
 
 Organizar referencias de engenharia para desenvolvimento, testes e validacao
-da missao PocketQube.
+da missao Helike (#213 - LASC 2026) — Serra Rocketry.
 
 ## Estrutura
 

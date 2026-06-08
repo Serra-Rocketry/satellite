@@ -392,4 +392,4 @@ Linking Zettelkasten
 **Versão**: 1.0  
 **Data**: 2026-04-17  
 **Status**: Revisão pendente  
-**Próxima revisão**: Após apresentação ao team Helike
+**Proxima revisao**: Apos apresentacao ao time Helike #213 (LASC 2026)
