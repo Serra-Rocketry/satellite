@@ -63,7 +63,7 @@ CONFIG = {
     "max_step": 0.2,        # passo máximo do integrador RK45 [s]
 
     # --- Saída ---
-    "output_dir": Path(__file__).resolve().parent,  # diretório de saída dos relatórios
+    "output_dir": str(Path(__file__).resolve().parent.parent / "results"),  # diretório de saída dos relatórios
 }
 # =============================================================================
 
