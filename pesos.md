@@ -1,0 +1,4 @@
+- Eletrônica base: 57g;
+- Frame + asas: 58g;
+- Frame: 44g;
+- Total: 113g;

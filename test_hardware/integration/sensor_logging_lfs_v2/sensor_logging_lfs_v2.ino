@@ -16,13 +16,8 @@
 #include "LittleFS.h"
 #include <Adafruit_BMP280.h>
 
-#if defined(CONFIG_IDF_TARGET_ESP32C3)
 #define I2C_SDA_PIN 8
 #define I2C_SCL_PIN 9
-#else
-#define I2C_SDA_PIN 21
-#define I2C_SCL_PIN 22
-#endif
 
 // ============= Configurações =============
 

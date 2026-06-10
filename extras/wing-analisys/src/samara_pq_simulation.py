@@ -37,13 +37,13 @@ except ImportError as import_error:
 CONFIG = {
     # --- Geometria da asa ---
     "dxf_path": Path(__file__).resolve().parent / "Asa2.DXF",  # arquivo DXF da asa
-    "n_wings": 4,           # número de asas simétricas
+    "n_wings": 2,           # número de asas simétricas
 
     # --- Massa e estrutura ---
-    "mass_kg": 0.250,       # massa total do sistema [kg] (limite regulatório PQ 1P)
+    "mass_kg": 0.110,       # massa total do sistema [kg] (limite regulatório PQ 1P)
 
     # --- Condições iniciais da simulação ---
-    "altitude_m": 1000.0,   # altitude de liberação [m] (altura do apogeu do foguete)
+    "altitude_m": 20.0,   # altitude de liberação [m] (altura do apogeu do foguete)
     "theta_deg": 20.0,      # ângulo de conicidade inicial [graus]
     "theta_dot_0": 0.0,     # taxa de variação do pitch inicial [rad/s]
     "phi_dot_0": 0.1,       # spin inicial [rad/s] (~1 RPM — praticamente parado)
