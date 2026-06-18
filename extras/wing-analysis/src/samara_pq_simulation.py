@@ -1250,7 +1250,7 @@ def _parse_args():
                         help="Ativa o otimizador numérico para encontrar o raio aerodinâmico ideal")
     parser.add_argument("--target-vf", type=float, metavar="M_S", default=25.0,
                         help="Velocidade vertical alvo (módulo) para o impacto [m/s] (ex: 30)")
-                        
+    parser.add_argument("--safety-factor", type=float, default=1, help="Fator de segurança para velocidade alvo.")                    
     return parser.parse_args()
 
 
@@ -1274,6 +1274,7 @@ def _build_config_from_args(args):
         "output_dir": args.output,
         "optimize":   args.optimize,   # Adicionado
         "target_vf":  args.target_vf,  # Adicionado
+        "safety_factor": args.safety_factor,
     }
     for key, val in overrides.items():
         if val is not None:
@@ -1284,6 +1285,8 @@ def _build_config_from_args(args):
         cfg["optimize"] = False
     if "target_vf" not in cfg:
         cfg["target_vf"] = 25.0
+    if "safety_factor" in cfg:
+        cfg["target_vf"] = cfg["target_vf"]/cfg["safety_factor"]
         
     return cfg
 
