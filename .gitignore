@@ -25,3 +25,6 @@ hardware/CDB/~*.lck
 *.swp
 *.swo
 *~
+
+# PDFs de artigos (copyright)
+extras/wing-analysis/docs/*.pdf
