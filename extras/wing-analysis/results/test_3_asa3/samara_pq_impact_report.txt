@@ -1,17 +1,17 @@
 ======================================================================
 IMPACT REPORT
 ======================================================================
-DXF profile:             extras/wing-analysis/geometry/Asa3.DXF
+DXF profile:             extras/wing-analisys/geometry/Asa3.DXF
 Status: GROUND IMPACT DETECTED
-Impact time:             63.41 s
-Altitude at final state: -0.00 m
-Impact speed |v|:        16.01 m/s
-Vertical speed vz:       -16.01 m/s
-Impact kinetic energy:   25.64 J
-Angular speed phi_dot:   49.52 rad/s
-Angular speed spin:      472.86 rpm
-Mean Reynolds number:    18646
-Initial potential energy: 1962.00 J
-Final kinetic energy:     25.64 J
-Dissipated energy:        1936.36 J
-Total frontal area:      44.83 cm²
+Impact time:             51.31 s
+Altitude at final state: 0.00 m
+Impact speed |v|:        20.00 m/s
+Vertical speed vz:       -20.00 m/s
+Impact kinetic energy:   49.98 J
+Angular speed phi_dot:   57.83 rad/s
+Angular speed spin:      552.25 rpm
+Mean Reynolds number:    19655
+Initial potential energy: 2452.50 J
+Final kinetic energy:     49.98 J
+Dissipated energy:        2402.52 J
+Total frontal area:      39.19 cm²
