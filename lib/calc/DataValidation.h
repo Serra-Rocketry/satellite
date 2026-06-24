@@ -1,19 +1,32 @@
-#pragma once
+/**
+ * @file DataValidation.h
+ * @brief Validacao de telemetria contra limites fisicos e NaN
+ *
+ * Verifica cada campo da struct SensorData contra:
+ * - Valores NaN (not-a-number)
+ * - Faixas fisicas de operacao (aceleracao, pressao, Vz)
+ *
+ * @author #213 Avionics
+ * @date 2026
+ */
+
+#ifndef DATA_VALIDATION_H
+#define DATA_VALIDATION_H
 
 #include <math.h>
 #include "SensorData.h"
 
 /**
  * @struct ValidationConfig
- * @brief Limites configuráveis para validação de dados dos sensores
+ * @brief Limites configuraveis para validacao de dados dos sensores
  */
 struct ValidationConfig {
-  float max_accel_ms2;    ///< Aceleração máxima em m/s²
-  float min_pressure_pa;  ///< Pressão mínima em Pa
-  float max_pressure_pa;  ///< Pressão máxima em Pa
-  float max_vz_ms;        ///< |Vz| máxima em m/s
+  float max_accel_ms2;    ///< Aceleracao maxima em m/s^2
+  float min_pressure_pa;  ///< Pressao minima em Pa
+  float max_pressure_pa;  ///< Pressao maxima em Pa
+  float max_vz_ms;        ///< |Vz| maxima em m/s
 
-  /** @brief Configuração padrão para ±16g */
+  /** @brief Configuracao padrao para ±16g */
   static ValidationConfig defaultConfig() {
     return {
       .max_accel_ms2   = 16.0f * 9.80665f,
@@ -23,7 +36,7 @@ struct ValidationConfig {
     };
   }
 
-  /** @brief Configuração mais permissiva para ±50g */
+  /** @brief Configuracao mais permissiva para ±50g */
   static ValidationConfig liberalConfig() {
     return {
       .max_accel_ms2   = 50.0f * 9.80665f,
@@ -36,17 +49,17 @@ struct ValidationConfig {
 
 /**
  * @class DataValidation
- * @brief Validação de telemetria contra limites físicos e NaN
+ * @brief Validacao de telemetria contra limites fisicos e NaN
  *
  * Verifica cada campo da struct SensorData contra:
  * - Valores NaN (not-a-number)
- * - Faixas físicas de operação (aceleração, pressão, Vz)
+ * - Faixas fisicas de operacao (aceleracao, pressao, Vz)
  *
  * Uso:
  * @code
  * DataValidation dv;
  * if (!dv.isValid(data)) {
- *   Serial.println("Dado inválido, ignorando...");
+ *   Serial.println("Dado invalido, ignorando...");
  *   return;
  * }
  * @endcode
@@ -54,7 +67,7 @@ struct ValidationConfig {
 class DataValidation {
 public:
   /**
-   * @param cfg Configuração de limites (defaultConfig ou liberalConfig)
+   * @param cfg Configuracao de limites (defaultConfig ou liberalConfig)
    */
   DataValidation(ValidationConfig cfg = ValidationConfig::defaultConfig())
     : _cfg(cfg) {}
@@ -62,11 +75,11 @@ public:
   /**
    * @brief Valida uma leitura completa dos sensores
    * @param d Dados do sensor a validar
-   * @return true se todos os campos estão dentro dos limites
+   * @return true se todos os campos estao dentro dos limites
    *
    * @note Verifica NaN em ax, ay, az, pressao, altura, vz
-   * @note Verifica magnitude da aceleração contra max_accel_ms2
-   * @note Verifica pressão contra [min_pressure_pa, max_pressure_pa]
+   * @note Verifica magnitude da aceleracao contra max_accel_ms2
+   * @note Verifica pressao contra [min_pressure_pa, max_pressure_pa]
    * @note Verifica |Vz| contra max_vz_ms
    */
   bool isValid(const SensorData& d) const {
@@ -83,9 +96,11 @@ public:
     return true;
   }
 
-  /** @return Configuração atual de limites */
+  /** @return Configuracao atual de limites */
   const ValidationConfig& config() const { return _cfg; }
 
 private:
   ValidationConfig _cfg;
 };
+
+#endif // DATA_VALIDATION_H

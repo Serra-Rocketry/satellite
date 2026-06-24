@@ -1,23 +1,36 @@
-#pragma once
+/**
+ * @file ApogeeDetection.h
+ * @brief Deteccao automatica de apogeu por threshold de velocidade vertical
+ *
+ * Monitora a velocidade vertical e detecta o apogeu quando Vz cruza
+ * o threshold negativo (transicao subida -> descida). Mantem registro
+ * da altitude maxima atingida e da velocidade maxima de descida.
+ *
+ * @author #213 Avionics
+ * @date 2026
+ */
+
+#ifndef APOGEE_DETECTION_H
+#define APOGEE_DETECTION_H
 
 /**
  * @struct ApogeeEvent
- * @brief Resultado da detecção de apogeu
+ * @brief Resultado da deteccao de apogeu
  */
 struct ApogeeEvent {
   bool detected;              ///< Apogeu foi detectado? (Vz cruzou threshold negativo)
-  unsigned long timestamp_ms; ///< Timestamp da detecção em ms
-  float altitude_max;         ///< Altitude máxima registrada durante a subida (pico)
+  unsigned long timestamp_ms; ///< Timestamp da deteccao em ms
+  float altitude_max;         ///< Altitude maxima registrada durante a subida (pico)
   float velocidade_max_descida; ///< Maior |Vz| registrada durante a descida
 };
 
 /**
  * @class ApogeeDetection
- * @brief Detecção automática de apogeu por threshold de velocidade vertical
+ * @brief Deteccao automatica de apogeu por threshold de velocidade vertical
  *
  * Monitora a velocidade vertical e detecta o apogeu quando Vz cruza
- * o threshold negativo (transição subida → descida). Mantém registro
- * da altitude máxima atingida e da velocidade máxima de descida.
+ * o threshold negativo (transicao subida -> descida). Mantem registro
+ * da altitude maxima atingida e da velocidade maxima de descida.
  *
  * Uso:
  * @code
@@ -35,13 +48,13 @@ class ApogeeDetection {
 public:
   /**
    * @param vz_threshold Threshold de Vz (m/s) para considerar descida
-   *        Valores típicos: -0.5 (liberal) a -2.0 (conservador)
+   *        Valores tipicos: -0.5 (liberal) a -2.0 (conservador)
    */
   ApogeeDetection(float vz_threshold = -0.5f)
     : _threshold(vz_threshold), _descending(false), _altitude_peak(-1e6f),
       _event{false, 0, 0.0f, 0.0f} {}
 
-  /** @brief Reseta detecção e eventos */
+  /** @brief Reseta deteccao e eventos */
   void reset() {
     _descending = false;
     _altitude_peak = -1e6f;
@@ -49,14 +62,14 @@ public:
   }
 
   /**
-   * @brief Atualiza detecção com nova leitura
+   * @brief Atualiza deteccao com nova leitura
    * @param vz Velocidade vertical atual (m/s)
    * @param millis_ts Timestamp da leitura (ms)
    * @param altitude Altitude atual (m)
-   * @return true se apogeu foi detectado nesta chamada (transição)
+   * @return true se apogeu foi detectado nesta chamada (transicao)
    *
-   * @note Retorna true apenas uma vez (primeira detecção)
-   * @note A altitude máxima é rastreada continuamente durante a subida
+   * @note Retorna true apenas uma vez (primeira deteccao)
+   * @note A altitude maxima e rastreada continuamente durante a subida
    */
   bool update(float vz, unsigned long millis_ts, float altitude) {
     if (altitude > _altitude_peak) {
@@ -81,10 +94,10 @@ public:
     return false;
   }
 
-  /** @return true se está em fase de descida */
+  /** @return true se esta em fase de descida */
   bool isDescending() const { return _descending; }
 
-  /** @return Referência const para o evento de apogeu */
+  /** @return Referencia const para o evento de apogeu */
   const ApogeeEvent& event() const { return _event; }
 
 private:
@@ -93,3 +106,5 @@ private:
   float _altitude_peak;
   ApogeeEvent _event;
 };
+
+#endif // APOGEE_DETECTION_H
