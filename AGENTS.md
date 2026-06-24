@@ -32,7 +32,7 @@ pio device monitor -b 115200
 | LoRa SPI | MOSI=7, MISO=5, SCK=6, CS=10, RST=4, DIO0=3 | RFM95W |
 | GPS UART | TX=21, RX=20 | NEO-8M |
 | LED | 1 | Indicador |
-| Buzzer | 8 | Alerta |
+| Buzzer | 0 | Alerta |
 | Button | 2 | Entrada |
 
 ## Convencoes
@@ -50,3 +50,29 @@ pio device monitor -b 115200
 - GPS: min 4 satellites for 3D fix, prefer 6+
 - LoRa: 915MHz, check all return values, implement retry with backoff
 - Documentation in Portuguese
+
+## Sistema Completo
+
+```
+satellite/          — firmware do satellite (ESP32-C3, este repo)
+├── src/            — codigo fonte
+├── lib/calc/       — modulos de calculo (header-only)
+└── docs/           — documentacao
+
+recovery-webui/     — sistema de recolhimento (ground station)
+├── components/receiver-lora/firmware/Receiver/ — firmware do receiver
+│   ├── include/    — headers (config, drivers, payload)
+│   ├── src/        — implementacao (main, LoRa, GPS, buzzer)
+│   └── docs/       — documentacao do receiver
+├── src/            — backend Python (Flask + SocketIO)
+└── docs/           — documentacao do protocolo e arquitetura
+```
+
+### Compatibilidade LoRa (satellite <-> receiver)
+
+Os parametros LoRa DEVEM ser iguais nos dois firmwares:
+- Frequencia: 915 MHz
+- Sync Word: 0xF3
+- SF: 7, BW: 125 kHz, CR: 4/5, CRC: enabled
+
+Formato do pacote: 19 campos (satellite) -> receiver preenche hora/data/rssi -> 21 campos (WebUI).

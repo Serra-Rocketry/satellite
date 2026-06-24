@@ -9,9 +9,10 @@ da missao Helike (#213 - LASC 2026) — Serra Rocketry.
 
 ## Estrutura
 
-- `docs/hardware.md`: especificacoes de hardware e interfaces.
-- `docs/software.md`: arquitetura de firmware, modulos `lib/calc/`, fluxos de dados.
-- `docs/flowchart.md`: fluxos operacionais e de estado.
+- `docs/software.md`: arquitetura de firmware, modulos, build, uso de recursos.
+- `docs/firmware.md`: documentacao detalhada de cada modulo (sensores, comunicacao, dados).
+- `docs/hardware.md`: especificacoes de hardware, pinagem, componentes.
+- `docs/flowchart.md`: fluxos operacionais, de dados e de desenvolvimento.
 - `docs/adr/`: registros de decisoes arquiteturais (ADR).
 
 ## Relacao com outros diretorios
