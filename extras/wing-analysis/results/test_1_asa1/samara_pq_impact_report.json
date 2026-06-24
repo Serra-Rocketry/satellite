@@ -1,11 +1,11 @@
 {
-  "mass_kg": 0.25,
+  "mass_kg": 0.2,
   "geometry": {
-    "dxf_file": "extras/wing-analisys/asa1.dxf",
+    "dxf_file": "extras/wing-analysis/geometry/asa1.dxf",
     "n_wings": 4,
     "radius_scale": 1.0,
-    "root_radius_m": 0.0,
-    "tip_radius_m": 0.1595,
+    "root_radius_m": 0.025,
+    "tip_radius_m": 0.1845,
     "wing_area_one_cm2": 27.30439828782694,
     "wing_area_total_cm2": 109.21759315130775,
     "body_square_area_cm2": 25.000000000000004,
@@ -13,22 +13,22 @@
   },
   "impact": {
     "detected": true,
-    "time_s": 97.32935065677347,
-    "altitude_m": 2.7033930649622562e-14,
-    "vertical_velocity_ms": -10.328004631394682,
-    "speed_magnitude_ms": 10.328004631394682,
-    "kinetic_energy_j": 13.33345995826375
+    "time_s": 123.61632315822756,
+    "altitude_m": 8.548717289613705e-15,
+    "vertical_velocity_ms": -8.100208840609207,
+    "speed_magnitude_ms": 8.100208840609207,
+    "kinetic_energy_j": 6.561338326148356
   },
   "energy": {
-    "initial_potential_j": 2452.5,
-    "final_kinetic_j": 13.33345995826375,
-    "dissipated_j": 2439.1665400417364,
+    "initial_potential_j": 1962.0000000000002,
+    "final_kinetic_j": 6.561338326148356,
+    "dissipated_j": 1955.4386616738518,
     "non_physical": false
   },
   "angular": {
-    "theta_deg": 6.143237227128677,
-    "theta_dot_rads": -4.474914431695585e-06,
-    "phi_dot_rads": 46.58511570922899,
-    "spin_rpm": 444.85508637790196
+    "theta_deg": 19.31989381490875,
+    "theta_dot_rads": -1.687242287101011e-05,
+    "phi_dot_rads": 27.210669637679434,
+    "spin_rpm": 259.8427546606341
   }
 }
