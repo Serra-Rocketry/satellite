@@ -20,7 +20,7 @@ da missao Helike (#213 - LASC 2026) — Serra Rocketry.
 - Testes unitarios nativos (Unity): `test/`.
 - Testes de hardware e guias praticos: `test_hardware/`.
 - Modulos de calculo reutilizaveis: `lib/calc/`.
-- Estudos de asa e simulacao: `extras/wing-analisys/`.
+- Estudos de asa autorrotativa SRAB: `extras/wing-analysis/` (teoria, resultados, scripts, proposta LASC em `extras/wing-analysis/docs/`).
 - Arquivos de hardware e BOM: `hardware/`.
 
 ## Convencoes
