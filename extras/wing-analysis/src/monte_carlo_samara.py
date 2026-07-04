@@ -44,29 +44,51 @@ def parse_args(argv=None):
 
     # Parâmetros nominais (usados se os respectivos --*-std forem 0 ou omitidos)
     p.add_argument("--mass-mean", type=float, default=0.200, help="Massa média [kg]")
-    p.add_argument("--mass-std", type=float, default=0.005, help="Desvio padrão da massa [kg]")
-    p.add_argument("--beta-mean", type=float, default=3.0, help="Ângulo β médio [graus]")
-    p.add_argument("--beta-std", type=float, default=0.3, help="Desvio padrão β [graus]")
+    p.add_argument(
+        "--mass-std", type=float, default=0.005, help="Desvio padrão da massa [kg]"
+    )
+    p.add_argument(
+        "--beta-mean", type=float, default=3.0, help="Ângulo β médio [graus]"
+    )
+    p.add_argument(
+        "--beta-std", type=float, default=0.3, help="Desvio padrão β [graus]"
+    )
     p.add_argument("--cd0-mean", type=float, default=1.0, help="Cd0 médio")
     p.add_argument("--cd0-std", type=float, default=0.10, help="Desvio padrão Cd0")
     p.add_argument("--f-factor-mean", type=float, default=0.3, help="f_factor médio")
-    p.add_argument("--f-factor-std", type=float, default=0.03, help="Desvio padrão f_factor")
-    p.add_argument("--rho-mean", type=float, default=1.225, help="Densidade média [kg/m³]")
+    p.add_argument(
+        "--f-factor-std", type=float, default=0.03, help="Desvio padrão f_factor"
+    )
+    p.add_argument(
+        "--rho-mean", type=float, default=1.225, help="Densidade média [kg/m³]"
+    )
     p.add_argument("--rho-std", type=float, default=0.0, help="Desvio padrão densidade")
 
     # Parâmetros fixos da simulação
     p.add_argument("--n-wings", type=int, default=4, help="Número de asas (fixo)")
-    p.add_argument("--altitude", type=float, default=1000.0, help="Altitude inicial [m]")
-    p.add_argument("--theta-deg", type=float, default=0.0, help="Ângulo θ inicial [graus]")
+    p.add_argument(
+        "--altitude", type=float, default=1000.0, help="Altitude inicial [m]"
+    )
+    p.add_argument(
+        "--theta-deg", type=float, default=0.0, help="Ângulo θ inicial [graus]"
+    )
     p.add_argument("--theta-dot", type=float, default=0.0, help="θ_dot inicial [rad/s]")
     p.add_argument("--phi-dot", type=float, default=0.0, help="φ_dot inicial [rad/s]")
-    p.add_argument("--v0", type=float, default=0.0, help="Velocidade vertical inicial [m/s]")
-    p.add_argument("--t-max", type=float, default=600.0, help="Tempo máximo de simulação [s]")
-    p.add_argument("--max-step", type=float, default=0.2, help="Passo máximo do integrador [s]")
+    p.add_argument(
+        "--v0", type=float, default=0.0, help="Velocidade vertical inicial [m/s]"
+    )
+    p.add_argument(
+        "--t-max", type=float, default=600.0, help="Tempo máximo de simulação [s]"
+    )
+    p.add_argument(
+        "--max-step", type=float, default=0.2, help="Passo máximo do integrador [s]"
+    )
 
     # Saída
     p.add_argument("--export", default=None, help="Caminho para exportar CSV")
-    p.add_argument("--verbose", action="store_true", default=True, help="Mostrar progresso")
+    p.add_argument(
+        "--verbose", action="store_true", default=True, help="Mostrar progresso"
+    )
 
     return p.parse_args(argv)
 

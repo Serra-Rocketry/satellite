@@ -130,9 +130,9 @@ else:
 
 ke_impact_para = 0.5 * total_mass * v_impact_para**2
 
-print(f"  D_para:     {d_para*1000:.0f} mm")
+print(f"  D_para:     {d_para * 1000:.0f} mm")
 print(f"  CD_para:    {cd_para}")
-print(f"  A_para:     {area_para*1e4:.1f} cm²")
+print(f"  A_para:     {area_para * 1e4:.1f} cm²")
 print(f"  v_impacto:  {v_impact_para:.2f} m/s")
 print(f"  t_descida:  {t_impact_para:.2f} s")
 print(f"  KE_impacto: {ke_impact_para:.2f} J")
@@ -149,7 +149,7 @@ print("=" * 65)
 print("  COMPARATIVO — SRAB vs Paraquedas")
 print("=" * 65)
 print(f"  {'Parametro':<25} {'SRAB':>12} {'Paraquedas':>12} {'Diferenca':>12}")
-print(f"  {'-'*25} {'-'*12} {'-'*12} {'-'*12}")
+print(f"  {'-' * 25} {'-' * 12} {'-' * 12} {'-' * 12}")
 print(
     f"  {'v_impacto [m/s]':<25} {v_srab:>12.2f} {v_impact_para:>12.2f} {v_srab - v_impact_para:>+12.2f}"
 )

@@ -37,33 +37,30 @@ except ImportError as import_error:
 CONFIG = {
     # --- Geometria da asa ---
     "dxf_path": Path(__file__).resolve().parent / "Asa2.DXF",  # arquivo DXF da asa
-    "n_wings": 2,           # número de asas simétricas
-
+    "n_wings": 2,  # número de asas simétricas
     # --- Massa e estrutura ---
-    "mass_kg": 0.110,       # massa total do sistema [kg] (limite regulatório PQ 1P)
-
+    "mass_kg": 0.110,  # massa total do sistema [kg] (limite regulatório PQ 1P)
     # --- Condições iniciais da simulação ---
-    "altitude_m": 20.0,   # altitude de liberação [m] (altura do apogeu do foguete)
-    "theta_deg": 20.0,      # ângulo de conicidade inicial [graus]
-    "theta_dot_0": 0.0,     # taxa de variação do pitch inicial [rad/s]
-    "phi_dot_0": 0.1,       # spin inicial [rad/s] (~1 RPM — praticamente parado)
-    "v0_0": 0.0,            # velocidade vertical inicial [m/s] (liberado no apogeu)
-
+    "altitude_m": 20.0,  # altitude de liberação [m] (altura do apogeu do foguete)
+    "theta_deg": 20.0,  # ângulo de conicidade inicial [graus]
+    "theta_dot_0": 0.0,  # taxa de variação do pitch inicial [rad/s]
+    "phi_dot_0": 0.1,  # spin inicial [rad/s] (~1 RPM — praticamente parado)
+    "v0_0": 0.0,  # velocidade vertical inicial [m/s] (liberado no apogeu)
     # --- Parâmetros aerodinâmicos ---
-    "f_factor": 0.3,        # fração de inércia de massa ao longo da asa (tensor I_yy)
-    "beta_deg": 8.0,        # ângulo de passo geométrico β [graus] — rotação da asa em torno
-                            # do eixo radial (X), visível na vista lateral (YZ). Fixado
-                            # pelo encaixe circular. δ (diedro) é determinado pela flexão
-                            # do material e capturado dinamicamente por θ.
-    "cd0": 1.0,             # coeficiente de arrasto basal (captura efeito LEV)
-    "rho": 1.225,           # densidade do ar [kg/m³] (nível do mar, ISA)
-
+    "f_factor": 0.3,  # fração de inércia de massa ao longo da asa (tensor I_yy)
+    "beta_deg": 8.0,  # ângulo de passo geométrico β [graus] — rotação da asa em torno
+    # do eixo radial (X), visível na vista lateral (YZ). Fixado
+    # pelo encaixe circular. δ (diedro) é determinado pela flexão
+    # do material e capturado dinamicamente por θ.
+    "cd0": 1.0,  # coeficiente de arrasto basal (captura efeito LEV)
+    "rho": 1.225,  # densidade do ar [kg/m³] (nível do mar, ISA)
     # --- Integração numérica ---
-    "t_max": 600.0,         # tempo máximo de simulação [s]
-    "max_step": 0.2,        # passo máximo do integrador RK45 [s]
-
+    "t_max": 600.0,  # tempo máximo de simulação [s]
+    "max_step": 0.2,  # passo máximo do integrador RK45 [s]
     # --- Saída ---
-    "output_dir": str(Path(__file__).resolve().parent.parent / "results"),  # diretório de saída dos relatórios
+    "output_dir": str(
+        Path(__file__).resolve().parent.parent / "results"
+    ),  # diretório de saída dos relatórios
 }
 # =============================================================================
 
@@ -240,7 +237,7 @@ class PocketQubeSamaraWing:
         self.profile = DxfWingProfile(self.dxf_path)
 
         # 1. Regulatory mass and topology constraints
-        self.mass = float(mass)   # massa total do sistema [kg]
+        self.mass = float(mass)  # massa total do sistema [kg]
         self.n_wings = n_wings
 
         # 2. Aerodynamic geometry from DXF profile
@@ -293,7 +290,7 @@ class PocketQubeSamaraWing:
         representem distâncias físicas reais desde o eixo de rotação.
         Isso afeta: BET (integração de r0 a rf), tensor de inércia e plots.
         """
-        body_h = self.pocketqube_side_m / 2.0          # 0.025 m
+        body_h = self.pocketqube_side_m / 2.0  # 0.025 m
         self.r0 = body_h + self.base_r0 * self.radius_scale
         self.rf = body_h + self.base_rf * self.radius_scale
         self.wing_area_one_m2 = self.profile.area_one_wing_m2 * (self.radius_scale**2)
@@ -313,12 +310,12 @@ class PocketQubeSamaraWing:
           • Asas (vareta uniforme de r0 a rf):   I_asas  = (1/3)*m_wings*(rf²-r0²)
         f_factor calibra a fração de massa alocada às asas vs corpo.
         """
-        m_wings = self.f_factor * self.mass          # massa efetiva das asas
-        m_body  = self.mass - m_wings                # massa restante (corpo PQ)
+        m_wings = self.f_factor * self.mass  # massa efetiva das asas
+        m_body = self.mass - m_wings  # massa restante (corpo PQ)
         r0 = max(self.r0, 1e-6)
         rf = max(self.rf, r0 + 1e-6)
         i_wings = (1.0 / 3.0) * m_wings * (rf**2 - r0**2)
-        i_body  = m_body * r0**2                     # ponto concentrado em r0
+        i_body = m_body * r0**2  # ponto concentrado em r0
         self.i_xx = 0.0
         self.i_yy = i_wings + i_body
         self.i_zz = self.i_yy
@@ -339,7 +336,7 @@ class PocketQubeSamaraWing:
         O perfil DXF usa coordenadas a partir da borda do cubo (x=0 = borda),
         portanto subtraímos body_h antes de consultar o perfil.
         """
-        body_h = self.pocketqube_side_m / 2.0          # 0.025 m
+        body_h = self.pocketqube_side_m / 2.0  # 0.025 m
         radial_array = np.asarray(radial_position_m, dtype=float)
         chord_result = np.zeros_like(radial_array, dtype=float)
 
@@ -561,15 +558,24 @@ class PocketQubeLRRVisualizer:
         fig, axs = plt.subplots(2, 2, figsize=(14, 10))
         fig.suptitle(
             f"LRR Certification Report — PocketQube 1P SRAB  {beta_str}",
-            fontsize=15, fontweight="bold",
+            fontsize=15,
+            fontweight="bold",
         )
 
         # ── [0,0] Altitude vs tempo ─────────────────────────
         ax = axs[0, 0]
-        ax.plot(self.t, self.z_alt, color="#1a6ea8", linewidth=2, label="Altitude simulada")
+        ax.plot(
+            self.t, self.z_alt, color="#1a6ea8", linewidth=2, label="Altitude simulada"
+        )
         alt0 = self.z_alt[0]
-        ax.axhline(alt0, color="gray", linestyle=":", linewidth=1, alpha=0.6,
-                   label=f"Altitude inicial ({alt0:.0f} m)")
+        ax.axhline(
+            alt0,
+            color="gray",
+            linestyle=":",
+            linewidth=1,
+            alpha=0.6,
+            label=f"Altitude inicial ({alt0:.0f} m)",
+        )
         ax.set_title("Perfil de Descida — Altitude AGL")
         ax.set_ylabel("Altitude (m)")
         ax.set_xlabel("Tempo (s)")
@@ -581,13 +587,30 @@ class PocketQubeLRRVisualizer:
         v_abs = np.abs(self.v0)
         ax.plot(self.t, v_abs, color="#333", linewidth=2, label="|v₀| simulado")
         ax.axhspan(20, 45, color="green", alpha=0.15, label="Janela LASC (20–45 m/s)")
-        ax.axhline(45, color="red", linestyle="--", linewidth=1.2, label="Limite máx. LASC (45 m/s)")
-        ax.axhline(20, color="orange", linestyle="--", linewidth=1.2, label="Limite mín. LASC (20 m/s)")
+        ax.axhline(
+            45,
+            color="red",
+            linestyle="--",
+            linewidth=1.2,
+            label="Limite máx. LASC (45 m/s)",
+        )
+        ax.axhline(
+            20,
+            color="orange",
+            linestyle="--",
+            linewidth=1.2,
+            label="Limite mín. LASC (20 m/s)",
+        )
         # velocidade terminal mediana (regime estacionário — última 20% da trajetória)
         n_steady = max(1, len(self.v0) // 5)
         v_term = float(np.median(v_abs[-n_steady:]))
-        ax.axhline(v_term, color="#1a6ea8", linestyle=":", linewidth=2,
-                   label=f"v_terminal ≈ {v_term:.1f} m/s")
+        ax.axhline(
+            v_term,
+            color="#1a6ea8",
+            linestyle=":",
+            linewidth=2,
+            label=f"v_terminal ≈ {v_term:.1f} m/s",
+        )
         ax.set_title("Velocidade Vertical vs Janela LASC")
         ax.set_ylabel("|v₀| (m/s)")
         ax.set_xlabel("Tempo (s)")
@@ -597,10 +620,17 @@ class PocketQubeLRRVisualizer:
 
         # ── [1,0] Ângulo de conicidade θ (δ dinâmico) ───────
         ax = axs[1, 0]
-        ax.plot(self.t, self.theta, color="#8e44ad", linewidth=2, label="θ (conicidade)")
+        ax.plot(
+            self.t, self.theta, color="#8e44ad", linewidth=2, label="θ (conicidade)"
+        )
         theta_eq = float(np.median(self.theta[-n_steady:]))
-        ax.axhline(theta_eq, color="#8e44ad", linestyle=":", linewidth=1.5,
-                   label=f"θ_eq ≈ {theta_eq:.1f}° (equilíbrio)")
+        ax.axhline(
+            theta_eq,
+            color="#8e44ad",
+            linestyle=":",
+            linewidth=1.5,
+            label=f"θ_eq ≈ {theta_eq:.1f}° (equilíbrio)",
+        )
         ax.set_title("Ângulo de Conicidade θ — Diedro Dinâmico (δ)")
         ax.set_ylabel("θ (graus)")
         ax.set_xlabel("Tempo (s)")
@@ -609,11 +639,18 @@ class PocketQubeLRRVisualizer:
 
         # ── [1,1] Spin φ̇ em RPM ─────────────────────────────
         ax = axs[1, 1]
-        spin_rpm = self.phi_dot * 60.0   # phi_dot já em rev/s (÷2π foi feito no __init__)
+        spin_rpm = (
+            self.phi_dot * 60.0
+        )  # phi_dot já em rev/s (÷2π foi feito no __init__)
         ax.plot(self.t, spin_rpm, color="#27ae60", linewidth=2, label="Spin φ̇")
         spin_eq = float(np.median(spin_rpm[-n_steady:]))
-        ax.axhline(spin_eq, color="#27ae60", linestyle=":", linewidth=1.5,
-                   label=f"Spin_eq ≈ {spin_eq:.0f} RPM")
+        ax.axhline(
+            spin_eq,
+            color="#27ae60",
+            linestyle=":",
+            linewidth=1.5,
+            label=f"Spin_eq ≈ {spin_eq:.0f} RPM",
+        )
         ax.set_title("Spin de Autorrotação φ̇")
         ax.set_ylabel("RPM")
         ax.set_xlabel("Tempo (s)")
@@ -630,12 +667,14 @@ class PocketQubeLRRVisualizer:
             plt.show()
         else:
             plt.close(fig)
-        
+
         return float(theta_eq), float(spin_eq)
 
 
 # pylint: disable=too-many-locals,too-many-statements
-def plot_wing_geometry_views(wing, theta_eq_deg=None, output_dir="extras/wing-analisys"):
+def plot_wing_geometry_views(
+    wing, theta_eq_deg=None, output_dir="extras/wing-analisys"
+):
     """Gera três vistas ortogonais do sistema asa+cubo.
 
     Vista superior (XY) — plano horizontal, mostra varredura Λ (forma do DXF).
@@ -648,13 +687,13 @@ def plot_wing_geometry_views(wing, theta_eq_deg=None, output_dir="extras/wing-an
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    body_s   = wing.pocketqube_side_m          # 0.050 m
-    body_h   = body_s / 2.0
-    rf_m     = wing.rf
-    r0_m     = wing.r0
-    beta     = wing.beta_mount                 # rad — passo geométrico (vista lateral)
+    body_s = wing.pocketqube_side_m  # 0.050 m
+    body_h = body_s / 2.0
+    rf_m = wing.rf
+    r0_m = wing.r0
+    beta = wing.beta_mount  # rad — passo geométrico (vista lateral)
     theta_eq = np.radians(theta_eq_deg if theta_eq_deg is not None else 15.0)
-    n        = wing.n_wings
+    n = wing.n_wings
 
     COLOR_BODY = "#264653"
     COLOR_WING = "#2a9d8f"
@@ -665,41 +704,67 @@ def plot_wing_geometry_views(wing, theta_eq_deg=None, output_dir="extras/wing-an
     fig.suptitle(
         f"Wing Geometry — {n} wings | DXF: {wing.dxf_path.name} | "
         f"β = {np.degrees(beta):.1f}°  |  θ_eq ≈ {np.degrees(theta_eq):.1f}°",
-        fontsize=13, fontweight="bold",
+        fontsize=13,
+        fontweight="bold",
     )
 
     # ── VISTA SUPERIOR (XY) ─────────────────────────────────
     ax = axes[0]
     # Corpo
-    bxy = np.array([[-body_h,-body_h],[body_h,-body_h],[body_h,body_h],[-body_h,body_h]])
-    ax.fill(bxy[:,0]*1e3, bxy[:,1]*1e3, color=COLOR_BODY, alpha=0.45)
-    ax.plot(np.r_[bxy[:,0],bxy[0,0]]*1e3, np.r_[bxy[:,1],bxy[0,1]]*1e3,
-            color=COLOR_BODY, linewidth=2)
+    bxy = np.array(
+        [[-body_h, -body_h], [body_h, -body_h], [body_h, body_h], [-body_h, body_h]]
+    )
+    ax.fill(bxy[:, 0] * 1e3, bxy[:, 1] * 1e3, color=COLOR_BODY, alpha=0.45)
+    ax.plot(
+        np.r_[bxy[:, 0], bxy[0, 0]] * 1e3,
+        np.r_[bxy[:, 1], bxy[0, 1]] * 1e3,
+        color=COLOR_BODY,
+        linewidth=2,
+    )
     ax.text(0, 0, "PocketQube\n50×50 mm", ha="center", va="center", fontsize=9)
     # Asas (planforma DXF, projetada no plano XY — sem projeção de θ ou β)
     for wi in range(n):
         ang = wi * (2.0 * np.pi / n)
-        R = np.array([[np.cos(ang), -np.sin(ang)],[np.sin(ang), np.cos(ang)]])
+        R = np.array([[np.cos(ang), -np.sin(ang)], [np.sin(ang), np.cos(ang)]])
         pts = wing.wing_outline_points_m @ R.T
         # Clipar pontos que entram dentro do cubo (|x| < body_h na direção radial)
-        radial_dist = np.sqrt(pts[:,0]**2 + pts[:,1]**2)
+        radial_dist = np.sqrt(pts[:, 0] ** 2 + pts[:, 1] ** 2)
         pts_plot = pts[radial_dist >= body_h * 0.95]
         if len(pts_plot) >= 3:
-            ax.fill(pts_plot[:,0]*1e3, pts_plot[:,1]*1e3, color=COLOR_WING, alpha=ALPHA_FILL)
-            ax.plot(np.r_[pts_plot[:,0],pts_plot[0,0]]*1e3,
-                    np.r_[pts_plot[:,1],pts_plot[0,1]]*1e3,
-                    color=COLOR_EDGE, linewidth=1.2)
+            ax.fill(
+                pts_plot[:, 0] * 1e3,
+                pts_plot[:, 1] * 1e3,
+                color=COLOR_WING,
+                alpha=ALPHA_FILL,
+            )
+            ax.plot(
+                np.r_[pts_plot[:, 0], pts_plot[0, 0]] * 1e3,
+                np.r_[pts_plot[:, 1], pts_plot[0, 1]] * 1e3,
+                color=COLOR_EDGE,
+                linewidth=1.2,
+            )
         else:
-            ax.fill(pts[:,0]*1e3, pts[:,1]*1e3, color=COLOR_WING, alpha=ALPHA_FILL)
-            ax.plot(np.r_[pts[:,0],pts[0,0]]*1e3, np.r_[pts[:,1],pts[0,1]]*1e3,
-                    color=COLOR_EDGE, linewidth=1.2)
-    lim = max(rf_m, body_h)*1e3*1.35
-    ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
-    ax.set_aspect("equal"); ax.grid(True, alpha=0.25)
-    ax.set_xlabel("X (mm)"); ax.set_ylabel("Y (mm)")
+            ax.fill(
+                pts[:, 0] * 1e3, pts[:, 1] * 1e3, color=COLOR_WING, alpha=ALPHA_FILL
+            )
+            ax.plot(
+                np.r_[pts[:, 0], pts[0, 0]] * 1e3,
+                np.r_[pts[:, 1], pts[0, 1]] * 1e3,
+                color=COLOR_EDGE,
+                linewidth=1.2,
+            )
+    lim = max(rf_m, body_h) * 1e3 * 1.35
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    ax.set_aspect("equal")
+    ax.grid(True, alpha=0.25)
+    ax.set_xlabel("X (mm)")
+    ax.set_ylabel("Y (mm)")
     body_a = body_s**2 * 1e4
     wing_a = n * wing.wing_area_one_m2 * 1e4
-    ax.set_title(f"Vista Superior (XY) — Varredura Λ\nÁrea corpo: {body_a:.1f} cm²  |  Asas: {wing_a:.1f} cm²  |  Total: {body_a+wing_a:.1f} cm²")
+    ax.set_title(
+        f"Vista Superior (XY) — Varredura Λ\nÁrea corpo: {body_a:.1f} cm²  |  Asas: {wing_a:.1f} cm²  |  Total: {body_a + wing_a:.1f} cm²"
+    )
 
     # ── VISTA FRONTAL (XZ) ──────────────────────────────────
     # Olhando ao longo de Y → plano XZ.
@@ -707,24 +772,30 @@ def plot_wing_geometry_views(wing, theta_eq_deg=None, output_dir="extras/wing-an
     # Projeção da asa: x_proj = r·cos(θ_eq), z_proj = r·sin(θ_eq)
     ax = axes[1]
     # Corpo (quadrado XZ)
-    bxz = np.array([[-body_h,-body_h],[body_h,-body_h],[body_h,body_h],[-body_h,body_h]])
-    ax.fill(bxz[:,0]*1e3, bxz[:,1]*1e3, color=COLOR_BODY, alpha=0.45)
-    ax.plot(np.r_[bxz[:,0],bxz[0,0]]*1e3, np.r_[bxz[:,1],bxz[0,1]]*1e3,
-            color=COLOR_BODY, linewidth=2)
+    bxz = np.array(
+        [[-body_h, -body_h], [body_h, -body_h], [body_h, body_h], [-body_h, body_h]]
+    )
+    ax.fill(bxz[:, 0] * 1e3, bxz[:, 1] * 1e3, color=COLOR_BODY, alpha=0.45)
+    ax.plot(
+        np.r_[bxz[:, 0], bxz[0, 0]] * 1e3,
+        np.r_[bxz[:, 1], bxz[0, 1]] * 1e3,
+        color=COLOR_BODY,
+        linewidth=2,
+    )
     ax.text(0, 0, "PQ", ha="center", va="center", fontsize=9)
     # Asas: para cada asa, projeta contorno no plano XZ com inclinação θ_eq
     # Extrai perfil de corda ao longo do raio para montar o contorno 3D projetado
     r_arr = np.linspace(r0_m, rf_m, 60)
     for wi in range(n):
         # sinal do lado (asas opostas vão para ±X)
-        side = 1 if wi < n/2 else -1
+        side = 1 if wi < n / 2 else -1
         # contorno superior e inferior da asa na vista frontal
         # aproximação: retângulo com largura = corda média, inclinado em θ_eq
         chord_vals = np.array([wing.chord_width(r) for r in r_arr])
         # A asa parte do canto superior do cubo: (±body_h, +body_h).
         # r_local = distância desde a borda do cubo (não desde o eixo de rotação),
         # evitando dupla contagem de body_h no deslocamento vertical e horizontal.
-        r_local = r_arr - body_h   # 0 na raiz, (rf-body_h) na ponta
+        r_local = r_arr - body_h  # 0 na raiz, (rf-body_h) na ponta
         x_top = side * (body_h + r_local * np.cos(theta_eq))
         z_top = body_h + r_local * np.sin(theta_eq) + chord_vals * np.sin(beta) / 2
         x_bot = side * (body_h + r_local * np.cos(theta_eq))
@@ -735,38 +806,58 @@ def plot_wing_geometry_views(wing, theta_eq_deg=None, output_dir="extras/wing-an
         ax.fill(x_poly, z_poly, color=COLOR_WING, alpha=ALPHA_FILL)
         ax.plot(x_poly, z_poly, color=COLOR_EDGE, linewidth=1.0)
     # Anotação do ângulo θ — parte do canto superior direito do cubo
-    r_ann_loc = (rf_m - body_h) * 0.6   # r_local para anotação
+    r_ann_loc = (rf_m - body_h) * 0.6  # r_local para anotação
     x0_ann = body_h * 1e3
     z0_ann = body_h * 1e3
-    ax.annotate("", xy=(x0_ann + r_ann_loc*np.cos(theta_eq)*1e3,
-                        z0_ann + r_ann_loc*np.sin(theta_eq)*1e3),
-                xytext=(x0_ann + r_ann_loc*1e3, z0_ann),
-                arrowprops=dict(arrowstyle="-|>", color="purple", lw=1.2))
-    ax.text(x0_ann + r_ann_loc*np.cos(theta_eq/2)*1e3*1.05,
-            z0_ann + r_ann_loc*np.sin(theta_eq/2)*1e3,
-            f"θ≈{np.degrees(theta_eq):.0f}°", color="purple", fontsize=9)
-    lim_xz = max(rf_m, body_h)*1e3*1.35
-    ax.set_xlim(-lim_xz, lim_xz); ax.set_ylim(-lim_xz*0.4, lim_xz)
-    ax.set_aspect("equal"); ax.grid(True, alpha=0.25)
+    ax.annotate(
+        "",
+        xy=(
+            x0_ann + r_ann_loc * np.cos(theta_eq) * 1e3,
+            z0_ann + r_ann_loc * np.sin(theta_eq) * 1e3,
+        ),
+        xytext=(x0_ann + r_ann_loc * 1e3, z0_ann),
+        arrowprops=dict(arrowstyle="-|>", color="purple", lw=1.2),
+    )
+    ax.text(
+        x0_ann + r_ann_loc * np.cos(theta_eq / 2) * 1e3 * 1.05,
+        z0_ann + r_ann_loc * np.sin(theta_eq / 2) * 1e3,
+        f"θ≈{np.degrees(theta_eq):.0f}°",
+        color="purple",
+        fontsize=9,
+    )
+    lim_xz = max(rf_m, body_h) * 1e3 * 1.35
+    ax.set_xlim(-lim_xz, lim_xz)
+    ax.set_ylim(-lim_xz * 0.4, lim_xz)
+    ax.set_aspect("equal")
+    ax.grid(True, alpha=0.25)
     ax.axhline(0, color="gray", linewidth=0.8, linestyle="--", alpha=0.5)
-    ax.set_xlabel("X (mm)"); ax.set_ylabel("Z (mm)")
-    ax.set_title(f"Vista Frontal (XZ) — Diedro δ / conicidade θ\nθ_eq ≈ {np.degrees(theta_eq):.1f}°  (dinâmico, flexão do material)")
+    ax.set_xlabel("X (mm)")
+    ax.set_ylabel("Z (mm)")
+    ax.set_title(
+        f"Vista Frontal (XZ) — Diedro δ / conicidade θ\nθ_eq ≈ {np.degrees(theta_eq):.1f}°  (dinâmico, flexão do material)"
+    )
 
     # ── VISTA LATERAL (YZ) ──────────────────────────────────
     # Olhando ao longo de X (da ponta para a raiz) → plano YZ.
     # Mostra a seção transversal da asa inclinada em β.
     ax = axes[2]
     # Corpo
-    byz = np.array([[-body_h,-body_h],[body_h,-body_h],[body_h,body_h],[-body_h,body_h]])
-    ax.fill(byz[:,0]*1e3, byz[:,1]*1e3, color=COLOR_BODY, alpha=0.45)
-    ax.plot(np.r_[byz[:,0],byz[0,0]]*1e3, np.r_[byz[:,1],byz[0,1]]*1e3,
-            color=COLOR_BODY, linewidth=2)
+    byz = np.array(
+        [[-body_h, -body_h], [body_h, -body_h], [body_h, body_h], [-body_h, body_h]]
+    )
+    ax.fill(byz[:, 0] * 1e3, byz[:, 1] * 1e3, color=COLOR_BODY, alpha=0.45)
+    ax.plot(
+        np.r_[byz[:, 0], byz[0, 0]] * 1e3,
+        np.r_[byz[:, 1], byz[0, 1]] * 1e3,
+        color=COLOR_BODY,
+        linewidth=2,
+    )
     ax.text(0, 0, "PQ", ha="center", va="center", fontsize=9)
     # Seção da asa: a corda se projeta no plano YZ inclinada em β
     # Para cada raio r, a corda tem comprimento w(r) inclinada em β
     # Na vista lateral, a projeção em Y = w·cos(β), em Z = w·sin(β)
     # Mostramos apenas a seção em r médio como representativa
-    r_mid   = (r0_m + rf_m) / 2.0
+    r_mid = (r0_m + rf_m) / 2.0
     chord_m = wing.chord_width(r_mid)
     # Seção no ponto de encaixe: topo do cubo (z = +body_h)
     attach_y = 0.0
@@ -780,39 +871,85 @@ def plot_wing_geometry_views(wing, theta_eq_deg=None, output_dir="extras/wing-an
     t_asa = 0.0006  # m
     perp_y = -np.sin(beta)  # vetor perpendicular à corda
     perp_z = -np.cos(beta)
-    wing_yz = np.array([
-        [le_y + perp_y*t_asa/2, le_z + perp_z*t_asa/2],
-        [te_y + perp_y*t_asa/2, te_z + perp_z*t_asa/2],
-        [te_y - perp_y*t_asa/2, te_z - perp_z*t_asa/2],
-        [le_y - perp_y*t_asa/2, le_z - perp_z*t_asa/2],
-    ]) * 1e3
-    ax.fill(wing_yz[:,0], wing_yz[:,1], color=COLOR_WING, alpha=0.7)
-    ax.plot(np.r_[wing_yz[:,0],wing_yz[0,0]], np.r_[wing_yz[:,1],wing_yz[0,1]],
-            color=COLOR_EDGE, linewidth=1.5)
+    wing_yz = (
+        np.array(
+            [
+                [le_y + perp_y * t_asa / 2, le_z + perp_z * t_asa / 2],
+                [te_y + perp_y * t_asa / 2, te_z + perp_z * t_asa / 2],
+                [te_y - perp_y * t_asa / 2, te_z - perp_z * t_asa / 2],
+                [le_y - perp_y * t_asa / 2, le_z - perp_z * t_asa / 2],
+            ]
+        )
+        * 1e3
+    )
+    ax.fill(wing_yz[:, 0], wing_yz[:, 1], color=COLOR_WING, alpha=0.7)
+    ax.plot(
+        np.r_[wing_yz[:, 0], wing_yz[0, 0]],
+        np.r_[wing_yz[:, 1], wing_yz[0, 1]],
+        color=COLOR_EDGE,
+        linewidth=1.5,
+    )
     # Linha de corda (eixo de β)
-    ax.plot([le_y*1e3, te_y*1e3], [le_z*1e3, te_z*1e3],
-            color="orange", linewidth=1.5, linestyle="--", label="linha de corda")
+    ax.plot(
+        [le_y * 1e3, te_y * 1e3],
+        [le_z * 1e3, te_z * 1e3],
+        color="orange",
+        linewidth=1.5,
+        linestyle="--",
+        label="linha de corda",
+    )
     # Linha horizontal de referência (β=0)
-    ax.axhline(0, color="gray", linewidth=0.8, linestyle="--", alpha=0.5,
-               label="β = 0° (referência)")
+    ax.axhline(
+        0,
+        color="gray",
+        linewidth=0.8,
+        linestyle="--",
+        alpha=0.5,
+        label="β = 0° (referência)",
+    )
     # Arco de β
     ang_arr = np.linspace(0, beta, 30)
     r_arc = chord_m * 0.35 * 1e3
-    ax.plot(r_arc*np.cos(ang_arr + np.pi), r_arc*np.sin(ang_arr + np.pi),
-            color="steelblue", linewidth=1.5)
-    ax.text(-(r_arc*1.15)*np.cos(beta/2), (r_arc*1.15)*np.sin(beta/2),
-            f"β={np.degrees(beta):.1f}°", color="steelblue", fontsize=10, fontweight="bold")
+    ax.plot(
+        r_arc * np.cos(ang_arr + np.pi),
+        r_arc * np.sin(ang_arr + np.pi),
+        color="steelblue",
+        linewidth=1.5,
+    )
+    ax.text(
+        -(r_arc * 1.15) * np.cos(beta / 2),
+        (r_arc * 1.15) * np.sin(beta / 2),
+        f"β={np.degrees(beta):.1f}°",
+        color="steelblue",
+        fontsize=10,
+        fontweight="bold",
+    )
     # Anotações LE/TE
-    ax.annotate("LE", xy=(le_y*1e3, le_z*1e3), fontsize=9, color="#1f7f76",
-                xytext=(le_y*1e3-5, le_z*1e3+3))
-    ax.annotate("TE", xy=(te_y*1e3, te_z*1e3), fontsize=9, color="#1f7f76",
-                xytext=(te_y*1e3+1, te_z*1e3-4))
-    lim_yz = max(chord_m*0.8, body_h) * 1e3 * 2.2
-    ax.set_xlim(-lim_yz, lim_yz); ax.set_ylim(-lim_yz*0.6, lim_yz*0.6)
-    ax.set_aspect("equal"); ax.grid(True, alpha=0.25)
-    ax.set_xlabel("Y (mm)"); ax.set_ylabel("Z (mm)")
+    ax.annotate(
+        "LE",
+        xy=(le_y * 1e3, le_z * 1e3),
+        fontsize=9,
+        color="#1f7f76",
+        xytext=(le_y * 1e3 - 5, le_z * 1e3 + 3),
+    )
+    ax.annotate(
+        "TE",
+        xy=(te_y * 1e3, te_z * 1e3),
+        fontsize=9,
+        color="#1f7f76",
+        xytext=(te_y * 1e3 + 1, te_z * 1e3 - 4),
+    )
+    lim_yz = max(chord_m * 0.8, body_h) * 1e3 * 2.2
+    ax.set_xlim(-lim_yz, lim_yz)
+    ax.set_ylim(-lim_yz * 0.6, lim_yz * 0.6)
+    ax.set_aspect("equal")
+    ax.grid(True, alpha=0.25)
+    ax.set_xlabel("Y (mm)")
+    ax.set_ylabel("Z (mm)")
     ax.legend(fontsize=8, loc="upper right")
-    ax.set_title(f"Vista Lateral (YZ) — Passo β\nβ = {np.degrees(beta):.1f}°  (encaixe circular)  |  corda em r_mid = {chord_m*1e3:.1f} mm")
+    ax.set_title(
+        f"Vista Lateral (YZ) — Passo β\nβ = {np.degrees(beta):.1f}°  (encaixe circular)  |  corda em r_mid = {chord_m * 1e3:.1f} mm"
+    )
 
     plt.tight_layout()
     out_path = out_dir / "samara_pq_geometry_views.png"
@@ -1171,36 +1308,45 @@ class PocketQubeMissionReporter:
         Permite comparação direta com dados de telemetria real (Teste 3 etc.).
         """
         import csv as _csv
+
         out_dir = Path(output_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
         csv_path = out_dir / "samara_pq_trajectory.csv"
 
-        t    = self.solution.t
-        th   = self.solution.y[0]
-        thdot= self.solution.y[1]
-        phdot= self.solution.y[2]
-        v0   = self.solution.y[3]
-        alt  = self.solution.y[4]
+        t = self.solution.t
+        th = self.solution.y[0]
+        thdot = self.solution.y[1]
+        phdot = self.solution.y[2]
+        v0 = self.solution.y[3]
+        alt = self.solution.y[4]
 
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
             writer = _csv.writer(f)
-            writer.writerow([
-                "millis", "t_s",
-                "theta_deg", "theta_dot_rads",
-                "phi_dot_rads", "spin_rpm",
-                "v0_ms", "altitude_m",
-            ])
+            writer.writerow(
+                [
+                    "millis",
+                    "t_s",
+                    "theta_deg",
+                    "theta_dot_rads",
+                    "phi_dot_rads",
+                    "spin_rpm",
+                    "v0_ms",
+                    "altitude_m",
+                ]
+            )
             for i, ti in enumerate(t):
-                writer.writerow([
-                    f"{ti * 1000:.0f}",           # millis
-                    f"{ti:.4f}",                   # t_s
-                    f"{np.degrees(th[i]):.4f}",   # theta_deg
-                    f"{thdot[i]:.6f}",             # theta_dot_rads
-                    f"{phdot[i]:.6f}",             # phi_dot_rads
-                    f"{phdot[i] * 60 / (2*np.pi):.3f}",  # spin_rpm
-                    f"{v0[i]:.4f}",                # v0_ms
-                    f"{alt[i]:.4f}",               # altitude_m
-                ])
+                writer.writerow(
+                    [
+                        f"{ti * 1000:.0f}",  # millis
+                        f"{ti:.4f}",  # t_s
+                        f"{np.degrees(th[i]):.4f}",  # theta_deg
+                        f"{thdot[i]:.6f}",  # theta_dot_rads
+                        f"{phdot[i]:.6f}",  # phi_dot_rads
+                        f"{phdot[i] * 60 / (2 * np.pi):.3f}",  # spin_rpm
+                        f"{v0[i]:.4f}",  # v0_ms
+                        f"{alt[i]:.4f}",  # altitude_m
+                    ]
+                )
         print(f"Saved trajectory CSV: {csv_path}")
 
 
@@ -1211,46 +1357,88 @@ def _parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     # Geometria
-    parser.add_argument("--dxf", type=Path, metavar="FILE",
-                        help="Arquivo DXF da asa (ex: Asa2.DXF)")
-    parser.add_argument("--n-wings", type=int, metavar="N",
-                        help="Número de asas simétricas")
+    parser.add_argument(
+        "--dxf", type=Path, metavar="FILE", help="Arquivo DXF da asa (ex: Asa2.DXF)"
+    )
+    parser.add_argument(
+        "--n-wings", type=int, metavar="N", help="Número de asas simétricas"
+    )
     # Massa
-    parser.add_argument("--mass", type=float, metavar="KG",
-                        help="Massa total do sistema [kg]")
+    parser.add_argument(
+        "--mass", type=float, metavar="KG", help="Massa total do sistema [kg]"
+    )
     # Condições iniciais
-    parser.add_argument("--altitude", type=float, metavar="M",
-                        help="Altitude de liberação [m]")
-    parser.add_argument("--theta-deg", type=float, metavar="DEG",
-                        help="Ângulo de conicidade inicial [graus]")
-    parser.add_argument("--phi-dot", type=float, metavar="RAD_S",
-                        help="Spin inicial [rad/s]")
-    parser.add_argument("--v0", type=float, metavar="M_S",
-                        help="Velocidade vertical inicial [m/s]")
+    parser.add_argument(
+        "--altitude", type=float, metavar="M", help="Altitude de liberação [m]"
+    )
+    parser.add_argument(
+        "--theta-deg",
+        type=float,
+        metavar="DEG",
+        help="Ângulo de conicidade inicial [graus]",
+    )
+    parser.add_argument(
+        "--phi-dot", type=float, metavar="RAD_S", help="Spin inicial [rad/s]"
+    )
+    parser.add_argument(
+        "--v0", type=float, metavar="M_S", help="Velocidade vertical inicial [m/s]"
+    )
     # Aerodinâmica
-    parser.add_argument("--cd0", type=float, metavar="COEF",
-                        help="Coeficiente de arrasto basal (LEV)")
-    parser.add_argument("--f-factor", type=float, metavar="F",
-                        help="Fração de inércia de massa nas asas")
-    parser.add_argument("--beta-deg", type=float, metavar="DEG",
-                        help="Ângulo de passo geométrico β [graus]")
-    parser.add_argument("--rho", type=float, metavar="KG_M3",
-                        help="Densidade do ar [kg/m³]")
+    parser.add_argument(
+        "--cd0", type=float, metavar="COEF", help="Coeficiente de arrasto basal (LEV)"
+    )
+    parser.add_argument(
+        "--f-factor",
+        type=float,
+        metavar="F",
+        help="Fração de inércia de massa nas asas",
+    )
+    parser.add_argument(
+        "--beta-deg",
+        type=float,
+        metavar="DEG",
+        help="Ângulo de passo geométrico β [graus]",
+    )
+    parser.add_argument(
+        "--rho", type=float, metavar="KG_M3", help="Densidade do ar [kg/m³]"
+    )
     # Integração
-    parser.add_argument("--t-max", type=float, metavar="S",
-                        help="Tempo máximo de simulação [s]")
-    parser.add_argument("--max-step", type=float, metavar="S",
-                        help="Passo máximo do integrador RK45 [s]")
+    parser.add_argument(
+        "--t-max", type=float, metavar="S", help="Tempo máximo de simulação [s]"
+    )
+    parser.add_argument(
+        "--max-step",
+        type=float,
+        metavar="S",
+        help="Passo máximo do integrador RK45 [s]",
+    )
     # Saída
-    parser.add_argument("--output", type=Path, metavar="DIR",
-                        help="Diretório de saída dos relatórios e figuras")
-    
+    parser.add_argument(
+        "--output",
+        type=Path,
+        metavar="DIR",
+        help="Diretório de saída dos relatórios e figuras",
+    )
+
     # --- NOVOS ARGUMENTOS DE OTIMIZAÇÃO ---
-    parser.add_argument("--optimize", action="store_true",
-                        help="Ativa o otimizador numérico para encontrar o raio aerodinâmico ideal")
-    parser.add_argument("--target-vf", type=float, metavar="M_S", default=25.0,
-                        help="Velocidade vertical alvo (módulo) para o impacto [m/s] (ex: 30)")
-    parser.add_argument("--safety-factor", type=float, default=1, help="Fator de segurança para velocidade alvo.")                    
+    parser.add_argument(
+        "--optimize",
+        action="store_true",
+        help="Ativa o otimizador numérico para encontrar o raio aerodinâmico ideal",
+    )
+    parser.add_argument(
+        "--target-vf",
+        type=float,
+        metavar="M_S",
+        default=25.0,
+        help="Velocidade vertical alvo (módulo) para o impacto [m/s] (ex: 30)",
+    )
+    parser.add_argument(
+        "--safety-factor",
+        type=float,
+        default=1,
+        help="Fator de segurança para velocidade alvo.",
+    )
     return parser.parse_args()
 
 
@@ -1258,36 +1446,36 @@ def _build_config_from_args(args):
     """Merge CONFIG defaults with CLI arguments (CLI takes precedence)."""
     cfg = dict(CONFIG)
     overrides = {
-        "dxf_path":   args.dxf,
-        "n_wings":    args.n_wings,
-        "mass_kg":    args.mass,
+        "dxf_path": args.dxf,
+        "n_wings": args.n_wings,
+        "mass_kg": args.mass,
         "altitude_m": args.altitude,
-        "theta_deg":  args.theta_deg,
-        "phi_dot_0":  args.phi_dot,
-        "v0_0":       args.v0,
-        "cd0":        args.cd0,
-        "f_factor":   args.f_factor,
-        "beta_deg":   args.beta_deg,
-        "rho":        args.rho,
-        "t_max":      args.t_max,
-        "max_step":   args.max_step,
+        "theta_deg": args.theta_deg,
+        "phi_dot_0": args.phi_dot,
+        "v0_0": args.v0,
+        "cd0": args.cd0,
+        "f_factor": args.f_factor,
+        "beta_deg": args.beta_deg,
+        "rho": args.rho,
+        "t_max": args.t_max,
+        "max_step": args.max_step,
         "output_dir": args.output,
-        "optimize":   args.optimize,   # Adicionado
-        "target_vf":  args.target_vf,  # Adicionado
+        "optimize": args.optimize,  # Adicionado
+        "target_vf": args.target_vf,  # Adicionado
         "safety_factor": args.safety_factor,
     }
     for key, val in overrides.items():
         if val is not None:
             cfg[key] = val
-            
+
     # Valores fallback caso não estejam no dicionário original CONFIG
     if "optimize" not in cfg:
         cfg["optimize"] = False
     if "target_vf" not in cfg:
         cfg["target_vf"] = 25.0
     if "safety_factor" in cfg:
-        cfg["target_vf"] = cfg["target_vf"]/cfg["safety_factor"]
-        
+        cfg["target_vf"] = cfg["target_vf"] / cfg["safety_factor"]
+
     return cfg
 
 
@@ -1301,7 +1489,7 @@ def main():
     print("==========================================================")
     print(f"  DXF:          {cfg['dxf_path']}")
     print(f"  Asas:         {cfg['n_wings']}")
-    print(f"  Massa:        {cfg['mass_kg']*1000:.0f} g")
+    print(f"  Massa:        {cfg['mass_kg'] * 1000:.0f} g")
     print(f"  Altitude:     {cfg['altitude_m']:.0f} m")
     print(f"  Spin inicial: {cfg['phi_dot_0']:.2f} rad/s")
     print(f"  θ inicial:    {cfg['theta_deg']:.1f}°")
@@ -1336,18 +1524,22 @@ def main():
         # Garante que o target seja negativo para a velocidade de descida
         target_impact_vf = -abs(cfg["target_vf"])
         optimizer = PocketQubeSamaraOptimizer(solver, target_vf=target_impact_vf)
-        
+
         radius_opt = optimizer.optimize_radius_for_impact(
             n_wings=cfg["n_wings"],
             target_impact_vf=target_impact_vf,
             sim_t_span=(0.0, cfg["t_max"]),
             sim_max_step=cfg["max_step"],
         )
-        
+
         if radius_opt is None:
-            print("\n[AVISO] A otimização numércia não convergiu. Mantendo o raio do DXF.")
+            print(
+                "\n[AVISO] A otimização numércia não convergiu. Mantendo o raio do DXF."
+            )
         else:
-            print(f"\n[INFO] Simulando voo final com raio otimizado: {radius_opt*100:.2f} cm")
+            print(
+                f"\n[INFO] Simulando voo final com raio otimizado: {radius_opt * 100:.2f} cm"
+            )
     # --------------------------------
 
     solution = solver.simulate_drop(
@@ -1364,7 +1556,10 @@ def main():
 
     visualizer = PocketQubeLRRVisualizer(solution, output_dir=str(cfg["output_dir"]))
     theta_eq, spin_eq = visualizer.generate_lrr_report(beta_deg=cfg["beta_deg"])
-    plot_wing_geometry_views(wing, theta_eq_deg=theta_eq, output_dir=str(cfg["output_dir"]))
+    plot_wing_geometry_views(
+        wing, theta_eq_deg=theta_eq, output_dir=str(cfg["output_dir"])
+    )
+
 
 if __name__ == "__main__":
     main()
