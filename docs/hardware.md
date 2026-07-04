@@ -98,9 +98,19 @@ do deploy (apogeu). O sistema liga instantaneamente e comeca a transmitir.
 O sistema detecta automaticamente qual storage esta disponivel (SD primeiro,
 LittleFS como fallback).
 
+## Montagem Mecanica
+
+Modelos 3D e arquivos de montagem fisica do satelite.
+
+- Arquivos CAD: `hardware/mechanical/`
+  - `.SLDPRT` / `.STEP` — modelos SolidWorks (part/assembly)
+  - `.STL` — para impressao 3D / visualizacao rapida
+  - Convencao: nome em minusculo, sufixo `_v2`, `_v3` para revisoes
+
 ## Referencias
 
 - BOM principal: `hardware/CDB_bom.md`
 - Artefatos Fritzing/PDF: `hardware/CDB.fzz` e `hardware/CDB.pdf`
+- Montagem mecanica 3D: `hardware/mechanical/`
 - Guia de bancada: `test_hardware/docs/checklist_bancada_pre_sd.md`
 - Testes de hardware: `test_hardware/`
