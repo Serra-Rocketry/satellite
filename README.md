@@ -7,7 +7,7 @@ Recuperacao Autorrotativo Bioinspirado (SRAB) e triangulacao LoRa.
 
 - Projeto em desenvolvimento.
 - Foco atual em validacao de sensores e estudo aerodinamico.
-- Estudos de asa em `extras/wing-analisys/`.
+- Estudos de asa em `extras/wing-analysis/`.
 - Testes de hardware em `test_hardware/`.
 - Testes unitarios nativos em `test/`.
 
@@ -56,12 +56,11 @@ satellite/
 |   |-- storage/              #   Testes de sistema de arquivos
 |   `-- docs/                 #   Documentacao dos testes
 |-- extras/
-|   `-- wing-analisys/        # Estudo de asa autorrotativa
-|       |-- src/
-|       |-- geometry/
-|       |-- results/
-|       |-- docs/
-|       `-- guides/
+|   `-- wing-analysis/        # Estudo de asa autorrotativa
+|       |-- src/              # Scripts Python
+|       |-- geometry/         # Perfis DXF
+|       |-- results/          # Saidas graficas e CSVs
+|       `-- docs/             # Documentacao SRAB (teoria, resultados, scripts, proposta)
 |-- hardware/                 # Schematics, BOM, PCB
 |-- docs/                     # Documentacao geral
 `-- .opencode/                # Configuracao de ferramentas
@@ -105,7 +104,7 @@ Ou abrir o arquivo `.ino` no VS Code com PlatformIO e clicar em "Upload".
 1. Validar sensores isolados em `test_hardware/sensor/`.
 2. Rodar integracao de sensores em `test_hardware/integration/`.
 3. Executar testes unitarios: `pio test -e native`.
-4. Executar estudos aerodinamicos em `extras/wing-analisys/`.
+4. Executar estudos aerodinamicos em `extras/wing-analysis/`.
 5. Consolidar resultados em documentacao tecnica.
 6. Integrar firmware final em `firmware/`.
 
@@ -126,7 +125,7 @@ Modulos header-only (sem dependencia de hardware) para logica de voo:
 - Arquitetura de software: `docs/software.md`.
 - Documentacao por skill: `.opencode/README.md`.
 - Testes de hardware: `test_hardware/docs/`.
-- Estudo de asa: `extras/wing-analisys/guides/README.md`.
+- Estudo de asa: `extras/wing-analysis/docs/README.md`.
 - BOM: `hardware/CDB_bom.md`.
 
 ## Ferramentas de qualidade

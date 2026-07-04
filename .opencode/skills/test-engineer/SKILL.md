@@ -48,14 +48,14 @@ compatibility: opencode
 
 **Purpose**: Validate algorithms with real data before hardware testing
 
-**Location**: `extras/wing-analisys/`
+**Location**: `extras/wing-analysis/`
 
 #### Wing Analysis Validation
 **File**: `src/samara_pq_simulation.py`
 
 **Usage**:
 ```bash
-python extras/wing-analisys/src/samara_pq_simulation.py
+python extras/wing-analysis/src/samara_pq_simulation.py
 ```
 
 **What it Tests**:
@@ -66,7 +66,7 @@ python extras/wing-analisys/src/samara_pq_simulation.py
 **Expected Output**:
 ```
 Simulation completed
-Outputs generated in extras/wing-analisys/results/
+Outputs generated in extras/wing-analysis/results/
 ```
 
 **Creating New Simulation Tests**:
@@ -76,7 +76,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load simulation outputs
-df = pd.read_csv('extras/wing-analisys/results/test_1_asa1/samara_pq_impact_report.csv')
+df = pd.read_csv('extras/wing-analysis/results/test_1_asa1/samara_pq_impact_report.csv')
 
 # Extract metrics
 velocity = df['velocity'].values
@@ -257,10 +257,10 @@ jobs:
       - uses: actions/setup-python@v4
       
       - name: Install Dependencies
-        run: pip install -r extras/wing-analisys/requirements.txt
+        run: pip install -r extras/wing-analysis/requirements.txt
       
       - name: Run Wing Analysis
-        run: python extras/wing-analisys/src/samara_pq_simulation.py
+        run: python extras/wing-analysis/src/samara_pq_simulation.py
 ```
 
 ---
@@ -310,5 +310,5 @@ Based on bench test data from test_hardware
 
 ## Resources
 - `test_hardware/docs/` - Guias e checklists
-- `extras/wing-analisys/` - Simulacao e relatorios
+- `extras/wing-analysis/` - Simulacao e relatorios
 - Unity Test Framework documentation

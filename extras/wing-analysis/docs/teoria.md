@@ -19,7 +19,7 @@ e maximiza a dispersao horizontal.
 
 Durante a rotacao, forma-se um vortece no bordo de ataque que reduz a pressao
 sobre o extradorso, elevando a sustentacao efetiva de forma analoga ao voo de
-insetos \citep{lentink2009, mcconnell2023, rezgui2020}.
+insetos [Lentink et al., 2009; McConnell & Das, 2023; Rezgui et al., 2020].
 
 ### Aplicacao no PocketQube
 

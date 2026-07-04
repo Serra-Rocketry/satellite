@@ -208,7 +208,7 @@ Exemplo:
 
    ```bash
    # Pós-processamento (Python)
-   python extras/wing-analisys/src/samara_pq_simulation.py
+   python extras/wing-analysis/src/samara_pq_simulation.py
    
    # Gera:
    - Gráfico Vz vs tempo

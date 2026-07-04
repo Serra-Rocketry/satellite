@@ -55,7 +55,7 @@ comprometem a velocidade terminal.
 Variacao: massa 200±10 g, β=3,0±0,5°, CD0=1,0±0,10, f_factor=0,3±0,03.
 
 | Metrica | Media ± σ | P5 | P95 |
-|---|---|---|---:|---:|
+|---|---:|---:|---:|
 | Velocidade de impacto | 12,89 ± 0,20 m/s | 12,54 | 13,19 |
 | Tempo de descida | 78,23 ± 1,22 s | 76,46 | 80,38 |
 | Conicidade θeq | 17,48 ± 1,19° | 15,71° | 19,50° |

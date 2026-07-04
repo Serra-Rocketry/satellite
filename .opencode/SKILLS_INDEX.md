@@ -89,7 +89,7 @@ satellite/
 │   ├── hardware.md             # Especificações de hardware
 │   └── flowchart.md            # Fluxos operacionais
 ├── extras/
-│   ├── wing-analisys/          # Estudos de asa e simulacao
+│   ├── wing-analysis/          # Estudos de asa e simulacao
 │   └── ...
 ├── test_hardware/
 │   ├── docs/                   # Guias e checklists de bancada

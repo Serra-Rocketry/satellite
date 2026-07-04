@@ -49,7 +49,7 @@ satellite/
 │   └── docs/                    # Bench guides and checklists
 │
 └── extras/
-    └── wing-analisys/           # Wing analysis and reports
+    └── wing-analysis/           # Wing analysis and reports
 ```
 
 ## Documentation Standards
@@ -263,7 +263,7 @@ This creates several issues:
 Padronizar pipeline de logging e telemetria com foco em:
 - CSV consistente no LittleFS/SD
 - Validacao de dados com `lib/calc/`
-- Parametros de simulacao alinhados com `extras/wing-analisys/`
+- Parametros de simulacao alinhados com `extras/wing-analysis/`
 
 ## Rationale
 - **Consistencia**: mesmos formatos de CSV para testes e analise

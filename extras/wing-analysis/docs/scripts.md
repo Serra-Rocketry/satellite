@@ -41,14 +41,24 @@ Simulacao de descida autorrotativa SRAB. Le geometria de DXF, resolve EDOs
 
 ### CLI
 
-```
---dxf Asa2.DXF        --n-wings 2         --mass 0.110
---altitude 20.0       --theta-deg 20.0    --phi-dot 0.1
---beta-deg 8.0        --cd0 1.0           --f-factor 0.3
---rho 1.225           --t-max 600.0       --max-step 0.2
---output results/     --optimize          --target-vf -25.0
-                      --safety-factor 1.0
-```
+| Argumento | Default | Descricao |
+|---|---|---|
+| `--dxf` | `Asa2.DXF` | Arquivo DXF da asa |
+| `--n-wings` | `2` | Numero de asas |
+| `--mass` | `0.110` | Massa total [kg] |
+| `--altitude` | `20.0` | Altitude de liberacao [m] |
+| `--theta-deg` | `20.0` | Conicidade inicial [graus] |
+| `--phi-dot` | `0.1` | Spin inicial [rad/s] |
+| `--beta-deg` | `8.0` | Passo geometrico β [graus] |
+| `--cd0` | `1.0` | Arrasto basal |
+| `--f-factor` | `0.3` | Fracao de inercia nas asas |
+| `--rho` | `1.225` | Densidade do ar [kg/m³] |
+| `--t-max` | `600.0` | Tempo maximo de simulacao [s] |
+| `--max-step` | `0.2` | Passo maximo do integrador [s] |
+| `--output` | `results/` | Diretorio de saida |
+| `--optimize` | — | Ativa otimizacao de raio |
+| `--target-vf` | `-25.0` | Velocidade vertical alvo [m/s] |
+| `--safety-factor` | `1.0` | Fator de seguranca |
 
 ### Exemplo
 

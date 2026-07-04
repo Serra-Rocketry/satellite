@@ -6,7 +6,7 @@ Este guia detalha como implementar e executar os testes experimentais de queda d
 
 **Objetivos**:
 
-1. Validar modelos aerodinâmicos do `extras/wing-analisys/`
+1. Validar modelos aerodinâmicos do `extras/wing-analysis/`
 2. Medir taxa de descida real vs. simulada
 3. Detectar padrão de rotação (estabilidade)
 4. Coletar dados para calibração de detecção de apogeu
@@ -309,7 +309,7 @@ millis,ax,ay,az,gx,gy,gz,pressao_Pa,altura_m,temperatura_C,umidade_pct,vz,mag_gi
 
 **Setup**:
 
-- Asa: Config conforme `extras/wing-analisys/` (ex: 2 asas, R=100mm)
+- Asa: Config conforme `extras/wing-analysis/` (ex: 2 asas, R=100mm)
 - Altura: 10 metros (mesmo que baseline)
 - Repetições: 5×
 
@@ -329,7 +329,7 @@ Apogeu detector: Pode detectar "flutuação" inicial
 ```
 ⚠️ IMPORTANTE: Em quedas de 10m NÃO atingimos regime terminal!
    
-Simulação (`extras/wing-analisys/results/test_2_asa2/samara_pq_impact_report.txt`):
+Simulação (`extras/wing-analysis/results/test_2_asa2/samara_pq_impact_report.txt`):
    - Config 2×R124mm: v₀ = 27.65 m/s (regime terminal)
    - Config 2×R100mm: v₀ = 27.61 m/s (regime terminal)
    
@@ -482,7 +482,7 @@ Validações:
 ### 3. Comparar com Simulação
 
 ```python
-# Dados da simulação (extras/wing-analisys/results/test_2_asa2/samara_pq_impact_report.txt)
+# Dados da simulação (extras/wing-analysis/results/test_2_asa2/samara_pq_impact_report.txt)
 # Terminal velocities por configuração:
 # - 2×R124mm: v₀ = 27.65 m/s
 # - 2×R100mm: v₀ = 27.61 m/s
