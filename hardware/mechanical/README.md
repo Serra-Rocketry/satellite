@@ -2,28 +2,30 @@
 
 Arquivos de modelagem 3D e montagem mecanica do satelite.
 
-## Estrutura de pastas sugerida
+## Estrutura de pastas
 
 ```
 mechanical/
-├── assembly.*        (.SLDPRT, .STEP) - montagem completa
-├── chassis.*         (.SLDPRT, .STEP, .STL) - corpo principal
-├── plate.*           (.STEP, .STL) - PCB mounting plate
-├── standoff.*        (.STEP, .STL) - separadores/roscas
-├── antenna.*         (.STEP, .STL) - suporte antena
-├──connector.*       (.STEP, .STL) - passagem de conector
-├── README.md         (este arquivo)
+├── assembly/        — montagens gerais (.SLDASM)
+├── chassis/         — corpo principal (.SLDPRT)
+├── electronics/     — PCBs, bateria, suportes de montagem (.SLDPRT)
+├── standoff/        — parafusos, porcas, separadores (.SLDPRT)
+├── srab/
+│   ├── assembly/    — montagens do SRAB (.SLDASM)
+│   └── parts/       — pecas do SRAB (.SLDPRT)
+├── README.md
 ```
 
 ## Convencoes
 
-- `.SLDPRT` / `.iam` — arquivos nativos SolidWorks (part/assembly)
+- `.SLDPRT` — partes nativas SolidWorks
+- `.SLDASM` — montagens nativas SolidWorks
 - `.STEP` — formato neutro para compartilhamento (AP214)
 - `.STL` — para impressao 3D / visualizacao rapida
-- Nome em minusculo, sem espacos, sufixo `_v2`, `_v3` para revisoes
+- Nomes em lowercase, snake_case, sem espacos; sufixo `_v2`, `_v3` para revisoes
 
 ## Como contribuir
 
-1. Salve `.SLDPRT`/`.STEP` nativo + `.STEP` neutro + `.STL` (se impressivel)
-2. Mantenha o STEP neutro sempre atualizado como fonte de verdade para corte/ CAM
+1. Salve `.SLDPRT`/`.SLDASM` nativo + `.STEP` neutro + `.STL` (se impressivel)
+2. Mantenha o STEP neutro sempre atualizado como fonte de verdade para corte/CAM
 3. Adicione nota aqui quando subir nova revisao
