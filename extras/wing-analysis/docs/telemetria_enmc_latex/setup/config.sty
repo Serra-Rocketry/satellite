@@ -96,15 +96,11 @@
   \gdef\@title{}
 }
 
-% Estrutura visual do bloco de título
+% Estrutura visual do bloco de título corrigida para o seu layout original
 \def\@maketitle{%
   \newpage
   \null
-  % Ajuste vertical fino do título
   \vspace{-0.68cm}
-
-  % Espaçamento superior do título
-  % (valor original era 50mm, alterado para 0mm)
   \vskip 0mm
 
   \begin{center}
@@ -113,11 +109,25 @@
 
   \vskip 3.9bp
 
-  % Autores
-  {\noindent \bfseries \@author}
+  % Seu bloco original injetado direto na estrutura visual (Sem dar erro!)
+  {\rm
+  \noindent \textbf{Diego dos Santos Alves}$^{1}$ - \textnormal{diego.alves@grad.iprj.uerj.br}\\
+  \noindent \textbf{Pedro Henrique Couto Silva}$^{1}$ - \textnormal{pedro.silva@grad.iprj.uerj.br}\\
+  \noindent \textbf{Vinicius Carvalho Monnerat Bandeira}$^{1}$ - \textnormal{vinicius.bandeira@grad.iprj.uerj.br}\\
+  \noindent \textbf{Caio Phelipe Souza De Lima}$^{1}$ - \textnormal{caio.lima@grad.iprj.uerj.br}\\
+  \noindent \textbf{Pablo Alves Mattos Borges}$^{1}$ - \textnormal{pablo.borges@grad.iprj.uerj.br}\\
+  \noindent \textbf{Angelo Mondaini Calvão}$^{1}$ - \textnormal{oangelo@iprj.uerj.br}\\
+  \noindent \textbf{Eustáquio de Souza Baêta Júnior}$^{2}$ - \textnormal{eustaquio.baeta@eng.uerj.br}\\
+  \noindent \textbf{Letícia dos Santos Aguilera}$^{3}$ - \textnormal{leticia.aguilera@iprj.uerj.br}\\
+  {\small
+  \noindent $^{1}$Universidade do Estado do Rio de Janeiro, Instituto Politécnico -- Nova Friburgo -- RJ\\
+  \noindent $^{2}$Universidade do Estado do Rio de Janeiro, Faculdade de Engenharia, Programa de Pós-Graduação em Engenharia Mecânica -- Rio de Janeiro -- RJ\\
+  \noindent $^{3}$Universidade do Estado do Rio de Janeiro, Instituto Politécnico, Programa de Pós-Graduação em Ciência e Tecnologia de Materiais -- Nova Friburgo -- RJ\par}
+  }
 
   \vskip 12bp
 }
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -197,10 +207,8 @@
     \endquotation
     \vskip 12bp
 }
-
-% Nome exibido para palavras-chave
-\newcommand{\keywordsname}{Palavras-chave}
-
+\addto\captionsenglish{\renewcommand{\keywordsname}{Keywords}}
+\addto\captionsbrazil{\renewcommand{\keywordsname}{Palavras-chave}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CONFIGURAÇÃO DE PÁGINA
@@ -253,4 +261,4 @@
 \pagestyle{empty}
 
 % Título da seção de referências
-\renewcommand\refname{REFERENCES}
+\renewcommand\refname{REFERÊNCIAS}
