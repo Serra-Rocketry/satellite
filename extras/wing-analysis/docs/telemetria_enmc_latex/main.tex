@@ -59,21 +59,9 @@
 % AUTORES E AFILIAÇÕES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\author{
-\rm
-\begin{tabular}{l}
-\textbf{Diego dos Santos Alves}$^{1}$ - {\textnormal diego.alves@grad.iprj.uerj.br}\\
-\textbf{Pedro Henrique Couto Silva}$^{1}$ - {\textnormal pedro.silva@grad.iprj.uerj.br}\\
-\textbf{Vinicius Carvalho Monnerat Bandeira}$^{1}$ - {\textnormal vinicius.bandeira@grad.iprj.uerj.br}\\
-\textbf{Pablo Alves Mattos Borges}$^{1}$ - {\textnormal pablo.borges@grad.iprj.uerj.br}\\
-\textbf{Angelo Mondaini Calvão}$^{1}$ - {\textnormal oangelo@iprj.uerj.br}\\
-\textbf{Eustáquio de Souza Baêta Júnior}$^{2}$ - {\textnormal eustaquio.baeta@eng.uerj.br}\\
-\textbf{Letícia dos Santos Aguilera}$^{3}$ - {\textnormal leticia.aguilera@iprj.uerj.br}\\
-{\fontsize{11}{0}\selectfont $^{1}$Universidade do Estado do Rio de Janeiro, Instituto Politécnico -- Nova Friburgo -- RJ}\\
-{\fontsize{11}{0}\selectfont $^{2}$Universidade do Estado do Rio de Janeiro, Faculdade de Engenharia, Programa de Pós-Graduação em Engenharia Mecânica -- Rio de Janeiro -- RJ}\\
-{\fontsize{11}{0}\selectfont $^{3}$Universidade do Estado do Rio de Janeiro, Instituto Politécnico, Programa de Pós-Graduação em Ciência e Tecnologia de Materiais -- Nova Friburgo -- RJ}
-\end{tabular}
-}
+\author{Diego dos Santos Alves, et al.}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RODAPÉ ESPECIAL DA PRIMEIRA PÁGINA
@@ -159,309 +147,13 @@ XVII ECTM -- Encontro de Ciência e Tecnologia de Materiais\\
 \pagestyle{fancy}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 1. INTRODUÇÃO
+% SEÇÕES DO ARTIGO
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{INTRODUÇÃO}
-
-O regulamento da Latin American Space Challenge (LASC) exige que sistemas de recuperação de nanossatélites assegurem descida controlada entre 20~m/s e 45~m/s \citep{lasc2026}. Paraquedas, embora difundidos, apresentam pontos únicos de falha em dobraduras, costuras e mecanismos de acionamento. Como alternativa, propõe-se o Sistema de Recuperação Auto Rotativo Bioinspirado (SRAB), de arquitetura passiva inspirada na autorrotação de sementes de samara (\textit{Acer rubrum}, \textit{Fraxinus}). A assimetria estrutural induz rotação cônica estável, gerando Vórtices de Bordo de Ataque (LEV) que ampliam a sustentação efetiva \citep{lentink2009, mcconnell2023} sem atuadores ou lógicas de disparo.
-
-Os objetivos específicos deste trabalho são: (a) desenvolver e validar qualitativamente o modelo dinâmico de 4$^{\underline{a}}$ ordem do SRAB por meio de ensaios de queda livre com protótipos iterativos (Testes 1 e 2); (b) projetar e validar funcionalmente a instrumentação embarcada para aquisição de dados de voo a 20~Hz (Teste 3 -- Parte B); (c) realizar simulação computacional da configuração Asa3 com 4 asas em altitude operacional para caracterizar o regime estacionário e analisar a dispersão paramétrica via Monte Carlo (Teste 3 -- Parte A); (d) realizar análise de sensibilidade paramétrica para caracterizar a influência dos coeficientes aerodinâmicos no regime estacionário; (e) comparar o desempenho do SRAB com sistema de paraquedas equivalente.
-
-O escopo delimita-se à validação preliminar qualitativa (Testes 1 e 2), à análise de sensibilidade paramétrica, à validação funcional da instrumentação e à demonstração de viabilidade física. Não se pretende esgotar a caracterização quantitativa do regime terminal, mas estabelecer bases para investigações futuras, incluindo lançamento real em altitude operacional.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 2. DA NATUREZA À PLATAFORMA
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{DA NATUREZA À PLATAFORMA}
-
-Sementes de \textit{Acer rubrum} e \textit{Fraxinus} desenvolveram ao longo da evolução um eficiente mecanismo de dispersão baseado em autorrotação passiva \citep{limacher2015, european2009}. A assimetria estrutural, massa concentrada na semente e superfície aerodinâmica expandida na asa, induz rotação cônica estável que reduz a velocidade terminal e maximiza a distância de dispersão horizontal. Durante a rotação, forma-se um vórtice no bordo de ataque (Leading-Edge Vortex, LEV) que reduz a pressão sobre o extradorso, elevando a sustentação efetiva de forma análoga ao voo de insetos \citep{lentink2009, mcconnell2023, rezgui2020}.
-
-É desse princípio que nasce o SRAB: um sistema que substitui a semente pelo nanossatélite e as asas da samara por superfícies aerodinâmicas impressas em PETG. A plataforma alvo é o PocketQube 1P, padrão de nanossatélite de 50~$\times$~50~$\times$~50~mm com massa máxima de 250~g \citep{lasc2026}. O frame utilizado, doado à equipe Serra Rocketry durante a LASC 2025 pela Alba Orbital, é composto por estrutura de alumínio e backplate de FR4 com massa de 44~g, deixando margem de 206~g para o sistema de recuperação, a eletrônica embarcada e as asas propriamente ditas.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 4. METODOLOGIA
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{METODOLOGIA}
-
-\subsection{Modelagem dinâmica e aerodinâmica}
-
-A dinâmica do SRAB é descrita por um modelo de 4$^{\underline{a}}$ ordem fundamentado nas equações reduzidas de Newton-Euler, em que o movimento de 6 graus de liberdade é simplificado a 4 variáveis de estado aproveitando a simetria axial do sistema. As simplificações adotadas são: ângulo de rolagem lateral desprezível ($\psi \approx 0$), momento de inércia longitudinal nulo ($I_{x3x3}=0$) e inércia em guinada equivalente à de arfagem ($I_{z3z3}=I_{y3y3}$). O vetor de estado é definido por quatro variáveis que capturam os graus de liberdade essenciais do movimento cônico: o ângulo de conicidade $\theta$, que mede a inclinação do eixo do satélite em relação à vertical; sua taxa de variação $\dot\theta$ (arfagem); a taxa de rotação $\dot\phi$ em torno do eixo vertical (guinada); e a velocidade vertical $v_0$:
-
-\begin{equation}
-\frac{d\theta}{dt} = \dot\theta
-\end{equation}
-
-\begin{equation}
-\ddot\theta = -\frac{M_{y3}}{I_{y3y3}} - \dot\phi^2 \sin\theta \cos\theta
-\end{equation}
-
-\begin{equation}
-\ddot\phi = \frac{M_{z3}}{I_{y3y3} \cos\theta} + 2\,\dot\phi\,\dot\theta \tan\theta
-\end{equation}
-
-\begin{equation}
-\dot v_0 = -g + \frac{F_{z3} \cos\theta}{m}
-\end{equation}
-
-O sistema de equações revela o acoplamento entre os movimentos de arfagem e guinada: o termo $\dot\phi^2 \sin\theta \cos\theta$ na Equação (2) mostra que a rotação gera um momento de restauração cônica, enquanto o termo $2\,\dot\phi\,\dot\theta \tan\theta$ na Equação (3) representa o acoplamento giroscópico entre arfagem e rotação, ambos característicos do regime de autorrotação estável observado nas sementes de samara. As forças aerodinâmicas ($F_{z3}$) e momentos ($M_{y3}$, $M_{z3}$) foram calculados pela Teoria do Elemento de Pá (BEM) com integração numérica ao longo da extensão da asa, discretizando cada asa em elementos de pá com perfil de corda extraído diretamente dos arquivos DXF. Incorporou-se um fator de sintonia fenomenológica $C_{D0}$ para capturar o ganho de sustentação induzido pelo LEV, calibrado iterativamente contra as observações experimentais dos Testes 1 e 2.
-
-\subsection{Simulação computacional (Pipeline Samara PQ)}
-
-O simulador Samara PQ, desenvolvido em Python, implementa o modelo dinâmico da Seção 3.1 e o integra numericamente no tempo para reproduzir a trajetória de queda desde a altitude inicial até o impacto. O pipeline inicia com a importação dos contornos geométricos de arquivos DXF (biblioteca \texttt{ezdxf}), dos quais são extraídos automaticamente o perfil de corda ao longo da envergadura, a área total e o raio efetivo de cada asa. As equações diferenciais são resolvidas com o método Runge--Kutta de 5$^{\underline{a}}$ ordem (\texttt{solve\_ivp}, RK45) da biblioteca SciPy, escolhido por oferecer controle adaptativo de passo e boa estabilidade numérica para sistemas com dinâmica multi-escala como o SRAB, em que as oscilações de arfagem ocorrem em frações de segundo enquanto a descida dura dezenas de segundos. O ambiente simula quedas de até 600~s com passo máximo de 0,2~s, produzindo relatórios em formato JSON e TXT com os valores numéricos de cada variável de estado, além de gráficos de altitude, velocidade, ângulo de conicidade e rotação ao longo do tempo.
-
-\subsection{Ensaios experimentais qualitativos (Testes 1 e 2)}
-
-Protótipos físicos montados sob a plataforma Alba Orbital 1P foram submetidos a quedas livres a partir de drone em altitude máxima de aproximadamente 20~m. O primeiro protótipo, Teste 1, utilizou quatro asas com área total de 109,22~cm$^2$ (asa1.dxf), apresentando sustentação detectável embora com desalinhamento estrutural evidente durante a rotação. Com base nas observações do Teste 1, a geometria foi otimizada para o Teste 2, que empregou a Asa2.DXF com 122,28~cm$^2$, um aumento de 12\% na área, e resultou em rotação cônica visualmente mais estável.
-
-A Tabela~\ref{tab:testes12} apresenta os parâmetros de simulação para os Testes 1 e 2.
-
-\begin{table}[htbp]
-\caption{Parâmetros de simulação computacional para os Testes 1 e 2. Condições: queda de 20~m, massa 200~g, $\beta=8^\circ$, $C_{D0}=1,0$, $f_{factor}=0,3$, $\rho=1,225$~kg/m$^3$.}
-\centering
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccc}
-\hline
-Parâmetro & Teste 1 (Asa1, 4 asas) & Teste 2 (Asa2, 4 asas) & Variação \\
-\hline
-Área Total das Asas [cm$^2$] & 109,22 & 122,28 & +12\% \\
-Velocidade de Impacto [m/s] & 7,68 & 8,04 & +4,7\% \\
-Energia Cinética no Impacto [J] & 5,90 & 6,47 & +9,7\% \\
-Tempo de Voo [s] & 2,79 & 2,70 & $-$3,2\% \\
-Conicidade $\theta$ no Impacto [$^\circ$] & 13,46 & 24,44 & +81,6\% \\
-Taxa de Rotação no Impacto [RPM] & 306,77 & 306,89 & +0,04\% \\
-Número de Reynolds médio & 9\,875 & 13\,876 & +40,5\% \\
-\hline
-\end{tabular*}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{tab:testes12}
-\end{table}
-
-\subsection{Instrumentação embarcada (Teste 3 -- Parte B)}
-
-Projetou-se uma suíte de telemetria com massa total de 15~g, composta por microcontrolador ESP32-C3 (4~g), IMU ICM-20602 (3~g) para amostragem inercial a 20~Hz, barômetro BMP280 para medição de altitude barométrica à mesma taxa, transceptor LoRa RFM95W em 915~MHz (2~g) para telemetria de longo alcance e data logger baseado em LittleFS na flash interna. Um módulo GPS u-blox NEO-8M (2,5~g) está previsto para integração futura no Teste 3. O restante da massa é composto por bateria e suportes mecânicos (3,5~g).
-
-O firmware \texttt{sensor\_logging\_lfs\_v2.ino} implementa leitura simultânea do ICM-20602 e BMP280 via I2C, cálculo de taxa de descida por derivada numérica da altitude barométrica, detecção automática de apogeu, validação de dados (NaN, outliers, ranges físicos) e logging CSV no LittleFS a 20~Hz. O sistema foi validado funcionalmente em bancada com detecção de apogeu por transição de sinal de $V_z$ e logging sem perda de amostras.
-
-\subsection{Teste 3 -- Protocolo e estrutura}
-
-O Teste 3 foi definido como uma campanha de validação unificada da configuração Asa3.DXF com 4 asas, dividida em duas frentes complementares. A Parte A compreende a simulação computacional para caracterização do regime estacionário em altitude operacional de 1000~m via Samara PQ, incluindo análise de sensibilidade por Monte Carlo, cujos resultados são apresentados na Seção 4.2. A Parte B consiste no ensaio de campo instrumentado, com lançamento real em altitude operacional e aquisição de dados pela suíte de telemetria descrita na Seção 3.4, tendo como critérios de aceitação erro de velocidade de impacto inferior a $\pm5\%$ e erro de tempo de voo inferior a $\pm3\%$ em relação às previsões da Parte A. O ensaio de campo permanece como trabalho futuro.
-
-\subsection{Análise de sensibilidade do parâmetro $C_{D0}$}
-
-Conduziu-se análise de sensibilidade variando $C_{D0}$ em $\pm10\%$ e $\pm20\%$ em relação ao valor calibrado ($C_{D0}=1,0$), mantendo os demais parâmetros fixos (Asa3.DXF, 4 asas, 200~g, $\beta=3^\circ$, altitude 1000~m, $\rho=1,225$~kg/m$^3$, $f_{factor}=0,3$). A Tabela~\ref{tab:cd0} apresenta os resultados.
-
-\begin{table}[htbp]
-\caption{Análise de sensibilidade de $C_{D0}$ para a configuração Asa3 com 4 asas.}
-\centering
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccc}
-\hline
-$C_{D0}$ & Variação & Velocidade de Impacto [m/s] & Energia Cinética [J] \\
-\hline
-0,8 & $-$20\% & 12,90 & 16,65 \\
-0,9 & $-$10\% & 12,90 & 16,65 \\
-1,0 & nominal & 12,90 & 16,65 \\
-1,1 & +10\% & 12,90 & 16,65 \\
-1,2 & +20\% & 12,90 & 16,65 \\
-\hline
-\end{tabular*}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{tab:cd0}
-\end{table}
-
-A velocidade de impacto é independente de $C_{D0}$ na faixa testada, indicando que o sistema atinge regime de autorrotação onde a sustentação aerodinâmica, e não o arrasto basal, é o mecanismo dominante de dissipação de energia. Este resultado é consistente com a física do LEV: uma vez estabelecido o vórtice de bordo de ataque, a força de sustentação gerada pelo escoamento rotativo sobrepuja em muito a componente de arrasto de forma, tornando o sistema robusto a variações na rugosidade superficial ou no perfil do bordo de fuga. O parâmetro $C_{D0}$, embora relevante na fase transitória inicial de aceleração, perde influência assim que o regime cônico-estacionário se estabelece. Essa insensibilidade tem implicações práticas importantes para a fabricação: tolerâncias de impressão 3D que alterem o acabamento superficial das asas não comprometerão a velocidade terminal do sistema, desde que a geometria global (corda, envergadura e ângulo de passo) seja preservada.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 5. RESULTADOS E DISCUSSÃO
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{RESULTADOS E DISCUSSÃO}
-
-A Tabela~\ref{tab:resumo} resume os parâmetros de simulação para todos os testes.
-
-\begin{table}[htbp]
-\caption{Resumo dos parâmetros de simulação.}
-\centering
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccc}
-\hline
-Parâmetro & Teste 1 & Teste 2 & Teste 3 & MC \\
-\hline
-DXF & asa1.dxf & Asa2.DXF & Asa3.DXF & Asa3.DXF \\
-$n_{wings}$ & 4 & 4 & 4 & 4 \\
-Massa [g] & 200 & 200 & 200 & 200 $\pm$ 10 \\
-$\beta$ [$^\circ$] & 8 & 8 & 3 & 3 $\pm$ 0,5 \\
-$C_{D0}$ & 1,0 & 1,0 & 1,0 & 1,0 $\pm$ 0,10 \\
-$f_{factor}$ & 0,3 & 0,3 & 0,3 & 0,3 $\pm$ 0,03 \\
-$\rho$ [kg/m$^3$] & 1,225 & 1,225 & 1,225 & 1,225 \\
-Altitude [m] & 20 & 20 & 1000 & 1000 \\
-Iterações & 1 & 1 & 1 & 200 \\
-\hline
-\end{tabular*}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{tab:resumo}
-\end{table}
-
-\subsection{Análise experimental (Testes 1 e 2)}
-
-As Figuras~\ref{fig:test1_lrr} a~\ref{fig:test2_geom} apresentam os dashboards LRR (Long-Range Report) e vistas geométricas dos Testes 1 e 2. A Tabela~\ref{tab:testes12} (Seção 3.3) resume os parâmetros e resultados simulados para ambos os ensaios. A comparação entre os dois testes revela aspectos importantes da dinâmica do SRAB. O aumento de 81,6\% na conicidade de impacto (de 13,46$^\circ$ para 24,44$^\circ$) com apenas 12\% de acréscimo na área das asas indica uma relação não linear entre área aerodinâmica e torque restaurador. Esse comportamento é esperado do modelo de BEM, uma vez que o momento aerodinâmico $M_{y3}$ escala com o quadrado da corda local, amplificando o efeito de pequenos incrementos geométricos.
-
-A taxa de rotação, por outro lado, permaneceu praticamente inalterada entre os dois testes (306,77~RPM para 306,89~RPM, diferença de 0,04\%), sugerindo que a velocidade angular de equilíbrio é determinada principalmente pelo ângulo de passo $\beta$ e pela distribuição de massa, sendo relativamente insensível à área total das asas. O aumento de 40,5\% no número de Reynolds médio (de 9\,875 para 13\,876) reflete a maior velocidade de impacto do Teste 2 (8,04~m/s contra 7,68~m/s) e aproxima o escoamento do regime de transição para turbulento, onde o LEV se torna mais estável e reprodutível \citep{rezgui2020}.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_test1_lrr.png}
-\caption{LRR do Teste 1 (Asa1, 4 asas, 200~g).}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{fig:test1_lrr}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_test1_geom.png}
-\caption{Vistas geométricas do Teste 1 (Asa1).}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{fig:test1_geom}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_test2_lrr.png}
-\caption{LRR do Teste 2 (Asa2, 4 asas, 200~g).}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{fig:test2_lrr}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_test2_geom.png}
-\caption{Vistas geométricas do Teste 2 (Asa2).}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{fig:test2_geom}
-\end{figure}
-
-\subsection{Simulação computacional da configuração Asa3 com 4 asas (Teste 3)}
-
-A Tabela~\ref{tab:test3} apresenta os resultados da simulação da configuração Asa3.DXF com 4 asas em altitude operacional de 1000~m, e as Figuras~\ref{fig:test3_lrr} e~\ref{fig:test3_geom} mostram o dashboard LRR e as vistas geométricas correspondentes.
-
-\begin{table}[htbp]
-\caption{Resultados da simulação computacional para o Teste 3 (Asa3, 4 asas).}
-\centering
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lc}
-\hline
-Parâmetro & Valor \\
-\hline
-Geometria & Asa3.DXF, 4 asas \\
-Massa total [g] & 200 \\
-Velocidade de impacto [m/s] & 12,90 \\
- Tempo de descida [s] & 78,03 \\
-Conicidade $\theta$ de equilíbrio [$^\circ$] & 17,22 \\
-Taxa de rotação [RPM] & 371,98 \\
-Energia cinética final [J] & 16,65 \\
-Energia potencial inicial [J] & 1962,00 \\
-Energia dissipada [J] (\%) & 1945,35 (99,15\%) \\
-\hline
-\end{tabular*}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{tab:test3}
-\end{table}
-
-A configuração com 4 asas apresenta velocidade de impacto de 12,90~m/s, com conicidade de equilíbrio de 17,22$^\circ$ e spin de 372~RPM. Três aspectos merecem discussão aprofundada. Primeiro, a dissipação de 99,15\% da energia potencial inicial (1945,35~J dos 1962~J) demonstra que o sistema de autorrotação é altamente eficiente na conversão de energia potencial em trabalho aerodinâmico, restando apenas 16,65~J na forma de energia cinética no impacto, valor compatível com estruturas de nanossatélites sem danos. Segundo, a conicidade de equilíbrio de 17,22$^\circ$ representa um compromisso entre estabilidade cônica (que favorece ângulos maiores) e velocidade vertical (que aumenta com o cosseno de $\theta$, conforme a Equação 4). Este ângulo é significativamente menor que os 24,44$^\circ$ do Teste 2, o que se explica pela diferença no ângulo de passo $\beta$ (3$^\circ$ no Teste 3 contra 8$^\circ$ no Teste 2), que regula diretamente a componente de sustentação gerada por cada asa. Terceiro, o tempo de descida de 78,03~s para 1000~m implica uma taxa de descida média de 12,82~m/s, consistente com a velocidade terminal do sistema e compatível com missões que exijam tempos de voo controlados.
-
-A velocidade de impacto de 12,90~m/s situa-se abaixo da janela regulatória LASC (20--45~m/s), indicando que o SRAB na configuração atual é mais lento que o requisito mínimo. Isto não invalida o sistema, mas sinaliza a necessidade de ajustes geométricos, como redução do número de asas de 4 para 2, aumento do ângulo de passo $\beta$ ou incremento de massa total, para elevar a velocidade terminal ao intervalo regulatório. Do ponto de vista da missão, uma velocidade abaixo do limite mínimo é preferível a uma acima do máximo, pois representa risco energético menor em cenário de falha.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_test3_lrr.png}
-\caption{LRR do Teste 3 (Asa3, 4 asas, 200~g). Velocidade de impacto de 12,90~m/s com conicidade de 17,22$^\circ$.}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{fig:test3_lrr}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_test3_geom.png}
-\caption{Vistas geométricas do Teste 3 (Asa3, 4 asas).}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{fig:test3_geom}
-\end{figure}
-
-\subsubsection*{Análise de Sensibilidade Monte Carlo (Teste 3)}
-
-Para quantificar a dispersão esperada, conduziu-se análise Monte Carlo com 200 iterações, variando simultaneamente a massa total (200~$\pm$~10~g), o ângulo de passo $\beta$ (3,0$^\circ$~$\pm$~0,5$^\circ$), $C_{D0}$ (1,0~$\pm$~0,10) e $f_{factor}$ (0,3~$\pm$~0,03). Os intervalos foram definidos com base nas tolerâncias de fabricação estimadas para impressão PETG a 0,6~mm ($\beta$ e $f_{factor}$), na faixa de calibração observada nos Testes 1 e 2 ($C_{D0}$) e na margem regulatória de massa do padrão PocketQube 1P. A Tabela~\ref{tab:mc} sumariza os resultados.
-
-\begin{table}[htbp]
-\caption{Resultados da análise Monte Carlo para a configuração Asa3 com 4 asas (200 iterações).}
-\centering
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccc}
-\hline
-Métrica & Média $\pm$ $\sigma$ & P5 & P95 \\
-\hline
-Velocidade de impacto & 12,89 $\pm$ 0,20~m/s & 12,54~m/s & 13,19~m/s \\
-Tempo de descida & 78,23 $\pm$ 1,22~s & 76,46~s & 80,38~s \\
-Conicidade $\theta_{eq}$ & 17,48$^\circ$ $\pm$ 1,19$^\circ$ & 15,71$^\circ$ & 19,50$^\circ$ \\
-Spin de equilíbrio & 371 $\pm$ 8~RPM & 358~RPM & 384~RPM \\
-Energia de impacto & 16,54 $\pm$ 1,19~J & 14,40~J & 18,30~J \\
-\hline
-\end{tabular*}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{tab:mc}
-\end{table}
-
-A velocidade de impacto apresenta baixa dispersão ($\sigma = 0,20$~m/s, CV~$<$~2\%), confirmando que o regime de autorrotação estável atua como um controlador aerodinâmico natural que rejeita perturbações paramétricas. Um coeficiente de variação inferior a 2\% é notavelmente baixo para um sistema aeroespacial, onde incertezas de 5--10\% são típicas mesmo em projetos maduros. Essa robustez decorre do fato de que a velocidade terminal no regime de autorrotação é determinada primariamente pela geometria das asas e pela massa total, com influência secundária dos parâmetros fenomenológicos calibrados. O P95~=~13,19~m/s é uma estimativa preliminar (200 iterações são suficientes para média e desvio; recomenda-se 1000 para quantis extremos), ainda assim representando um pior caso 2,6\% acima da média nominal e confortavelmente abaixo do limite LASC de 45~m/s.
-
-\subsection{Limitações e trabalhos futuros}
-
-Os Testes 1 e 2 foram conduzidos em aproximadamente 20~m de altitude, insuficientes para que o regime terminal fosse atingido, e o modelo atmosférico adotado é simplificado, com densidade constante e sem representação de vento ou turbulência. Como desdobramentos futuros, pretende-se realizar o Teste 3 em campo com critérios de erro inferiores a $\pm5\%$ em velocidade e $\pm3\%$ em tempo, integrar o simulador Samara PQ ao RocketPy \citep{rocketpy2024} para simulações com perfil atmosférico variável (GFS/ISA) e deriva por vento, recalibrar os coeficientes $C_{D0}$ e $f_{factor}$ a partir dos dados experimentais do Teste 3, e expandir a análise de sensibilidade para incluir os parâmetros $f_{factor}$ e $\beta$.
-
-\subsection{Benchmark SRAB vs paraquedas}
-
-A Tabela~\ref{tab:benchmark} compara o SRAB (Asa3, 4 asas, 200~g) com um paraquedas flat circular de $\varnothing$200~mm ($C_D = 1,5$), ambos partindo de 1000~m com a mesma massa total. O SRAB atinge 1,6$\times$ a velocidade de impacto do paraquedas (12,90~m/s contra 8,25~m/s) e completa a descida em 78,03~s, contra 118,33~s do paraquedas, uma redução de 34\% no tempo de voo. Esta diferença reflete a física fundamental dos dois sistemas: enquanto o paraquedas dissipa energia exclusivamente por arrasto de forma (proporcional a $v^2$), o SRAB combina arrasto e sustentação, e a componente de sustentação, embora reduza a taxa de dissipação vertical, é o que permite a autorrotação estável.
-
-A comparação, no entanto, não pode ser reduzida a uma questão de velocidade. O SRAB apresenta três vantagens estruturais sobre o paraquedas. Primeiro, elimina completamente mecanismos de acionamento, molas, retenções, pirotecnia, que são fontes clássicas de falha em missões de recuperação, onde o volume e a massa disponíveis limitam drasticamente a redundância. Segundo, remove pontos únicos de falha associados a linhas, costuras e dobraduras, que respondem por uma fração significativa das falhas de recuperação em nanossatélites. Terceiro, o tempo de descida 34\% menor reduz a exposição a ventos cruzados, diminuindo o raio de dispersão do ponto de impacto e facilitando a localização pós-queda.
-
-Ambos os sistemas operam abaixo da janela LASC (20--45~m/s), o que significa que nenhum dos dois atende ao requisito regulatório sem modificações. Esta constatação não é uma limitação específica do SRAB, mas um indicador de que a configuração de referência (200~g, $\varnothing$200~mm) foi dimensionada para priorizar a margem de segurança energética em detrimento da conformidade regulatória, uma escolha de projeto válida para a fase de validação conceitual. Para missões reais, ambos os sistemas exigiriam ajustes: no caso do paraquedas, redução do diâmetro ou aumento de massa; no caso do SRAB, redução do número de asas ou aumento do ângulo de passo $\beta$.
-
-É importante notar que esta comparação é limitada por duas simplificações. Primeiro, o paraquedas foi modelado com $C_D$ constante de 1,5, típico de paraquedas flat circular, sem considerar efeitos de inflação, oscilação ou vento. Segundo, o SRAB foi simulado sem vento ou turbulência atmosférica. Uma comparação mais realista exigiria modelos estocásticos para ambos os sistemas, incluindo rajadas de vento e perfis atmosféricos variáveis.
-
-\begin{table}[htbp]
-\caption{Comparativo SRAB vs Paraquedas.}
-\centering
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcc}
-\hline
-Parâmetro & SRAB (4 asas) & Paraquedas ($\varnothing$200~mm) \\
-\hline
-Massa total [g] & 200 & 200 \\
-Velocidade de impacto [m/s] & 12,90 & 8,25 \\
-Tempo de descida [s] & 78,03 & 118,33 \\
-Energia de impacto [J] & 16,65 & 6,80 \\
-Abaixo do limite LASC (45~m/s) & Sim & Sim \\
-Dentro da janela LASC (20--45~m/s) & Não & Não \\
-\hline
-\end{tabular*}
-{\footnotesize\centering Fonte: Autores (2026)\par}
-\label{tab:benchmark}
-\end{table}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 6. CONCLUSÕES
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{CONCLUSÕES}
-
-Este trabalho apresentou o desenvolvimento e a validação preliminar do SRAB para PocketQube 1P, com cinco contribuições principais alinhadas aos objetivos propostos. O modelo dinâmico de 4$^{\underline{a}}$ ordem acoplado ao BEM foi validado qualitativamente nos Testes 1 e 2, nos quais a transição Asa1--Asa2 resultou em aumento de 81,6\% na conicidade de impacto (de 13,46$^\circ$ para 24,44$^\circ$), uma amplificação não linear que revela a sensibilidade do torque aerodinâmico à geometria das asas. A instrumentação embarcada (ESP32-C3, ICM-20602, BMP280, LoRa RFM95W) foi validada funcionalmente em bancada a 20~Hz, demonstrando viabilidade de aquisição e logging em voo real. A simulação da Asa3 com 4 asas em altitude operacional de 1000~m resultou em velocidade de impacto de 12,90~m/s, conicidade de equilíbrio de 17,22$^\circ$ e spin de 372~RPM, com dissipação de 99,15\% da energia potencial inicial, um indicador da eficiência aerodinâmica do regime de autorrotação. A análise de sensibilidade demonstrou que a velocidade terminal é independente de $C_{D0}$ na faixa de $\pm20\%$, confirmando o LEV como mecanismo dominante e conferindo robustez à fabricação por impressão 3D. Por fim, o benchmark com paraquedas flat circular de 200~mm mostrou que o SRAB, embora 1,6$\times$ mais rápido (12,90~m/s contra 8,25~m/s), elimina mecanismos de acionamento e pontos únicos de falha, reduzindo o tempo de descida em 34\% e a consequente deriva por vento.
-
-A análise Monte Carlo (200 iterações) indicou velocidade de impacto de 12,89~$\pm$~0,20~m/s (CV~$<$~2\%), confirmando a robustez do sistema às variações paramétricas de massa, $\beta$, $C_{D0}$ e $f_{factor}$ com dispersão excepcionalmente baixa para padrões aeroespaciais. Ambas as configurações simuladas operam abaixo da janela regulatória LASC (20--45~m/s), indicando que ajustes geométricos, como redução do número de asas, aumento do ângulo de passo $\beta$ ou incremento de massa, são necessários para conformidade. Esta limitação não invalida o conceito: velocidades abaixo do mínimo regulatório são energeticamente mais seguras do que velocidades acima do máximo, e os ajustes necessários são parametricamente simples de implementar.
-
-O SRAB demonstra viabilidade como sistema passivo de recuperação para PocketQubes, oferecendo vantagens fundamentais de confiabilidade ao eliminar mecanismos de acionamento e pontos únicos de falha inerentes a paraquedas. A continuidade do desenvolvimento com o Teste 3 em campo, a integração ao RocketPy e a recalibração dos coeficientes a partir de dados experimentais permitirá avançar da validação conceitual para a certificação operacional do sistema.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% AGRADECIMENTOS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection*{\textit{Agradecimentos}}
-
-Os autores agradecem à equipe Serra Rocketry (Missão Helike \#213), à Alba Orbital pela doação da plataforma PocketQube 1P e aos laboratórios do IPRJ/UERJ pelo suporte institucional.
+\input{sec-introducao}  % §1 Introdução + §2 Fundamentação Teórica
+\input{sec-metodologia}  % §3 Materiais e Métodos
+\input{sec-resultados}  % §4 Resultados e Discussão
+\input{sec-conclusoes}  % §5 Conclusões
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % REFERÊNCIAS
@@ -481,7 +173,7 @@ Os autores agradecem à equipe Serra Rocketry (Missão Helike \#213), à Alba Or
 
 \vspace{0.2cm}
 
-\noindent {\bfseries BIOINSPIRED AUTOROTATIVE RECOVERY SYSTEM (SRAB) FOR POCKETQUBE 1P NANOSATELLITE: FOUNDATIONS, MODELING, PRELIMINARY EXPERIMENTAL VALIDATION AND COMPUTATIONAL SIMULATION}
+\noindent {\centering \bfseries BIOINSPIRED AUTOROTATIVE RECOVERY SYSTEM (SRAB) FOR POCKETQUBE 1P NANOSATELLITE: FOUNDATIONS, MODELING, PRELIMINARY EXPERIMENTAL VALIDATION AND COMPUTATIONAL SIMULATION \par}
 
 \vspace{0.5cm}
 
@@ -489,7 +181,9 @@ Os autores agradecem à equipe Serra Rocketry (Missão Helike \#213), à Alba Or
 The recovery of PocketQube 1P nanosatellites traditionally relies on parachutes, which present single points of failure such as folding errors, stitching defects or corrosion. This work proposes the Bioinspired Autorotative Recovery System (SRAB), based on the passive autorotation mechanism observed in samara seeds (\textit{Acer rubrum}, \textit{Fraxinus}). The system employs an asymmetric structural architecture that induces conical rotation without active actuation, generating a Leading-Edge Vortex (LEV) that reduces terminal velocity. Validation uses a fourth-order dynamic model (reduced Newton-Euler) coupled with Blade Element Theory (BEM), implemented in the Samara PQ simulator in Python, and qualitative free-fall experiments with two iterative prototypes (Tests 1 and 2). Computational simulation of the Asa3.DXF configuration with 4 wings (Test 3 -- Part A) resulted in impact velocity of 12.90~m/s, equilibrium conicity of 17.22$^\circ$ and spin of 372~RPM. Monte Carlo dispersion analysis (200 iterations) indicated impact velocity of 12.89~$\pm$~0.20~m/s (P95~=~13.19~m/s). The embedded instrumentation (ESP32-C3, ICM-20602, BMP280, LoRa RFM95W) was functionally validated at 20~Hz.
 \end{abstract}
 
-\noindent {\em Keywords: Passive recovery, samara, PocketQube, autorotation, Monte Carlo}
+\begin{keywords}
+Passive recovery, samara, PocketQube, autorotation, Monte Carlo
+\end{keywords}
 
 \selectlanguage{brazil}
 
