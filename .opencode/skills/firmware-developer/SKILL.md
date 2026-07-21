@@ -76,14 +76,14 @@ bool update();
 ```cpp
 bool setupSensor() {
   if (!sensor.begin()) {
-    Serial.println("❌ BMP280 initialization failed");
+    Serial.println("BMP280 initialization failed");
     return false;
   }
   
   // Validate sensor readings
   float pressure = sensor.readPressure();
   if (isnan(pressure) || pressure < 300 || pressure > 1100) {
-    Serial.println("⚠️ Invalid pressure reading");
+    Serial.println(" Invalid pressure reading");
     return false;
   }
   
@@ -270,9 +270,9 @@ if (isnan(alt) || alt < -500 || alt > 50000) {
 
 ### SPI Sensors
 - **RFM95W LoRa**:
-  - SS: GPIO 10
-  - RST: GPIO 4
-  - DIO0: GPIO 3
+  - LoRa CS: GPIO 7
+  - RST: GPIO 1
+  - DIO0: GPIO 2
   - Frequency: 915 MHz
 
 ### UART Devices

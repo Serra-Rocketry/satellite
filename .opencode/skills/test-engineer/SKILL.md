@@ -202,10 +202,10 @@ OK
 **Expected Output**:
 ```
 === Teste Unificado de Sensores v3 ===
-✓ ICM20602 encontrado!
-✓ BME280 inicializado!
-✓ GPS UART inicializado!
-✓ LittleFS montado!
+ ICM20602 encontrado!
+ BME280 initialized!
+ GPS UART initialized!
+ LittleFS montado!
 ```
 
 ---

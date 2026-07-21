@@ -120,7 +120,7 @@ A equipe é composta por 5 especialistas que cobrem todas as áreas críticas do
 │ 1. PLANNING                                                  │
 └─────────────────────────────────────────────────────────────┘
     ↓
-    👤 Usuário: "Adicionar suporte ao sensor BME280"
+    Usuário: "Adicionar suporte ao sensor BME280"
     ↓
     🏗️ Architect:
        - Analisa impacto na arquitetura
@@ -183,7 +183,7 @@ A equipe é composta por 5 especialistas que cobrem todas as áreas críticas do
 ### 2. Bug Fix (Ciclo Rapido)
 
 ```
-👤 Usuário: "A telemetria LoRa parou de transmitir"
+Usuário: "A telemetria LoRa parou de transmitir"
 💻 Firmware Developer:
    - Diagnostica e implementa correção
     ↓
@@ -205,7 +205,7 @@ A equipe é composta por 5 especialistas que cobrem todas as áreas críticas do
 ### 3. Refatoracao (Arquitetural)
 
 ```
-👤 Usuário: "Refatorar loop para melhorar modularidade"
+Usuário: "Refatorar loop para melhorar modularidade"
     ↓
 🏗️ Architect:
    - Cria Architecture Decision Record (ADR)
@@ -213,7 +213,7 @@ A equipe é composta por 5 especialistas que cobrem todas as áreas críticas do
    - Especifica prioridades e core affinity
     - Documenta em docs/software.md
     ↓
-👤 Aprovação do time
+Aprovação do time
     ↓
 💻 Firmware Developer:
    - Implementa tasks conforme necessidade

@@ -10,7 +10,7 @@ Este arquivo lista todas as skills disponíveis no projeto Satellite e fornece a
 
 ## Skills Disponíveis
 
-### 🏗️ Embedded Systems Architect
+###  Embedded Systems Architect
 - **Caminho**: `.opencode/skills/embedded-architect/SKILL.md`
 - **Especialidade**: Arquitetura embarcada, organizacao de tasks, otimizacao de performance
 - **Use quando**: Planejar arquitetura, validar design, otimizar recursos
@@ -20,7 +20,7 @@ Este arquivo lista todas as skills disponíveis no projeto Satellite e fornece a
 
 ---
 
-### 💻 Firmware Developer
+###  Firmware Developer
 - **Caminho**: `.opencode/skills/firmware-developer/SKILL.md`
 - **Especialidade**: C/C++ embarcado, integração de sensores, protocolos I2C/SPI/UART
 - **Use quando**: Implementar drivers, adicionar módulos, corrigir bugs
@@ -30,7 +30,7 @@ Este arquivo lista todas as skills disponíveis no projeto Satellite e fornece a
 
 ---
 
-### ✅ Code Reviewer (Safety & Quality)
+###  Code Reviewer (Safety & Quality)
 - **Caminho**: `.opencode/skills/code-reviewer/SKILL.md`
 - **Especialidade**: Código safety-critical, análise estática, padrões de qualidade
 - **Use quando**: Revisar PRs, verificar lógica de segurança, validar padrões
@@ -40,7 +40,7 @@ Este arquivo lista todas as skills disponíveis no projeto Satellite e fornece a
 
 ---
 
-### 🧪 Test Engineer
+###  Test Engineer
 - **Caminho**: `.opencode/skills/test-engineer/SKILL.md`
 - **Especialidade**: Unit tests, testes de hardware, simulacao Python, analise de dados
 - **Use quando**: Criar testes, validar com simulator, testar hardware
@@ -50,7 +50,7 @@ Este arquivo lista todas as skills disponíveis no projeto Satellite e fornece a
 
 ---
 
-### 📚 Documentation Specialist
+###  Documentation Specialist
 - **Caminho**: `.opencode/skills/documentation-specialist/SKILL.md`
 - **Especialidade**: Doxygen, ADRs, diagramas, documentação técnica
 - **Use quando**: Atualizar docs, criar ADRs, documentar APIs
@@ -163,6 +163,6 @@ Se precisar:
 
 ---
 
-**Status**: ✅ Active  
+**Status**:  Active  
 **Última atualização**: 2026-04-06  
 **Versão**: 1.0

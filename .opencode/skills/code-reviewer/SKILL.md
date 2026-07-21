@@ -77,7 +77,7 @@ if (altitude < ALTITUDE_THRESHOLD &&
 ```
 
 **Review Comment**:
-> ⚠️ **CRITICAL SAFETY ISSUE**: Event logic is missing context validation. This could cause triggers during transient sensor noise.
+>  **CRITICAL SAFETY ISSUE**: Event logic is missing context validation. This could cause triggers during transient sensor noise.
 > 
 > **Required Fix**: Add context checks (vz/altitude/estado interno) before triggering.
 
@@ -101,7 +101,7 @@ verticalVelocity = (altitude - prevAltitude) / dt;
 ```
 
 **Review Comment**:
-> ⚠️ **CRITICAL**: Missing sensor data validation. If BMP280/BME280 returns NaN (sensor fault), calculations will propagate NaN through the system, potentially affecting detection logic.
+>  **CRITICAL**: Missing sensor data validation. If BMP280/BME280 returns NaN (sensor fault), calculations will propagate NaN through the system, potentially affecting detection logic.
 >
 > **Required Fix**: Add validation checks with fallback to last known good value.
 
@@ -123,7 +123,7 @@ snprintf(buffer, sizeof(buffer), "%.32s,%.2f,%.2f,%.2f",
 ```
 
 **Review Comment**:
-> ⚠️ **MAJOR**: `sprintf()` can cause buffer overflow if input strings are longer than expected. Use `snprintf()` with explicit buffer size.
+>  **MAJOR**: `sprintf()` can cause buffer overflow if input strings are longer than expected. Use `snprintf()` with explicit buffer size.
 
 ---
 
@@ -154,7 +154,7 @@ xSemaphoreGive(altitudeMutex);
 ```
 
 **Review Comment**:
-> ⚠️ **MAJOR**: `maxAltitude` is accessed by multiple tasks without synchronization. This can cause race conditions and incorrect values.
+>  **MAJOR**: `maxAltitude` is accessed by multiple tasks without synchronization. This can cause race conditions and incorrect values.
 >
 > **Required Fix**: Protect with mutex or atomic operations.
 
