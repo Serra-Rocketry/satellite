@@ -50,12 +50,12 @@ bool setupSD()
 {
     if (!SD.begin(CS_PIN))
     {
-        Serial.println("Erro ao montar SD.");
+        Serial.println("Failed to mount SD.");
         return false;
     }
     if (SD.cardType() == CARD_NONE)
     {
-        Serial.println("Cartão SD não encontrado.");
+        Serial.println("SD card not found.");
         return false;
     }
     return true; // Retorna true se tudo ocorreu bem
@@ -77,16 +77,16 @@ bool writeFile(const String &path, const String &data_string)
     File file = SD.open(path, FILE_WRITE);
     if (!file) // Se houver falha ao abrir o arquivo
     {
-        Serial.println("Falha ao abrir arquivo para gravação.");
+        Serial.println("Failed to open file for writing.");
         return false;
     }
     if (file.println(data_string)) // Se a escrita no arquivo for bem-sucedida
     {
-        Serial.println("Arquivo escrito.");
+        Serial.println("File written.");
     }
     else // Se houver falha na escrita
     {
-        Serial.println("Falha na gravação do arquivo.");
+        Serial.println("Failed to write to file.");
         file.close();
         return false;
     }
@@ -100,7 +100,7 @@ bool appendFile(const String &path, const String &message)
     File file = SD.open(path, FILE_APPEND);
     if (!file) // Se houver falha ao abrir o arquivo
     {
-        Serial.println("Falha ao abrir arquivo para anexar.");
+        Serial.println("Failed to open file for appending.");
         return false;
     }
      bool success = file.print(message + "\n");
@@ -109,7 +109,7 @@ bool appendFile(const String &path, const String &message)
     if (success)
         Serial.println("Mensagem anexada.");
     else
-        Serial.println("Falha ao anexar mensagem.");
+        Serial.println("Failed to append message.");
 
     return success;
 }
@@ -121,14 +121,14 @@ void setup()
     Serial.println("Iniciando...");
 
     if (!setupSD()) {
-        Serial.println("Erro ao iniciar o cartão SD!");
+        Serial.println("Failed to init SD card!");
         delay(3000);
         ESP.restart();
     }
 
     file_name = generateFileName();
     file_dir = file_name;
-    Serial.print("Salvando dados em: ");
+    Serial.print("Saving data to: ");
     Serial.println(file_dir);
  
     String data_header = "millis,lat,lon,sat,alt,data,hora,altp,p,ax,ay,az,gx,gy,gz";
@@ -138,7 +138,7 @@ void setup()
 
     if (!file_exists && !writeFile(file_dir, data_header))
     {
-        Serial.println("Erro ao criar arquivo de dados!");
+        Serial.println("Failed to create data file!");
         delay(3000);
         ESP.restart();
     }

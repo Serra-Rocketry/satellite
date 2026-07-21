@@ -26,7 +26,7 @@
 #define I2C_SCL_PIN 22
 #endif
 
-// ============= Configurações dos Sensores =============
+// ============= Configuration dos Sensores =============
 
 // ICM20602
 #define ICM_ADDR 0x69
@@ -34,12 +34,12 @@
 // BMP280
 Adafruit_BMP280 bmp;
 
-// ============= Definições de Pinos e Constantes =============
+// ============= Pin and Constant Definitions =============
 
 #define INTERVAL 500  // Intervalo de leitura em ms
 #define FILE_NAME "sensores.csv"
 
-// ============= Variáveis Globais =============
+// ============= Global Variables =============
 
 unsigned long previous_millis = 0;
 String file_path = "";
@@ -47,7 +47,7 @@ bool sd_ok = false;
 bool icm_ok = false;
 bool bmp_ok = false;
 
-// ============= Funções I2C para ICM20602 =============
+// ============= I2C Functions for ICM20602 =============
 
 void icm_writeReg(uint8_t reg, uint8_t val) {
   Wire.beginTransmission(ICM_ADDR);
@@ -72,7 +72,7 @@ int16_t icm_read16(uint8_t reg) {
   return (Wire.read() << 8) | Wire.read();
 }
 
-// ============= Inicialização do ICM20602 =============
+// ============= Initialization do ICM20602 =============
 
 bool setupICM20602() {
   // Reset
@@ -89,59 +89,59 @@ bool setupICM20602() {
   Serial.println(who, HEX);
 
   if (who == 0x12) {  // ID correto do ICM20602
-    Serial.println("ICM20602 encontrado!");
+    Serial.println("ICM20602 found!");
     return true;
   } else {
-    Serial.println("Erro: ICM20602 não encontrado!");
+    Serial.println("Erro: ICM20602 not found!");
     return false;
   }
 }
 
-// ============= Inicialização do BMP280 =============
+// ============= Initialization do BMP280 =============
 
 bool setupBMP280() {
   unsigned status = bmp.begin(0x76);
   if (!status) {
-    Serial.println("BMP280 não encontrado! Verifique conexão.");
+    Serial.println("BMP280 not found! Check connection.");
     return false;
   }
 
-  // Configurações padrão
+  // Configuration padrão
   bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,
                   Adafruit_BMP280::SAMPLING_X2,
                   Adafruit_BMP280::SAMPLING_X16,
                   Adafruit_BMP280::FILTER_X16,
                   Adafruit_BMP280::STANDBY_MS_500);
 
-  Serial.println("BMP280 inicializado com sucesso!");
+  Serial.println("BMP280 initialized!");
   return true;
 }
 
-// ============= Inicialização do LittleFS =============
+// ============= Initialization do LittleFS =============
 
 bool setupLittleFS() {
   if (!LittleFS.begin(true)) {
-    Serial.println("Erro ao montar LittleFS.");
+    Serial.println("Failed to mount LittleFS.");
     return false;
   }
-  Serial.println("LittleFS montado com sucesso!");
+  Serial.println("LittleFS mounted!");
   return true;
 }
 
-// ============= Funções de Arquivo =============
+// ============= File Functions =============
 
 bool writeFile(const String &path, const String &data) {
   File file = LittleFS.open(path, FILE_WRITE);
   if (!file) {
-    Serial.println("Falha ao abrir arquivo para gravação.");
+    Serial.println("Failed to open file for writing.");
     return false;
   }
   if (file.println(data)) {
-    Serial.println("Cabeçalho escrito.");
+    Serial.println("Header written.");
     file.close();
     return true;
   } else {
-    Serial.println("Falha na gravação do arquivo.");
+    Serial.println("Failed to write to file.");
     file.close();
     return false;
   }
@@ -150,18 +150,18 @@ bool writeFile(const String &path, const String &data) {
 void appendFile(const String &path, const String &message) {
   File file = LittleFS.open(path, FILE_APPEND);
   if (!file) {
-    Serial.println("Falha ao abrir arquivo para anexar.");
+    Serial.println("Failed to open file for appending.");
     return;
   }
   if (file.print(message + "\n")) {
-    Serial.println("Dados anexados ao arquivo.");
+    Serial.println("Data appended to file.");
   } else {
-    Serial.println("Falha ao anexar mensagem.");
+    Serial.println("Failed to append message.");
   }
   file.close();
 }
 
-// ============= Função de Leitura de Sensores =============
+// ============= Read Function de Sensores =============
 
 void readSensors(float &ax, float &ay, float &az, float &gx, float &gy, float &gz,
                  float &pressao, float &altura) {
@@ -192,7 +192,7 @@ void readSensors(float &ax, float &ay, float &az, float &gx, float &gy, float &g
   }
 }
 
-// ============= Função de Log de Dados =============
+// ============= Data Logging Function =============
 
 void logData(unsigned long current_millis) {
   float ax, ay, az, gx, gy, gz, pressao, altura;
@@ -245,28 +245,28 @@ void setup() {
 
   bmp_ok = setupBMP280();
 
-  Serial.println("\nInicializando LittleFS...");
+  Serial.println("\nInitializing LittleFS...");
   sd_ok = setupLittleFS();
 
   // Configura arquivo
   if (sd_ok) {
     file_path = "/" + String(FILE_NAME);
-    Serial.print("Salvando dados em: ");
+    Serial.print("Saving data to: ");
     Serial.println(file_path);
 
     // Cabeçalho: millis, ax, ay, az, gx, gy, gz, pressao, altura
     String header = "millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m";
     if (!writeFile(file_path, header)) {
-      Serial.println("Erro ao criar arquivo!");
+      Serial.println("Failed to create file!");
       sd_ok = false;
     }
   }
 
   Serial.println("\n=== Status dos Sensores ===");
-  Serial.printf("ICM20602: %s\n", icm_ok ? "OK" : "FALHA");
-  Serial.printf("BMP280: %s\n", bmp_ok ? "OK" : "FALHA");
-  Serial.printf("LittleFS: %s\n", sd_ok ? "OK" : "FALHA");
-  Serial.println("\n=== Iniciando Leituras ===\n");
+  Serial.printf("ICM20602: %s\n", icm_ok ? "OK" : "FAIL");
+  Serial.printf("BMP280: %s\n", bmp_ok ? "OK" : "FAIL");
+  Serial.printf("LittleFS: %s\n", sd_ok ? "OK" : "FAIL");
+  Serial.println("\n=== Starting Readings ===\n");
 }
 
 // ============= Loop =============

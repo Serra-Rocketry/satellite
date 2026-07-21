@@ -1,21 +1,3 @@
-/**
- * @file main.cpp
- * @brief Firmware for the Helike PocketQube satellite (#213 - LASC 2026)
- *
- * CRITICAL CONTEXT: The satellite remains COMPLETELY POWERED OFF (no energy)
- * until the rocket deploys at apogee. Upon power-on, the system is already
- * descending.
- *
- * Operation flow:
- * 1. setup(): initializes Serial, I2C, sensors, LoRa, buzzer/LED, storage
- * 2. loop(): reads sensors every SAMPLE_INTERVAL_MS, builds CSV, TX via Serial + LoRa
- *
- * No FSM, no FreeRTOS — just a continuous loop.
- *
- * @author Serra Rocketry Team — Mission #213
- * @date 2026
- */
-
 //==============================================================================
 // INCLUDES
 //==============================================================================
@@ -42,7 +24,7 @@
 // GLOBAL OBJECTS (static, no heap allocation)
 //==============================================================================
 
-static TwoWire i2c_bus = Wire;
+static TwoWire i2c_bus = Wire; // alias for Wire
 static BME280Sensor g_bme;
 static ICM20602Sensor g_icm;
 static GPSSensor g_gps;
@@ -64,25 +46,10 @@ static bool g_icm_ok = false;
 static bool g_lora_ok = false;
 static uint32_t g_lora_failures = 0;
 static uint32_t g_fs_failures = 0;
-
 //==============================================================================
 // SETUP
 //==============================================================================
 
-/**
- * @brief One-time system initialization
- *
- * Sequence:
- * 1. Serial for debug output
- * 2. I2C for sensors
- * 3. Buzzer/LED for feedback
- * 4. BME280 (temperature, pressure, humidity)
- * 5. ICM-20602 (accelerometer, gyroscope)
- * 6. GPS (position, time)
- * 7. LoRa (telemetry radio)
- * 8. Storage (SD primary, LittleFS fallback)
- * 9. Watchdog
- */
 void setup() {
     // --- Serial ---
     Serial.begin(SERIAL_BAUD);
@@ -98,9 +65,10 @@ void setup() {
     Serial.println(F("========================================"));
     Serial.println();
 
-    // --- I2C ---
-    i2c_bus.begin(I2C_SDA, I2C_SCL);
-    i2c_bus.setClock(400000); // 400kHz Fast Mode
+    // --- I2C (single begin — initialize global Wire for all sensors) ---
+    Wire.begin(I2C_SDA, I2C_SCL);
+    delay(100);
+    Wire.setClock(400000); // 400kHz Fast Mode
     Serial.println(F("[I2C] Bus initialized (SDA=8, SCL=9, 400kHz)"));
 
     // --- Buzzer & LED ---
@@ -109,7 +77,7 @@ void setup() {
     Serial.println(F("[ACT] Buzzer & LED initialized"));
 
     // --- BME280 ---
-    g_bme_ok = g_bme.begin(i2c_bus, BME280_ADDR);
+    g_bme_ok = g_bme.begin(Wire, BME280_ADDR);
     if (g_bme_ok) {
         Serial.println(F("[BME] BME280 OK"));
     } else {
@@ -117,7 +85,7 @@ void setup() {
     }
 
     // --- ICM-20602 ---
-    g_icm_ok = g_icm.begin(ICM20602_ADDR, i2c_bus);
+    g_icm_ok = g_icm.begin(ICM20602_ADDR, Wire);
     if (g_icm_ok) {
         Serial.println(F("[ICM] ICM-20602 OK"));
     } else {
@@ -128,6 +96,16 @@ void setup() {
     g_gps.begin();
     Serial.println(F("[GPS] NEO-8M initialized (9600 baud)"));
 
+    // --- Storage (SD primary, LittleFS fallback) ---
+    if (g_fs.begin()) {
+        String csv_header = "TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,alt,lat,lon,sat,rssi";
+        g_fs.createFile("/telemetry.csv", csv_header);
+        Serial.print(F("[FS] Storage: "));
+        Serial.println(g_fs.getTypeString());
+    } else {
+        Serial.println(F("[FS] ERROR: No storage available!"));
+    }
+
     // --- LoRa ---
     g_lora_ok = g_telemetry.begin();
     if (g_lora_ok) {
@@ -136,24 +114,14 @@ void setup() {
         Serial.println(F("[LORA] ERROR: RFM95W not found!"));
     }
 
-    // --- Storage (SD primary, LittleFS fallback) ---
-    if (g_fs.begin()) {
-        String csv_header = "TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi";
-        g_fs.createFile("/telemetry.csv", csv_header);
-        Serial.print(F("[FS] Storage: "));
-        Serial.println(g_fs.getTypeString());
-    } else {
-        Serial.println(F("[FS] ERRO: Nenhum storage disponivel!"));
-    }
-
     // --- Status summary ---
-    Serial.println();
     Serial.println(F("--- Initialization Summary ---"));
     Serial.print(F("  BME280:    ")); Serial.println(g_bme_ok ? F("OK") : F("FAIL"));
     Serial.print(F("  ICM-20602: ")); Serial.println(g_icm_ok ? F("OK") : F("FAIL"));
-    Serial.print(F("  GPS:       ")); Serial.println(F("ACTIVE"));
-    Serial.print(F("  LoRa:      ")); Serial.println(g_lora_ok ? F("OK") : F("FAIL"));
-    Serial.println();
+
+    // --- Watchdog (ESP32-C3 TWDT) — init before beeps/blinks ---
+    esp_task_wdt_init(WATCHDOG_TIMEOUT_MS * 1000, true);
+    esp_task_wdt_add(NULL); // Subscribe current task
 
     // --- Audio/visual feedback ---
     if (g_bme_ok && g_icm_ok) {
@@ -164,11 +132,6 @@ void setup() {
         g_led.blinkFast(10);
     }
 
-    // --- Watchdog (ESP32-C3 TWDT) ---
-    esp_task_wdt_init(WATCHDOG_TIMEOUT_MS * 1000, true);
-    esp_task_wdt_add(NULL); // Subscribe current task
-
-    // --- Initialize timestamps ---
     g_last_sample = millis();
     g_last_debug_print = millis();
 
@@ -177,23 +140,9 @@ void setup() {
 }
 
 //==============================================================================
-// MAIN LOOP
+// LOOP
 //==============================================================================
 
-/**
- * @brief Main loop — sensor reading and telemetry transmission
- *
- * Every SAMPLE_INTERVAL_MS:
- * 1. Read GPS (always, to keep parser fresh)
- * 2. Update IMU
- * 3. Collect BME280 data
- * 4. Validate data
- * 5. Calculate Vz
- * 6. Build CSV packet
- * 7. Transmit via Serial + LoRa
- * 8. Toggle LED (heartbeat)
- * 9. Feed watchdog
- */
 void loop() {
     unsigned long now = millis();
 
@@ -206,11 +155,6 @@ void loop() {
     }
     // --- Feed watchdog ---
     esp_task_wdt_reset();
-
-    // --- Update IMU ---
-    if (g_icm_ok) {
-        g_icm.update();
-    }
 
     // --- Collect data ---
     SensorData data;
@@ -280,8 +224,7 @@ void loop() {
         Serial.print(F("ms | LoRa fails:"));
         Serial.print(g_lora_failures);
         Serial.print(F(" FS fails:"));
-        Serial.print(g_fs_failures);
-        Serial.println();
+        Serial.println(g_fs_failures);
     }
     g_last_sample = now;
 }

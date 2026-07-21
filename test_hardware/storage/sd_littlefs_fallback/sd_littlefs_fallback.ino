@@ -52,7 +52,7 @@ bool bmp_ok = false;
 bool setupBMP280() {
   unsigned status = bmp.begin(0x76);
   if (!status) {
-    Serial.println("BMP280 nao encontrado! Verifique conexao.");
+    Serial.println("BMP280 not found! Verifique conexao.");
     Serial.print("SensorID: 0x");
     Serial.println(bmp.sensorID(), HEX);
     return false;
@@ -64,7 +64,7 @@ bool setupBMP280() {
                  Adafruit_BMP280::FILTER_X16,
                  Adafruit_BMP280::STANDBY_MS_500);
 
-  Serial.println("BMP280 inicializado!");
+  Serial.println("BMP280 initialized!");
   return true;
 }
 
@@ -72,7 +72,7 @@ bool setupBMP280() {
 
 bool setupStorage() {
   // Tenta SD primeiro
-  Serial.println("Inicializando SD...");
+  Serial.println("Initializing SD...");
   if (SD.begin(SD_CS_PIN) && SD.cardType() != CARD_NONE) {
     storage_type = STORAGE_SD;
     Serial.println("SD iniciado com sucesso!");
@@ -84,7 +84,7 @@ bool setupStorage() {
     return true;
   }
 
-  Serial.println("SD falhou. Tentando LittleFS...");
+  Serial.println("SD failed. Trying LittleFS...");
 
   // Fallback para LittleFS
   if (LittleFS.begin(true)) {
@@ -95,7 +95,7 @@ bool setupStorage() {
     return true;
   }
 
-  Serial.println("ERRO: Nenhum storage disponivel!");
+  Serial.println("ERROR: No storage available!");
   return false;
 }
 
@@ -134,17 +134,17 @@ bool writeFile(const char* path, const char* message) {
   }
 
   if (!file) {
-    Serial.println("Falha ao abrir arquivo para gravacao.");
+    Serial.println("Failed to open file for writing.");
     return false;
   }
 
   if (file.println(message)) {
-    Serial.println("Arquivo escrito.");
+    Serial.println("File written.");
     file.close();
     return true;
   }
 
-  Serial.println("Falha na gravacao.");
+  Serial.println("Write failed.");
   file.close();
   return false;
 }
@@ -161,14 +161,14 @@ void appendFile(const char* path, const char* message) {
   }
 
   if (!file) {
-    Serial.println("Falha ao abrir arquivo para anexar.");
+    Serial.println("Failed to open file for appending.");
     return;
   }
 
   if (file.println(message)) {
-    Serial.println("Dados anexados.");
+    Serial.println("Data appended.");
   } else {
-    Serial.println("Falha ao anexar mensagem.");
+    Serial.println("Failed to append message.");
   }
   file.close();
 }
@@ -204,34 +204,34 @@ void setup() {
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   delay(100);
 
-  Serial.println("Inicializando BMP280...");
+  Serial.println("Initializing BMP280...");
   bmp_ok = setupBMP280();
 
-  Serial.println("\nInicializando Storage...");
+  Serial.println("\nInitializing Storage...");
   if (!setupStorage()) {
-    Serial.println("ERRO CRITICO: Sem storage!");
+    Serial.println("CRITICAL ERROR: No storage!");
     while (1) delay(1000);
   }
 
   // Gera nome do arquivo
   const char* prefix = (storage_type == STORAGE_SD) ? "Dados" : "dados";
   file_path = generateFileName(prefix, "csv");
-  Serial.printf("\nArquivo: %s\n", file_path.c_str());
+  Serial.printf("\nFile: %s\n", file_path.c_str());
 
   // Escreve cabeçalho
   const char* header = "millis,temperatura_C,pressao_Pa,altura_m";
   if (!writeFile(file_path.c_str(), header)) {
-    Serial.println("ERRO ao criar arquivo!");
+    Serial.println("ERROR creating file!");
     while (1) delay(1000);
   }
 
   Serial.println("\n=== Status ===");
-  Serial.printf("BMP280: %s\n", bmp_ok ? "OK" : "FALHA");
+  Serial.printf("BMP280: %s\n", bmp_ok ? "OK" : "FAIL");
   Serial.printf("Storage: %s\n",
     storage_type == STORAGE_SD ? "SD" :
     storage_type == STORAGE_LITTLEFS ? "LittleFS" : "NENHUM");
-  Serial.printf("Arquivo: %s\n", file_path.c_str());
-  Serial.println("\n=== Iniciando Leituras ===\n");
+  Serial.printf("File: %s\n", file_path.c_str());
+  Serial.println("\n=== Starting Readings ===\n");
 }
 
 // ============= Loop =============

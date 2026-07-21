@@ -14,6 +14,10 @@
 #include <Arduino.h>
 #include "config.h"
 
+// Use LEDC directly instead of tone() which has a bug on ESP32-C3 core
+#define BUZZER_LEDC_CHANNEL 0
+#define BUZZER_LEDC_RES     8   // 8-bit resolution
+
 /**
  * @class BuzzerModule
  * @brief Buzzer control for audio feedback

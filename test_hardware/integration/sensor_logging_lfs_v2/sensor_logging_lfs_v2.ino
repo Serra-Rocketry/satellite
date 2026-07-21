@@ -25,7 +25,7 @@
 #define I2C_SDA_PIN 8
 #define I2C_SCL_PIN 9
 
-// ============= Configurações =============
+// ============= Configuration =============
 
 #define ICM_ADDR 0x69
 #define INTERVAL_MS 50        // 20 Hz (era 500ms)
@@ -57,7 +57,7 @@ struct EventosQueda {
   float aceleracacao_max;
 } eventos;
 
-// ============= Variáveis Globais =============
+// ============= Global Variables =============
 
 unsigned long previous_millis = 0;
 String file_path = "";
@@ -76,7 +76,7 @@ unsigned long tempo_descida_inicio = 0;
 
 Adafruit_BMP280 bmp;
 
-// ============= Funções I2C para ICM-20602 =============
+// ============= I2C Functions for ICM-20602 =============
 
 void icm_writeReg(uint8_t reg, uint8_t val) {
   Wire.beginTransmission(ICM_ADDR);
@@ -103,7 +103,7 @@ int16_t icm_read16(uint8_t reg) {
   return (Wire.read() << 8) | Wire.read();
 }
 
-// ============= Inicialização =============
+// ============= Initialization =============
 
 bool setupICM20602() {
   icm_writeReg(0x6B, 0x80);  // Reset
@@ -116,10 +116,10 @@ bool setupICM20602() {
   Serial.println(who, HEX);
 
   if (who == 0x12) {
-    Serial.println("✅ ICM20602 encontrado!");
+    Serial.println(" ICM20602 found!");
     return true;
   } else {
-    Serial.println("❌ Erro: ICM20602 não encontrado!");
+    Serial.println(" Erro: ICM20602 not found!");
     return false;
   }
 }
@@ -127,7 +127,7 @@ bool setupICM20602() {
 bool setupBMP280() {
   unsigned status = bmp.begin(0x76);
   if (!status) {
-    Serial.println("❌ BMP280 não encontrado! Verifique conexão.");
+    Serial.println(" BMP280 not found! Check connection.");
     return false;
   }
 
@@ -137,16 +137,16 @@ bool setupBMP280() {
                   Adafruit_BMP280::FILTER_X16,
                   Adafruit_BMP280::STANDBY_MS_500);
 
-  Serial.println("✅ BMP280 inicializado com sucesso!");
+  Serial.println(" BMP280 initialized!");
   return true;
 }
 
 bool setupLittleFS() {
   if (!LittleFS.begin(true)) {
-    Serial.println("❌ Erro ao montar LittleFS.");
+    Serial.println(" Failed to mount LittleFS.");
     return false;
   }
-  Serial.println("✅ LittleFS montado com sucesso!");
+  Serial.println(" LittleFS mounted!");
   return true;
 }
 
@@ -179,7 +179,7 @@ void appendFile(const String &path, const String &message) {
   file.close();
 }
 
-// ============= Validação de Dados (NOVO) =============
+// ============= Data Validation (NEW) =============
 
 bool validarDados(const SensorData &data) {
   // Verificar NaN
@@ -189,25 +189,25 @@ bool validarDados(const SensorData &data) {
 
   // Verificar ranges
   if (fabs(data.ax) > MAX_ACCEL_G || fabs(data.ay) > MAX_ACCEL_G || fabs(data.az) > MAX_ACCEL_G) {
-    Serial.printf("⚠️ Aceleração fora do range: %.2f, %.2f, %.2f\n", data.ax, data.ay, data.az);
+    Serial.printf(" Acceleration out of range: %.2f, %.2f, %.2f\n", data.ax, data.ay, data.az);
     return false;
   }
 
   if (data.pressao < MIN_PRESSURE_PA || data.pressao > MAX_PRESSURE_PA) {
-    Serial.printf("⚠️ Pressão fora do range: %.0f Pa\n", data.pressao);
+    Serial.printf(" Pressure out of range: %.0f Pa\n", data.pressao);
     return false;
   }
 
   // Velocidade vertical > 30 m/s é suspeito (seria 108 km/h)
   if (fabs(data.vz) > 30.0) {
-    Serial.printf("⚠️ Vz fora do range: %.2f m/s\n", data.vz);
+    Serial.printf(" Vz fora do range: %.2f m/s\n", data.vz);
     return false;
   }
 
   return true;
 }
 
-// ============= Cálculo de Taxa de Descida (NOVO) =============
+// ============= Descent Rate Calculation (NEW) =============
 
 float calcularVelocidadeVertical(float altura_atual, unsigned long millis_atual) {
   if (millis_anterior == 0) {
@@ -233,13 +233,13 @@ float calcularVelocidadeVertical(float altura_atual, unsigned long millis_atual)
   return vz_filtrada;
 }
 
-// ============= Magnitude do Giroscópio (NOVO) =============
+// ============= Gyroscope Magnitude (NEW) =============
 
 float calcularMagnitudeGiroscopia(float gx, float gy, float gz) {
   return sqrt(gx * gx + gy * gy + gz * gz);
 }
 
-// ============= Detecção de Apogeu (NOVO) =============
+// ============= Apogee Detection (NOVO) =============
 
 void verificarApogeu(float vz, unsigned long millis_atual) {
   // Apogeu é quando Vz muda de positivo para negativo e permanece em descida
@@ -268,7 +268,7 @@ void verificarApogeu(float vz, unsigned long millis_atual) {
   }
 }
 
-// ============= Leitura de Sensores =============
+// ============= Sensor Reading =============
 
 void readSensors(SensorData &data) {
   data.millis = millis();
@@ -301,7 +301,7 @@ void readSensors(SensorData &data) {
   }
 }
 
-// ============= Logging com Validação =============
+// ============= Logging com Validation =============
 
 void logData() {
   SensorData data;
@@ -309,7 +309,7 @@ void logData() {
 
   // Validar dados
   if (!validarDados(data)) {
-    Serial.println("❌ Dados inválidos, skipping...");
+    Serial.println(" Invalid data, skipping...");
     return;
   }
 
@@ -359,22 +359,22 @@ void setup() {
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   bmp_ok = setupBMP280();
 
-  Serial.println("\nInicializando LittleFS...");
+  Serial.println("\nInitializing LittleFS...");
   sd_ok = setupLittleFS();
 
   if (sd_ok) {
     file_path = "/" + String(FILE_NAME);
     String header = "millis,ax_ms2,ay_ms2,az_ms2,gx_rads,gy_rads,gz_rads,pressao_Pa,altura_m,vz_ms,mag_giroscopia_rads";
     writeFile(file_path, header);
-    Serial.printf("✅ Salvando em: %s\n", file_path.c_str());
+    Serial.printf(" Saving to: %s\n", file_path.c_str());
   }
 
   Serial.println("\n=== Status dos Sensores ===");
-  Serial.printf("ICM20602: %s\n", icm_ok ? "✅ OK" : "❌ FALHA");
-  Serial.printf("BMP280: %s\n", bmp_ok ? "✅ OK" : "❌ FALHA");
-  Serial.printf("LittleFS: %s\n", sd_ok ? "✅ OK" : "❌ FALHA");
-  Serial.printf("\n=== Taxa de Aquisição: 20 Hz (50 ms) ===\n");
-  Serial.println("=== Iniciando Leituras ===\n");
+  Serial.printf("ICM20602: %s\n", icm_ok ? " OK" : " FAIL");
+  Serial.printf("BMP280: %s\n", bmp_ok ? " OK" : " FAIL");
+  Serial.printf("LittleFS: %s\n", sd_ok ? " OK" : " FAIL");
+  Serial.printf("\n=== Sample Rate: 20 Hz (50 ms) ===\n");
+  Serial.println("=== Starting Readings ===\n");
 }
 
 // ============= Loop =============
@@ -394,10 +394,10 @@ void loop() {
 
 void printEventos() {
   Serial.println("\n=== EVENTOS DETECTADOS ===");
-  Serial.printf("Apogeu detectado: %s\n", eventos.apogeu_detectado ? "SIM" : "NÃO");
+  Serial.printf("Apogee detected: %s\n", eventos.apogeu_detectado ? "YES" : "NO");
   Serial.printf("Tempo apogeu: %lu ms\n", eventos.tempo_apogeu_ms);
-  Serial.printf("Altitude máxima: %.2f m\n", eventos.altitude_max);
-  Serial.printf("Velocidade máxima de descida: %.2f m/s\n", eventos.velocidade_max_descida);
-  Serial.printf("Aceleração máxima: %.2f m/s²\n", eventos.aceleracacao_max);
+  Serial.printf("Max altitude: %.2f m\n", eventos.altitude_max);
+  Serial.printf("Max descent speed: %.2f m/s\n", eventos.velocidade_max_descida);
+  Serial.printf("Max acceleration: %.2f m/s²\n", eventos.aceleracacao_max);
   Serial.println("========================\n");
 }

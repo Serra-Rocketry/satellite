@@ -54,7 +54,7 @@ unsigned long ultimo_fix_ms = 0;
 unsigned long contador_sentencas = 0;
 unsigned long contador_erros = 0;
 
-// ============= Funções Utilitárias NMEA =============
+// ============= NMEA Utility Functions =============
 
 // Extrai campo de uma sentença NMEA
 String extrair_campo(String sentenca, int indice) {
@@ -129,7 +129,7 @@ float converter_coordenada_nmea(String coord_nmea) {
   return graus + (minutos / 60.0);
 }
 
-// ============= Processadores de Sentença NMEA =============
+// ============= NMEA Sentence Processors =============
 
 // Processa sentença $GPRMC (Recommended Minimum Navigation Information)
 void processar_rmc(String sentenca) {
@@ -248,7 +248,7 @@ void processar_nmea(String sentenca) {
   contador_sentencas++;
 }
 
-// ============= Leitura de Serial =============
+// ============= Serial Read =============
 
 void ler_gps() {
   while (Serial1.available()) {
@@ -277,7 +277,7 @@ void setup() {
   delay(1000);
   
   Serial.println("\n\n=== Teste GPS NEO-8M ===");
-  Serial.print("Inicializando UART GPS no pino RX=");
+  Serial.print("Initializing GPS UART on pin RX=");
   Serial.print(GPS_RX_PIN);
   Serial.print(" TX=");
   Serial.println(GPS_TX_PIN);
@@ -285,8 +285,8 @@ void setup() {
   // Inicializa UART para GPS
   Serial1.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
   
-  Serial.println("✓ GPS UART inicializado");
-  Serial.println("Aguardando dados NMEA...\n");
+  Serial.println(" GPS UART initialized");
+  Serial.println("Waiting for NMEA data...\n");
   
   delay(2000);
 }
@@ -305,10 +305,10 @@ void loop() {
     Serial.println("--- Status GPS ---");
     Serial.print("Sentencas NMEA recebidas: ");
     Serial.println(contador_sentencas);
-    Serial.print("Erros (checksum falho): ");
+    Serial.print("Errors (checksum fail): ");
     Serial.println(contador_erros);
     
-    Serial.print("Satélites vistos: ");
+    Serial.print("Satellites seen: ");
     Serial.println(gps_data.satellites);
     
     Serial.print("Fix quality: ");
@@ -347,11 +347,11 @@ void loop() {
       Serial.println(gps_data.vdop);
       
       unsigned long tempo_sem_fix = agora - ultimo_fix_ms;
-      Serial.print("Tempo desde último fix: ");
+      Serial.print("Time since last fix: ");
       Serial.print(tempo_sem_fix);
       Serial.println(" ms");
     } else {
-      Serial.println("Aguardando fix GPS...");
+      Serial.println("Waiting for GPS fix...");
     }
     
     Serial.println();

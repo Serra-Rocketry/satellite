@@ -16,7 +16,8 @@ Managed automatically by PlatformIO (`lib_deps` in platformio.ini):
 | Library | Version | Used By |
 |---------|---------|---------|
 | `sandeepmistry/LoRa` | ^0.8.0 | LoRaModule (RFM95W) |
-| `adafruit/Adafruit BME280 Library` | ^2.2.4 | BME280Sensor |
+| `adafruit/Adafruit BME280 Library` | ^2.2.4 | BME280Sensor (primary) |
+| `adafruit/Adafruit BMP280 Library` | ^2.6.8 | BMP280 fallback |
 | `mikalhart/TinyGPSPlus` | ^1.0.3 | GPSSensor |
 
 ### Build Configuration
@@ -33,6 +34,8 @@ build_flags =
     -D CORE_DEBUG_LEVEL=4
     -D CONFIG_FREERTOS_UNICORE=1
     -D SERIAL_USB_BUFFER_SIZE=64
+    -D ARDUINO_USB_MODE=1
+    -D ARDUINO_USB_CDC_ON_BOOT=1
     -I lib
 ```
 
@@ -117,15 +120,15 @@ pio run -e helike_esp32c3 --project-option="src_dir=test_hardware/sensor/bme280"
 ```text
 Power On
   │
-  ├─ Serial (115200 baud, wait 2s for USB)
+  ├─ Serial (115200 baud, wait 2s for USB CDC)
   ├─ I2C (400 kHz Fast Mode)
   ├─ Buzzer + LED (indicate startup)
-  ├─ BME280 (I2C address 0x76)
+  ├─ BME280/BMP280 (I2C address 0x76, BME280 primary, BMP280 fallback)
   ├─ ICM-20602 (I2C address 0x69, WHO_AM_I = 0x12)
   ├─ GPS (Serial1, 9600 baud)
   ├─ LoRa (RFM95W, 915 MHz)
   ├─ Storage (SD > LittleFS)
-  ├─ Watchdog (5s timeout)
+  ├─ Watchdog (5s timeout, init before beeps)
   │
   └─ Main Loop (5 Hz)
        ├─ Read GPS
@@ -140,7 +143,24 @@ Power On
        └─ Feed watchdog
 ```
 
-## Debugging
+## Known ESP32-C3 Pitfalls
+
+### 1. USB CDC Serial
+`Serial.println()` output is invisible unless compiled with:
+```
+-D ARDUINO_USB_MODE=1 -DARDUINO_USB_CDC_ON_BOOT=1
+```
+Without these flags, `Serial` maps to UART0, not the USB CDC port.
+
+### 2. tone() / LEDC
+`tone()` crashes with `ledc: ledc_get_duty(): LEDC is not initialized` on ESP32-C3.
+**Fix**: Use `ledcSetup()` + `ledcAttachPin()` + `ledcWrite()` directly.
+The BuzzerModule implements this workaround.
+
+### 3. I2C resetI2C()
+Do NOT use GPIO-level I2C bus recovery (`pinMode`/`digitalWrite` on SDA/SCL)
+with the ESP32 TwoWire peripheral. It corrupts the I/O MUX configuration.
+The `resetI2C()` helper was removed from the firmware for this reason.
 
 The system provides three debug outputs:
 

@@ -85,7 +85,7 @@ void setup() {
   Serial.println("\n\n=== Teste BME280 ===");
   
   // Inicializa I2C
-  Serial.print("Inicializando I2C (SDA=");
+  Serial.print("Initializing I2C (SDA=");
   Serial.print(I2C_SDA_PIN);
   Serial.print(" SCL=");
   Serial.print(I2C_SCL_PIN);
@@ -95,20 +95,20 @@ void setup() {
   delay(100);
   
   // Tenta inicializar BME280
-  Serial.print("Procurando BME280 no endereço 0x");
+  Serial.print("Searching BME280 at address 0x");
   Serial.println(BME280_ADDR, HEX);
   
   if (!bme.begin(BME280_ADDR)) {
-    Serial.println("✗ BME280 não encontrado!");
+    Serial.println(" BME280 not found!");
     Serial.println("Verifique:");
-    Serial.println("  - Conexão I2C (SDA/SCL)");
-    Serial.println("  - Endereço I2C (0x76 ou 0x77)");
-    Serial.println("  - Alimentação do sensor");
+    Serial.println("  - I2C connection (SDA/SCL)");
+    Serial.println("  - I2C address (0x76 or 0x77)");
+    Serial.println("  - Sensor power supply");
     bme_data.sensor_ok = false;
     return;
   }
   
-  Serial.println("✓ BME280 encontrado!");
+  Serial.println(" BME280 found!");
   
   // Configura modo de operação
   // Modo Normal: mede continuamente
@@ -125,16 +125,16 @@ void setup() {
     Adafruit_BME280::STANDBY_MS_1000        // Standby time
   );
   
-  Serial.println("✓ Sensor configurado");
+  Serial.println(" Sensor configurado");
   Serial.println("  - Modo: Normal");
-  Serial.println("  - Amostragem de pressão: 2x");
-  Serial.println("  - Amostragem de temperatura: 2x");
-  Serial.println("  - Amostragem de umidade: 2x");
+  Serial.println("  - Pressure sampling: 2x");
+  Serial.println("  - Temperature sampling: 2x");
+  Serial.println("  - Humidity sampling: 2x");
   Serial.println("  - Tempo de espera: 1000ms");
   
   bme_data.sensor_ok = true;
   
-  Serial.println("\nAguardando primeira leitura...\n");
+  Serial.println("\nWaiting for first reading...\n");
   delay(2000);
 }
 
@@ -149,7 +149,7 @@ void loop() {
     ultima_leitura = agora;
     
     if (!bme_data.sensor_ok) {
-      Serial.println("✗ Sensor não inicializado!");
+      Serial.println(" Sensor not initialized!");
       return;
     }
     
@@ -163,7 +163,7 @@ void loop() {
     // Verifica valores válidos
     if (isnan(bme_data.temperatura) || isnan(bme_data.pressao) || isnan(bme_data.umidade)) {
       contador_erros++;
-      Serial.println("✗ Erro na leitura do sensor!");
+      Serial.println(" Sensor read error!");
       return;
     }
     
@@ -174,17 +174,17 @@ void loop() {
   if (agora - ultimo_print >= 2000) {
     ultimo_print = agora;
     
-    Serial.println("--- Dados BME280 ---");
-    Serial.print("Leituras: ");
+    Serial.println("--- BME280 Data ---");
+    Serial.print("Readings: ");
     Serial.print(contador_leituras);
-    Serial.print(" | Erros: ");
+    Serial.print(" | Errors: ");
     Serial.println(contador_erros);
     
     Serial.print("Temperatura: ");
     Serial.print(bme_data.temperatura, 2);
     Serial.println(" °C");
     
-    Serial.print("Pressão:     ");
+    Serial.print("Pressure:     ");
     Serial.print(bme_data.pressao_hpa, 2);
     Serial.print(" hPa (");
     Serial.print(bme_data.pressao);
@@ -210,7 +210,7 @@ void loop() {
     Serial.print(ponto_orvalho, 2);
     Serial.println(" °C");
     
-    Serial.print("Índice calor: ");
+    Serial.print("Heat index: ");
     Serial.print(calcular_indice_calor(bme_data.temperatura, bme_data.umidade), 2);
     Serial.println(" °C");
     

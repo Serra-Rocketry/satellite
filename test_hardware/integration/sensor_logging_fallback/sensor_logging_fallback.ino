@@ -36,7 +36,7 @@
   #define I2C_SCL_PIN 22
 #endif
 
-// ============= Configurações =============
+// ============= Configuration =============
 #define ICM_ADDR          0x69
 #define INTERVAL_MS       50        // 20 Hz
 #define SD_CS_PIN         5
@@ -75,7 +75,7 @@ struct EventosQueda {
   float         aceleracao_max;
 };
 
-// ============= Variáveis Globais =============
+// ============= Global Variables =============
 StorageType   storage_type     = STORAGE_NONE;
 unsigned long previous_millis  = 0;
 String        file_path        = "";
@@ -121,7 +121,7 @@ int16_t icm_read16(uint8_t reg) {
   return (Wire.read() << 8) | Wire.read();
 }
 
-// ============= Inicialização ICM-20602 =============
+// ============= Initialization ICM-20602 =============
 bool setupICM20602() {
   // Reset
   icm_writeReg(0x6B, 0x80);
@@ -134,7 +134,7 @@ bool setupICM20602() {
   Serial.print("ICM-20602 WHO_AM_I: 0x");
   Serial.println(who, HEX);
   if (who != 0x12) {
-    Serial.println("Erro: ICM-20602 nao encontrado!");
+    Serial.println("ERROR: ICM-20602 not found!");
     return false;
   }
 
@@ -159,10 +159,10 @@ bool setupICM20602() {
   return true;
 }
 
-// ============= Inicialização BMP280 =============
+// ============= Initialization BMP280 =============
 bool setupBMP280() {
   if (!bmp.begin(0x76)) {
-    Serial.println("BMP280 nao encontrado!");
+    Serial.println("BMP280 not found!");
     return false;
   }
 
@@ -199,7 +199,7 @@ void resetI2C() {
 
 // ============= Storage =============
 bool setupStorage() {
-  Serial.println("Inicializando SD...");
+  Serial.println("Initializing SD...");
   if (SD.begin(SD_CS_PIN) && SD.cardType() != CARD_NONE) {
     storage_type = STORAGE_SD;
     Serial.printf("SD OK — tipo: %s  tamanho: %llu MB\n",
@@ -208,14 +208,14 @@ bool setupStorage() {
       SD.cardSize() * 512ULL / 1048576ULL);
     return true;
   }
-  Serial.println("SD falhou. Tentando LittleFS...");
+  Serial.println("SD failed. Trying LittleFS...");
   if (LittleFS.begin(true)) {
     storage_type = STORAGE_LITTLEFS;
     Serial.printf("LittleFS OK — %u bytes livres\n",
       (unsigned)(LittleFS.totalBytes() - LittleFS.usedBytes()));
     return true;
   }
-  Serial.println("ERRO: Nenhum storage disponivel!");
+  Serial.println("ERROR: No storage available!");
   return false;
 }
 
@@ -241,7 +241,7 @@ bool openDataFile(const char* path, const char* header) {
     return false;
   }
   if (!data_file) {
-    Serial.println("Falha ao abrir arquivo de dados.");
+    Serial.println("Failed to open data file.");
     return false;
   }
   data_file.println(header);
@@ -249,7 +249,7 @@ bool openDataFile(const char* path, const char* header) {
   return true;
 }
 
-// ============= Validação =============
+// ============= Validation =============
 bool validarDados(const SensorData &d) {
   if (isnan(d.ax) || isnan(d.ay) || isnan(d.az)) return false;
   if (isnan(d.pressao) || isnan(d.altura))        return false;
@@ -295,7 +295,7 @@ float calcularVz(float altura_atual, unsigned long millis_atual) {
   return vz_filt;
 }
 
-// ============= Detecção de Apogeu =============
+// ============= Apogee Detection =============
 void verificarApogeu(float vz, unsigned long ts) {
   if (!em_descida && vz < -0.5) {
     em_descida = true;
@@ -311,7 +311,7 @@ void verificarApogeu(float vz, unsigned long ts) {
     eventos.velocidade_max_descida = vz;
 }
 
-// ============= Leitura de Sensores =============
+// ============= Sensor Reading =============
 void readSensors(SensorData &d) {
   d.millis_ts = millis();
 
@@ -350,7 +350,7 @@ void logData() {
   readSensors(d);
 
   if (!validarDados(d)) {
-    Serial.println("Dados invalidos, skipping.");
+    Serial.println("Invalid data, skipping.");
     return;
   }
 
@@ -418,19 +418,19 @@ void setup() {
       "pressao_Pa,altura_rel_m,vz_ms";
 
     if (!openDataFile(file_path.c_str(), header)) {
-      Serial.println("ERRO ao criar arquivo de dados!");
+      Serial.println("ERROR creating data file!");
     } else {
-      Serial.printf("Arquivo: %s\n", file_path.c_str());
+      Serial.printf("File: %s\n", file_path.c_str());
     }
   }
 
   Serial.println("\n=== Status ===");
-  Serial.printf("ICM-20602: %s  (±2000°/s | ±16g)\n", icm_ok ? "OK" : "FALHA");
-  Serial.printf("BMP280:    %s  (standby 1ms | ref=%.2f hPa)\n", bmp_ok ? "OK" : "FALHA", p0_ground);
+  Serial.printf("ICM-20602: %s  (±2000°/s | ±16g)\n", icm_ok ? "OK" : "FAIL");
+  Serial.printf("BMP280:    %s  (standby 1ms | ref=%.2f hPa)\n", bmp_ok ? "OK" : "FAIL", p0_ground);
   Serial.printf("Storage:   %s\n",
     storage_type == STORAGE_SD      ? "SD (arquivo persistente)" :
     storage_type == STORAGE_LITTLEFS ? "LittleFS (arquivo persistente)" : "NENHUM");
-  Serial.printf("Arquivo:   %s\n", file_path.c_str());
+  Serial.printf("File:   %s\n", file_path.c_str());
   Serial.printf("\n=== 20 Hz | flush a cada %d amostras ===\n\n", FLUSH_EVERY_N);
 }
 

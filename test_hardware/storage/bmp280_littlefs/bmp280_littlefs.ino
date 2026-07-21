@@ -20,7 +20,7 @@
 #include "SPIFFS.h"
 #include <Adafruit_BMP280.h>
 
-// ============= Configurações =============
+// ============= Configuration =============
 
 #define INTERVAL 500  // Intervalo de leitura em ms
 #define FILE_NAME "/dados_bmp280.csv"
@@ -33,40 +33,40 @@
 #define I2C_SCL_PIN 22
 #endif
 
-// ============= Variáveis Globais =============
+// ============= Global Variables =============
 
 Adafruit_BMP280 bmp;
 unsigned long previous_millis = 0;
 bool bmp_ok = false;
 bool spiffs_ok = false;
 
-// ============= Inicialização do BMP280 =============
+// ============= Initialization do BMP280 =============
 
 bool setupBMP280() {
   unsigned status = bmp.begin(0x76);
   if (!status) {
-    Serial.println("BMP280 não encontrado! Verifique conexão.");
+    Serial.println("BMP280 not found! Check connection.");
     Serial.print("SensorID: 0x");
     Serial.println(bmp.sensorID(), HEX);
     return false;
   }
 
-  // Configurações padrão
+  // Configuration padrão
   bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,
                   Adafruit_BMP280::SAMPLING_X2,
                   Adafruit_BMP280::SAMPLING_X16,
                   Adafruit_BMP280::FILTER_X16,
                   Adafruit_BMP280::STANDBY_MS_500);
 
-  Serial.println("BMP280 inicializado com sucesso!");
+  Serial.println("BMP280 initialized!");
   return true;
 }
 
-// ============= Inicialização do SPIFFS =============
+// ============= Initialization do SPIFFS =============
 
 bool setupSPIFFS() {
   if (!SPIFFS.begin(true)) {
-    Serial.println("Erro ao montar SPIFFS.");
+    Serial.println("Failed to mount SPIFFS.");
     return false;
   }
   Serial.println("SPIFFS montado com sucesso!");
@@ -79,20 +79,20 @@ bool setupSPIFFS() {
   return true;
 }
 
-// ============= Funções de Arquivo =============
+// ============= File Functions =============
 
 bool writeFile(const char *path, const char *message) {
   File file = SPIFFS.open(path, FILE_WRITE);
   if (!file) {
-    Serial.println("Falha ao abrir arquivo para gravação.");
+    Serial.println("Failed to open file for writing.");
     return false;
   }
   if (file.println(message)) {
-    Serial.println("Cabeçalho escrito.");
+    Serial.println("Header written.");
     file.close();
     return true;
   } else {
-    Serial.println("Falha na gravação do arquivo.");
+    Serial.println("Failed to write to file.");
     file.close();
     return false;
   }
@@ -101,18 +101,18 @@ bool writeFile(const char *path, const char *message) {
 void appendFile(const char *path, const char *message) {
   File file = SPIFFS.open(path, FILE_APPEND);
   if (!file) {
-    Serial.println("Falha ao abrir arquivo para anexar.");
+    Serial.println("Failed to open file for appending.");
     return;
   }
   if (file.println(message)) {
-    Serial.println("Dados anexados.");
+    Serial.println("Data appended.");
   } else {
-    Serial.println("Falha ao anexar mensagem.");
+    Serial.println("Failed to append message.");
   }
   file.close();
 }
 
-// ============= Função de Leitura =============
+// ============= Read Function =============
 
 void readAndLogBMP280(unsigned long current_millis) {
   if (!bmp_ok) return;
@@ -148,27 +148,27 @@ void setup() {
   delay(100);
 
   // Inicializa BMP280
-  Serial.println("Inicializando BMP280...");
+  Serial.println("Initializing BMP280...");
   bmp_ok = setupBMP280();
 
   // Inicializa SPIFFS
-  Serial.println("\nInicializando SPIFFS...");
+  Serial.println("\nInitializing SPIFFS...");
   spiffs_ok = setupSPIFFS();
 
   // Cria arquivo com cabeçalho
   if (spiffs_ok) {
-    Serial.printf("\nCriando arquivo: %s\n", FILE_NAME);
+    Serial.printf("\nCreating file: %s\n", FILE_NAME);
     const char *header = "millis,temperatura_C,pressao_Pa,altura_m";
     if (!writeFile(FILE_NAME, header)) {
-      Serial.println("Erro ao criar arquivo!");
+      Serial.println("Failed to create file!");
       spiffs_ok = false;
     }
   }
 
   Serial.println("\n=== Status ===");
-  Serial.printf("BMP280: %s\n", bmp_ok ? "OK" : "FALHA");
-  Serial.printf("SPIFFS: %s\n", spiffs_ok ? "OK" : "FALHA");
-  Serial.println("\n=== Iniciando Leituras ===\n");
+  Serial.printf("BMP280: %s\n", bmp_ok ? "OK" : "FAIL");
+  Serial.printf("SPIFFS: %s\n", spiffs_ok ? "OK" : "FAIL");
+  Serial.println("\n=== Starting Readings ===\n");
 }
 
 // ============= Loop =============

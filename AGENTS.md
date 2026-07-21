@@ -24,16 +24,23 @@ pio device monitor -b 115200
 - **Unit tests**: Native (PC) com Unity (`pio test -e native`)
 - **Lib modules**: `lib/calc/` — header-only, sem deps de hardware
 
-## Pinouts (ESP32-C3 Super Mini)
+## Pinouts (ESP32-C3 Super Mini — conforme esquemático)
 
-| Interface | Pinos | Componente |
-|-----------|-------|------------|
-| I2C | SDA=8, SCL=9 | ICM-20602, BMP280/BME280 |
-| LoRa SPI | MOSI=7, MISO=5, SCK=6, CS=10, RST=4, DIO0=3 | RFM95W |
-| GPS UART | TX=21, RX=20 | NEO-8M |
-| LED | 1 | Indicador |
-| Buzzer | 0 | Alerta |
-| Button | 2 | Entrada |
+| GPIO | Rótulo | Periférico | Função |
+|------|--------|------------|--------|
+| 0 | BUZZER | Alerta sonoro | PWM (tone/LEDC) |
+| 1 | RESET | RFM95W | Reset do Rádio (LoRa) |
+| 2 | DIO0 | RFM95W | Interrupção do Rádio (LoRa) |
+| 3 | LED | Indicador | Saída digital |
+| 4 | SCK | RFM95W + SD Card | SPI Clock (compartilhado) |
+| 5 | MISO | RFM95W + SD Card | SPI MISO (compartilhado) |
+| 6 | MOSI | RFM95W + SD Card | SPI MOSI (compartilhado) |
+| 7 | NSS | RFM95W | SPI Chip Select (LoRa) |
+| 8 | SDA | BME280 + ICM-20602 | I2C Data |
+| 9 | SCL | BME280 + ICM-20602 | I2C Clock |
+| 10 | CS_SD | SD Card | SPI Chip Select (SD) |
+| 20 | TX_GPS | GPS NEO-8M | UART TX |
+| 21 | RX_GPS | GPS NEO-8M | UART RX |
 
 ## Convencoes
 
@@ -43,6 +50,13 @@ pio device monitor -b 115200
 - **Single-core**: tarefas sem pinning; evitar suposicoes de multi-core
 - **Tests**: Cada teste em seu diretorio sob `test/`, Unity framework
 - **Lib**: Header-only em `lib/calc/`, sem dependencias Arduino/ESP32
+
+## ESP32-C3 Pitfalls (aprendidos hoje)
+
+- **USB CDC**: Compilar com `-DARDUINO_USB_MODE=1 -DARDUINO_USB_CDC_ON_BOOT=1` nas build_flags senao Serial.println() nao aparece
+- **tone()**: Bug no core do C3 — usar `ledcSetup/ledcAttachPin/ledcWrite` ao inves de tone()
+- **I2C**: Nao usar `pinMode/digitalWrite` nos pinos SDA/SCL pois quebra o periferico I2C (TwoWire). O `resetI2C()` foi removido
+- **SPI defaults**: Variante esp32c3 tem MISO=5, MOSI=6, SCK=4, SS=7. O hardware Helike segue estes defaults. SD_CS=GPIO10, LORA_CS=GPIO7
 
 ## Critical Constraints
 

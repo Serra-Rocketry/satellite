@@ -75,7 +75,7 @@ flowchart LR
 All sensors implement the `ISensor` abstract interface:
 
 - `ISensor.h` — Pure virtual interface (begin, update, isReady, hasNewData, markDataRead)
-- `BME280Sensor` — Temperature, pressure, humidity, barometric altitude (I2C)
+- `BME280Sensor` — Temperature, pressure, humidity (BME280) or NAN (BMP280 fallback), barometric altitude (I2C)
 - `ICM20602Sensor` — 3-axis accelerometer (±16g), 3-axis gyroscope (±2000°/s) via raw I2C
 - `GPSSensor` — NEO-8M GPS with TinyGPSPlus parser (UART)
 
@@ -113,7 +113,7 @@ TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi
 | count | TelemetryModule | - | Packet sequence number |
 | altp | BME280 | m | Barometric altitude |
 | temp | BME280 | °C | Temperature |
-| umi | BME280 | % | Humidity |
+| umi | BME280 / BMP280 | % | Humidity (NAN if BMP280 fallback) |
 | p | BME280 | hPa | Atmospheric pressure |
 | gp | ICM-20602 | rad/s | Gyroscope X |
 | gr | ICM-20602 | rad/s | Gyroscope Y |

@@ -1,51 +1,59 @@
 /**
  * @file BME280Sensor.cpp
- * @brief BME280 driver implementation
+ * @brief BME280 sensor with BMP280 fallback implementation
  */
 
 #include "BME280Sensor.h"
 
 BME280Sensor::BME280Sensor(float seaLevelPressure)
-    : _seaLevelPressure(seaLevelPressure), _ready(false), _hasNewData(false) {
+    : _seaLevelPressure(seaLevelPressure), _useBME(false), _ready(false), _hasNewData(false) {
 }
 
 bool BME280Sensor::begin(TwoWire &wire, uint8_t addr) {
-    if (!_bme.begin(addr, &wire)) {
-        return false;
+    // Try BME280 first (with humidity)
+    if (_bme.begin(addr, &wire)) {
+        _useBME = true;
+        _ready = true;
+        _hasNewData = true;
+        return true;
     }
-    _ready = true;
-    _hasNewData = true;
-    return true;
+
+    // Fallback to BMP280 (no humidity) — uses default Wire internally
+    if (_bmp.begin(addr)) {
+        _bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,
+                         Adafruit_BMP280::SAMPLING_X2,
+                         Adafruit_BMP280::SAMPLING_X16,
+                         Adafruit_BMP280::FILTER_X16,
+                         Adafruit_BMP280::STANDBY_MS_500);
+        _useBME = false;
+        _ready = true;
+        _hasNewData = true;
+        return true;
+    }
+
+    return false;
 }
 
 float BME280Sensor::getTemperature() {
     if (!_ready) return NAN;
-    _hasNewData = true;
-    return _bme.readTemperature();
+    return _useBME ? _bme.readTemperature() : _bmp.readTemperature();
 }
 
 float BME280Sensor::getPressure() {
     if (!_ready) return NAN;
-    _hasNewData = true;
-    return _bme.readPressure(); // Returns Pa
+    return _useBME ? _bme.readPressure() : _bmp.readPressure();
 }
 
 float BME280Sensor::getHumidity() {
     if (!_ready) return NAN;
-    _hasNewData = true;
-    return _bme.readHumidity();
+    if (_useBME) return _bme.readHumidity();
+    return NAN;  // BMP280 has no humidity sensor
 }
 
 float BME280Sensor::getAltitude() {
     if (!_ready) return NAN;
-    float pressure = getPressure();
-    // Validate pressure before using in formula (avoids NAN propagation)
-    if (isnan(pressure) || pressure <= 0.0f) {
-        return NAN;
-    }
-    _hasNewData = true;
-    float pressure_hpa = pressure / 100.0f;
-    return 44330.0f * (1.0f - pow(pressure_hpa / _seaLevelPressure, 0.1903f));
+    return _useBME ? _bme.readAltitude(_seaLevelPressure)
+                   : _bmp.readAltitude(_seaLevelPressure);
 }
 
 void BME280Sensor::setSeaLevelPressure(float pressure) {

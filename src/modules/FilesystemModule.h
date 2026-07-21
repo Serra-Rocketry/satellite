@@ -1,14 +1,9 @@
 /**
  * @file FilesystemModule.h
- * @brief Storage module with SD as primary and LittleFS as fallback
+ * @brief Filesystem management with SD card primary, LittleFS fallback
  *
- * Follows the test_hardware pattern:
- * 1. Attempts SD.begin() first
- * 2. If that fails, uses LittleFS.begin() as fallback
- * 3. File operations dispatch automatically based on active type
- *
- * In real flight (no SD card), the system detects absence and uses LittleFS.
- * On the bench (with SD), it writes to SD for easy data retrieval.
+ * Smart storage strategy: SD card primary, LittleFS secondary for permanent storage
+ * Follows the exact pattern from sensor_logging_fallback.ino for consistency
  *
  * @author Serra Rocketry Team — Mission #213
  * @date 2026
@@ -22,73 +17,77 @@
 
 /**
  * @enum StorageType
- * @brief Active storage type
+ * @brief Storage selection with SD primary, LittleFS fallback
  */
-enum StorageType {
-    STORAGE_NONE = 0,       ///< No storage available
-    STORAGE_SD,             ///< SD card active
-    STORAGE_LITTLEFS        ///< LittleFS active (fallback)
-};
+enum StorageType { STORAGE_NONE, STORAGE_SD, STORAGE_LITTLEFS };
 
 /**
  * @class FilesystemModule
- * @brief Manages SD primary with LittleFS fallback
+ * @brief Handles filesystem operations with smart fallback strategy
+ *
+ * Implements the exact SD-to-LittleFS fallback pattern from sensor_logging_fallback.ino
+ * allowing smooth transition between storage media and maintaining persistent file naming
  */
 class FilesystemModule {
 public:
-    FilesystemModule(uint8_t sd_cs_pin = 5);
+    FilesystemModule();
 
     /**
-     * @brief Initializes storage: SD first, LittleFS as fallback
-     * @return true if any storage was initialized
+     * @brief Initialize storage with SD primary, LittleFS fallback
+     * @return true if either storage type initialized successfully
      */
     bool begin();
 
     /**
-     * @brief Creates file with header line
-     * @param path File path (e.g. "/telemetry.csv")
-     * @param header Header line
-     * @return true if created successfully
+     * @brief Check if storage is available
+     * @return true if any storage type is active
      */
-    bool createFile(const String &path, const String &header);
+    bool isAvailable() const { return _storage_type != STORAGE_NONE; }
 
     /**
-     * @brief Appends a line to an existing file
-     * @param line CSV line
-     * @return true if written successfully
+     * @brief Get human-readable storage type string
+     * @return String describing current storage type
      */
-    bool appendLine(const String &line);
+    String getTypeString() const;
 
     /**
-     * @brief Checks if storage is active
+     * @brief Create or truncate a file for writing
+     * @param path File path within the active filesystem
+     * @param header Initial content/header for the file
+     * @return true if file created successfully
      */
-    bool isReady() const { return _type != STORAGE_NONE; }
+    bool createFile(const char* path, const String& header);
 
     /**
-     * @brief Returns the active storage type
+     * @brief Append data to an existing file
+     * @param path File path within the active filesystem
+     * @return true if data appended successfully
      */
-    StorageType getType() const { return _type; }
+    bool appendLine(const String& packet);
 
     /**
-     * @brief Returns a descriptive string for the storage type
+     * @brief Check if a file exists
+     * @param path File path to check
+     * @return true if file exists in current storage
      */
-    const char* getTypeString() const;
+    bool exists(const char* path) const;
 
     /**
-     * @brief Number of lines written
+     * @brief Get current storage type
+     * @return Current active storage type
      */
-    uint32_t getLineCount() const { return _lineCount; }
-
-    /**
-     * @brief Closes files and unmounts
-     */
-    void close();
+    StorageType getStorageType() const { return _storage_type; }
 
 private:
-    StorageType _type;
-    uint8_t _sd_cs_pin;
-    String _filename;
-    uint32_t _lineCount;
+    StorageType _storage_type = STORAGE_NONE;  // SD primary, LittleFS secondary
+    bool        _initialized = false;
+
+    // SD card Chip Select (GPIO10 per schematic)
+    static const uint8_t SD_CS_PIN = 10;
+    bool setupSD();
+
+    // LittleFS-related
+    bool setupLittleFS();
 };
 
 #endif // FILESYSTEM_MODULE_H

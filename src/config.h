@@ -40,15 +40,15 @@
 #define LORA_MISO           5
 #define LORA_SCK            4
 #define LORA_CS             7
-#define LORA_RST            0
-#define LORA_DIO0           1
+#define LORA_RST            1
+#define LORA_DIO0           2
 
 // GPS UART (NEO-8M)
 #define GPS_RX              20
 #define GPS_TX              21
 
 // Actuators
-#define LED_PIN             1
+#define LED_PIN             3
 #define BUZZER_PIN          0
 #define BUTTON_PIN          2
 

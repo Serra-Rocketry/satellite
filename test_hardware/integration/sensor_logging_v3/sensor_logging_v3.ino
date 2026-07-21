@@ -30,7 +30,7 @@
 #include <Adafruit_BME280.h>
 #include <Adafruit_Sensor.h>
 
-// ============= Configurações de Pinos =============
+// ============= Configuration de Pinos =============
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
 #define I2C_SDA_PIN 8
@@ -44,7 +44,7 @@
 #define GPS_TX_PIN 17
 #endif
 
-// ============= Configurações Gerais =============
+// ============= Configuration Gerais =============
 
 #define ICM_ADDR 0x69
 #define BME_ADDR 0x76
@@ -101,7 +101,7 @@ struct EventosQueda {
   float aceleracacao_max;
 } eventos;
 
-// ============= Variáveis Globais =============
+// ============= Global Variables =============
 
 unsigned long previous_millis = 0;
 String file_path = "";
@@ -127,7 +127,7 @@ String nmea_buffer = "";
 unsigned long contador_sentencas_gps = 0;
 unsigned long contador_erros_gps = 0;
 
-// ============= Funções I2C para ICM-20602 =============
+// ============= I2C Functions for ICM-20602 =============
 
 void icm_writeReg(uint8_t reg, uint8_t val) {
   Wire.beginTransmission(ICM_ADDR);
@@ -154,7 +154,7 @@ int16_t icm_read16(uint8_t reg) {
   return (Wire.read() << 8) | Wire.read();
 }
 
-// ============= Funções I2C para BME280 =============
+// ============= I2C Functions for BME280 =============
 
 void resetI2C() {
   pinMode(I2C_SDA_PIN, INPUT_PULLUP);
@@ -170,7 +170,7 @@ void resetI2C() {
   pinMode(I2C_SCL_PIN, INPUT_PULLUP);
 }
 
-// ============= Funções UART para GPS =============
+// ============= UART Functions for GPS =============
 
 String extrair_campo(String sentenca, int indice) {
   int pos = 0;
@@ -306,7 +306,7 @@ void ler_gps(GpsData &gps) {
   }
 }
 
-// ============= Inicialização dos Sensores =============
+// ============= Initialization dos Sensores =============
 
 bool setupICM20602() {
   icm_writeReg(0x6B, 0x80);  // Reset
@@ -319,10 +319,10 @@ bool setupICM20602() {
   Serial.println(who, HEX);
 
   if (who == 0x12) {
-    Serial.println("✓ ICM20602 encontrado!");
+    Serial.println(" ICM20602 found!");
     return true;
   } else {
-    Serial.println("✗ ICM20602 não encontrado!");
+    Serial.println(" ICM20602 not found!");
     return false;
   }
 }
@@ -330,7 +330,7 @@ bool setupICM20602() {
 bool setupBME280() {
   unsigned status = bme.begin(BME_ADDR);
   if (!status) {
-    Serial.println("✗ BME280 não encontrado!");
+    Serial.println(" BME280 not found!");
     return false;
   }
 
@@ -341,26 +341,26 @@ bool setupBME280() {
                   Adafruit_BME280::FILTER_OFF,
                   Adafruit_BME280::STANDBY_MS_1000);
 
-  Serial.println("✓ BME280 inicializado!");
+  Serial.println(" BME280 initialized!");
   return true;
 }
 
 bool setupLittleFS() {
   if (!LittleFS.begin(true)) {
-    Serial.println("✗ Erro ao montar LittleFS.");
+    Serial.println(" Failed to mount LittleFS.");
     return false;
   }
-  Serial.println("✓ LittleFS montado!");
+  Serial.println(" LittleFS mounted!");
   return true;
 }
 
 bool setupGPS() {
   Serial1.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
-  Serial.println("✓ GPS UART inicializado!");
+  Serial.println(" GPS UART initialized!");
   return true;
 }
 
-// ============= Funções de Validação e Cálculo =============
+// ============= Validation and Calculation =============
 
 bool validarDados(const SensorData &data) {
   if (isnan(data.imu.ax) || isnan(data.imu.ay) || isnan(data.imu.az)) return false;
@@ -431,7 +431,7 @@ void verificarApogeu(float vz, unsigned long millis_atual) {
   }
 }
 
-// ============= Leitura de Sensores =============
+// ============= Sensor Reading =============
 
 void readSensors(SensorData &data) {
   data.millis = millis();
@@ -472,7 +472,7 @@ void readSensors(SensorData &data) {
   }
 }
 
-// ============= Funções de Arquivo =============
+// ============= File Functions =============
 
 bool writeFile(const String &path, const String &data) {
   File file = LittleFS.open(path, FILE_WRITE);
@@ -496,7 +496,7 @@ void logData() {
   readSensors(data);
 
   if (!validarDados(data)) {
-    Serial.println("✗ Dados inválidos!");
+    Serial.println(" Invalid data!");
     return;
   }
 
@@ -550,30 +550,30 @@ void setup() {
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   delay(100);
 
-  Serial.println("=== Inicializando Sensores ===");
+  Serial.println("=== Initializing...nsores ===");
   icm_ok = setupICM20602();
   resetI2C();
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   bme_ok = setupBME280();
   gps_ok = setupGPS();
 
-  Serial.println("\nInicializando LittleFS...");
+  Serial.println("\nInitializing LittleFS...");
   storage_ok = setupLittleFS();
 
   if (storage_ok) {
     file_path = "/" + String(FILE_NAME);
     String header = "millis,ax,ay,az,gx,gy,gz,pressao_Pa,altura_m,temperatura_C,umidade_pct,vz,mag_giroscopia,lat,lon,alt_gps";
     writeFile(file_path, header);
-    Serial.printf("✓ Salvando em: %s\n", file_path.c_str());
+    Serial.printf(" Saving to: %s\n", file_path.c_str());
   }
 
   Serial.println("\n=== Status dos Sensores ===");
-  Serial.printf("ICM20602: %s\n", icm_ok ? "✓ OK" : "✗ FALHA");
-  Serial.printf("BME280:   %s\n", bme_ok ? "✓ OK" : "✗ FALHA");
-  Serial.printf("GPS:      %s\n", gps_ok ? "✓ OK" : "✗ FALHA");
-  Serial.printf("Storage:  %s\n", storage_ok ? "✓ OK" : "✗ FALHA");
-  Serial.printf("\n=== Taxa de Aquisição: 20 Hz (50 ms) ===\n");
-  Serial.println("=== Iniciando Leituras ===\n");
+  Serial.printf("ICM20602: %s\n", icm_ok ? " OK" : " FAIL");
+  Serial.printf("BME280:   %s\n", bme_ok ? " OK" : " FAIL");
+  Serial.printf("GPS:      %s\n", gps_ok ? " OK" : " FAIL");
+  Serial.printf("Storage:  %s\n", storage_ok ? " OK" : " FAIL");
+  Serial.printf("\n=== Sample Rate: 20 Hz (50 ms) ===\n");
+  Serial.println("=== Starting Readings ===\n");
 }
 
 // ============= Loop =============
