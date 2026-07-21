@@ -1,122 +1,193 @@
-# Software
+# Software Architecture
 
-## Visao geral
+## Overview
 
-Firmware da missao Helike (#213 - LASC 2026) — Serra Rocketry.
-Organizado para coleta de sensores, telemetria LoRa, parse de GPS e registro
-de dados para analise pos-voo.
+The satellite firmware runs on an ESP32-C3 Super Mini (single-core RISC-V,
+400KB RAM, 4KB default stack). The system uses a continuous loop architecture
+with no FSM, no FreeRTOS, and no sleep mode — the satellite powers on already
+descending and runs until recovery.
 
-**Contexto critico**: O satellite fica completamente desligado (sem energia) ate
-o deploy do foguete no apogeu. Ao receber energia, o sistema ja esta em descida.
-Nao ha modo sleep, nao ha FSM de voo — apenas loop continuo de leitura e
-transmissao.
+## Architecture Diagram
 
-## Arquitetura
+```mermaid
+flowchart LR
+    subgraph Sensors
+        BME[BME280\nI2C 0x76]
+        ICM[ICM-20602\nI2C 0x69]
+        GPS[NEO-8M\nUART 9600]
+    end
 
+    subgraph Computation
+        COLLECT[TelemetryModule\ncollectData]
+        VALIDATE[DataValidation\nisValid]
+        VZ[VerticalVelocity\nEMA filter]
+        FORMAT[TelemetryModule\nformatPacket]
+    end
+
+    subgraph Output
+        LORA[LoRaModule\nRFM95W 915MHz]
+        STORAGE[FilesystemModule\nSD / LittleFS]
+        SERIAL[Serial\n115200 baud]
+    end
+
+    BME --> COLLECT
+    ICM --> COLLECT
+    GPS --> COLLECT
+    COLLECT --> VALIDATE
+    VALIDATE --> VZ
+    VZ --> FORMAT
+    FORMAT --> LORA
+    FORMAT --> SERIAL
+    FORMAT --> STORAGE
 ```
-src/
-  main.cpp               — Entry point: setup() + loop()
-  config.h               — Configuracoes globais (pinos, thresholds, intervalos)
-  sensors/
-    BME280Sensor.h/cpp   — Driver BME280 (I2C 0x76)
-    ICM20602Sensor.h/cpp — Driver ICM-20602 (I2C 0x68, WHO_AM_I = 0x12)
-    GPSSensor.h/cpp      — Wrapper TinyGPSPlus (Serial1 9600 baud)
-  modules/
-    LoRaModule.h/cpp     — Radio RFM95W (915 MHz, SPI)
-    BuzzerModule.h/cpp   — Feedback sonoro (piezo)
-    LEDModule.h/cpp      — Feedback visual
-    TelemetryModule.h/cpp — Coleta + formatacao CSV + TX Serial/LoRa
-    FilesystemModule.h/cpp — SD primario + LittleFS fallback
-lib/calc/
-  SensorData.h           — Struct padronizada de telemetria (14 campos)
-  VerticalVelocity.h     — Vz por diferenciacao + filtro EMA
-  ApogeeDetection.h    — Deteccao de apogeu por threshold de Vz
-  DataValidation.h       — Validacao contra NaN e ranges fisicos
-test/
-  test_apogee/           — 7 testes ApogeeDetection (Unity)
-  test_validation/       — 10 testes DataValidation (Unity)
-  test_vz/               — 6 testes VerticalVelocity (Unity)
-```
 
-## Blocos funcionais
+## Module Structure
 
-| Bloco | Modulo(s) | Responsabilidade |
-|-------|-----------|-----------------|
-| Sensores | BME280Sensor, ICM20602Sensor, GPSSensor | Leitura de dados fisicos |
-| Comunicacao | LoRaModule | Telemetria via radio 915MHz |
-| Logging | FilesystemModule | Armazenamento SD/LittleFS |
-| Calculo | lib/calc/ | Vz, apogeu, validacao |
-| Feedback | BuzzerModule, LEDModule | Indicacao visual/sonora |
-| Telemetria | TelemetryModule | Aggregacao + formatacao + TX |
+### `src/main.cpp` — Entry Point
 
-## lib/calc — Modulos de Calculo (header-only)
+- `setup()`: Initializes Serial, I2C, sensors, LoRa, storage, watchdog
+- `loop()`: Runs at 5Hz (SAMPLE_INTERVAL_MS = 200ms):
+  1. Read GPS (continuous)
+  2. Update IMU
+  3. Collect sensor data via TelemetryModule
+  4. Validate data via DataValidation
+  5. Calculate Vz via VerticalVelocity (EMA filter, alpha=0.4)
+  6. Build 18-field CSV packet
+  7. Transmit via Serial + LoRa
+  8. Log to SD/LittleFS
+  9. Toggle heartbeat LED
+  10. Feed watchdog
 
-| Modulo | Header | Dependencias | Descricao |
-|--------|--------|-------------|-----------|
-| `SensorData` | `lib/calc/SensorData.h` | nenhuma | Struct padronizada de telemetria |
-| `VerticalVelocity` | `lib/calc/VerticalVelocity.h` | math.h | Vz por diferenciacao + filtro EMA |
-| `ApogeeDetection` | `lib/calc/ApogeeDetection.h` | nenhuma | Deteccao de apogeu por threshold de Vz |
-| `DataValidation` | `lib/calc/DataValidation.h` | math.h, SensorData.h | Validacao contra NaN e ranges |
+### `src/config.h` — Global Configuration
 
-Nao dependem de Arduino, ESP32 ou qualquer hardware — compilaveis em nativo
-para testes unitarios.
+| Section | Key Defines |
+|---------|-------------|
+| Identification | `TEAM_ID`, `MISSION_NAME` |
+| Pinout | `I2C_SDA/SCL`, `LORA_*`, `GPS_*`, `LED/BUZZER/BUTTON_PIN` |
+| Timing | `SAMPLE_INTERVAL_MS=200`, `LORA_INTERVAL_MS=200`, `GPS_READ_INTERVAL_MS=1000` |
+| LoRa | `LORA_FREQ=915E6`, `SYNC_WORD=0xF3`, `SF=7`, `BW=125E3` |
+| Sensors | `BME280_ADDR`, `ICM20602_ADDR`, validation thresholds |
+| Watchdog | `WATCHDOG_TIMEOUT_MS=5000` |
+| Debug | `DEBUG_ENABLED`, `USE_LITTLEFS` |
 
-## Formato de Telemetria (CSV)
+### `src/sensors/` — Sensor Drivers
 
-O satellite transmite 18 campos via LoRa. O receiver preenche hora/data com GPS
-local e retransmite 21 campos para o Recovery WebUI.
+All sensors implement the `ISensor` abstract interface:
 
-Formato do satellite (18 campos, via LoRa):
-```
+- `ISensor.h` — Pure virtual interface (begin, update, isReady, hasNewData, markDataRead)
+- `BME280Sensor` — Temperature, pressure, humidity, barometric altitude (I2C)
+- `ICM20602Sensor` — 3-axis accelerometer (±16g), 3-axis gyroscope (±2000°/s) via raw I2C
+- `GPSSensor` — NEO-8M GPS with TinyGPSPlus parser (UART)
+
+### `src/modules/` — System Modules
+
+| Module | File | Description |
+|--------|------|-------------|
+| LoRaModule | `LoRaModule.h/.cpp` | RFM95W SPI driver (915MHz, SF7, 125kHz) |
+| TelemetryModule | `TelemetryModule.h/.cpp` | Data collection, CSV formatting, transmission |
+| FilesystemModule | `FilesystemModule.h/.cpp` | SD primary + LittleFS fallback |
+| LEDModule | `LEDModule.h/.cpp` | Heartbeat and status LED (GPIO1) |
+| BuzzerModule | `BuzzerModule.h/.cpp` | Startup/error beeps (GPIO0) |
+
+### `lib/calc/` — Calculation Library (Header-only, No Hardware Deps)
+
+| Module | Description |
+|--------|-------------|
+| `SensorData.h` | Unified telemetry struct (18 fields) |
+| `VerticalVelocity.h` | EMA-filtered Vz from altitude differential |
+| `ApogeeDetection.h` | Apogee detection by Vz threshold crossing |
+| `DataValidation.h` | NaN and range validation against physical limits |
+
+## Data Flow
+
+### CSV Packet Format (18 fields)
+
+```text
 TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi
 ```
 
-Exemplo:
+| Field | Source | Unit | Description |
+|-------|--------|------|-------------|
+| TEAM_ID | config | - | Team identifier (#213) |
+| millis | millis() | ms | System timestamp |
+| count | TelemetryModule | - | Packet sequence number |
+| altp | BME280 | m | Barometric altitude |
+| temp | BME280 | °C | Temperature |
+| umi | BME280 | % | Humidity |
+| p | BME280 | hPa | Atmospheric pressure |
+| gp | ICM-20602 | rad/s | Gyroscope X |
+| gr | ICM-20602 | rad/s | Gyroscope Y |
+| gy | ICM-20602 | rad/s | Gyroscope Z |
+| ap | ICM-20602 | m/s² | Accelerometer X |
+| ar | ICM-20602 | m/s² | Accelerometer Y |
+| ay | ICM-20602 | m/s² | Accelerometer Z |
+| alt | GPS | m | GPS altitude (MSL) |
+| lat | GPS | deg | Latitude |
+| lon | GPS | deg | Longitude |
+| sat | GPS | - | Satellite count |
+| rssi | placeholder | dBm | RSSI (-1, filled by receiver) |
+
+Time/date fields are intentionally omitted — they are filled by the ground
+station receiver using its local GPS for precise synchronization.
+
+### Validation Pipeline
+
+```mermaid
+flowchart LR
+    A[Raw Sensor Data] --> B{isNaN?}
+    B -->|Yes| C[Reject]
+    B -->|No| D{Accel < 20g?}
+    D -->|No| C
+    D -->|Yes| E{Pressure\n30-120 kPa?}
+    E -->|No| C
+    E -->|Yes| F{|Vz| < 200 m/s?}
+    F -->|No| C
+    F -->|Yes| G[Valid Data]
 ```
-#213,1205,1,152.30,25.30,45.20,1013.25,0.10,-0.20,0.05,0.12,-0.05,1.02,156.50,-22.908500,-43.176300,7,0,-1
+
+### Vertical Velocity (EMA Filter)
+
+Vz is computed using numerical differentiation with an Exponential Moving
+Average filter:
+
+```text
+vz_raw = (altitude - altitude_prev) / dt
+vz_filt = alpha * vz_raw + (1 - alpha) * vz_filt_prev
 ```
 
-Formato completo (21 campos, receiver -> WebUI via Serial):
-```
-TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,hora,data,alt,lat,lon,sat,rssi
-```
+Where `alpha = 0.4` (configured in main.cpp).
 
-Campos `hora` e `data` sao preenchidos pelo receiver com GPS local. Campo `rssi`
-e medido pelo receiver (placeholder -1 do satellite e substituido).
+### Apogee Detection
 
-## Storage (SD + LittleFS Fallback)
+Apogee is detected when Vz crosses below a configurable negative threshold
+(default: -0.5 m/s). The detector:
 
-O sistema segue o padrao do `test_hardware/storage/sd_littlefs_fallback`:
+- Tracks peak altitude during ascent
+- Records the exact timestamp of apogee
+- Tracks maximum descent speed after apogee
+- Fires only once per flight (single-shot)
 
-1. Tenta `SD.begin(CS)` primeiro
-2. Se falhar, usa `LittleFS.begin(true)` como fallback
-3. Dispatch automatico baseado no tipo ativo
+## Unit Testing
 
-Em voo real (sem SD card), o sistema detecta ausencia e usa LittleFS.
-Em bancada (com SD), grava no SD para facilidade de leitura.
+Three native test suites using the Unity framework:
 
-## Build e Testes
+| Suite | File | Tests | Description |
+|-------|------|-------|-------------|
+| test_vz | `test/test_vz/` | 7 | Vz calculation, EMA, zero dt, reset |
+| test_apogee | `test/test_apogee/` | 7 | Detection, tracking, single-shot, reset |
+| test_validation | `test/test_validation/` | 11 | NaN, range checks, liberal config |
+
+Run with:
 
 ```bash
-pio run -e helike_esp32c3          # Build ESP32-C3 Super Mini
-pio run -e helike_esp32c3 -t upload --upload-port /dev/ttyACM0  # Upload
-pio test -e native                  # Testes unitarios (25 testes)
-pio device monitor -b 115200        # Serial monitor
+pio test -e native
 ```
 
-## Uso de Recursos (ESP32-C3)
+## Key Design Decisions
 
-| Recurso | Uso | Disponivel |
-|---------|-----|------------|
-| RAM | ~15.5 KB (4.7%) | 320 KB |
-| Flash | ~417 KB (31.8%) | 1.3 MB |
-
-## Convencoes de Codigo
-
-- **Linguagem**: C++11, Arduino framework
-- **Naming**: snake_case funcoes/variaveis, SCREAMING_SNAKE_CASE defines, PascalCase classes
-- **Memoria**: Sem heap (new/malloc) — objetos globais estaticos
-- **Validacao**: Cada leitura de sensor validada antes de uso
-- **Documentacao**: Doxygen comments em PT-BR nos headers
-- **Indentacao**: 2 espacos
-- **Encoding**: UTF-8
+1. **No FSM, no sleep** — Satellite powers on already descending
+2. **Static global objects** — No heap allocation, deterministic RAM usage
+3. **SD primary, LittleFS fallback** — Runtime storage detection
+4. **TinyGPSPlus** — Higher-level NMEA parsing vs manual
+5. **PlatformIO** — Build + native tests in one toolchain
+6. **5Hz sample rate** — 200ms interval, adequate for descent phase

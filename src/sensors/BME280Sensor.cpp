@@ -1,6 +1,6 @@
 /**
  * @file BME280Sensor.cpp
- * @brief Implementacao do driver BME280
+ * @brief BME280 driver implementation
  */
 
 #include "BME280Sensor.h"
@@ -39,7 +39,7 @@ float BME280Sensor::getHumidity() {
 float BME280Sensor::getAltitude() {
     if (!_ready) return NAN;
     float pressure = getPressure();
-    // Validar pressao antes de usar na formula (evita propagacao de NAN)
+    // Validate pressure before using in formula (avoids NAN propagation)
     if (isnan(pressure) || pressure <= 0.0f) {
         return NAN;
     }

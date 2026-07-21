@@ -1,6 +1,25 @@
-/*
- * SRAB Logger v2 — ICM-20602 + BMP280
- * Serra Rocketry Team — Helike Mission
+/**
+ * @file sensor_logging_fallback.ino
+ * @brief SRAB Logger v2 — ICM-20602 + BMP280 with SD/LittleFS fallback
+ *
+ * Demonstrates SD-to-LittleFS fallback pattern for storage.
+ * Persistent file: same file is reopened across reboots.
+ *
+ * Components:
+ * - ICM-20602 (accelerometer + gyroscope)
+ * - BMP280 (pressure + altitude)
+ *
+ * Hardware setup (ESP32-C3 Super Mini):
+ * - I2C: SDA=GPIO8, SCL=GPIO9
+ * - SD Card: CS=GPIO5, SPI shared with LoRa (different CS)
+ *
+ * Storage strategy:
+ * 1. Try SD card first
+ * 2. Fallback to LittleFS if SD unavailable
+ * 3. Same filename reused across reboots
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
  */
 
 #include <Wire.h>

@@ -1,176 +1,162 @@
-# Fluxos do Sistema
+# System Flowcharts
 
-## Fluxo de Operacao (Runtime)
+## Boot and Initialization Sequence
 
 ```mermaid
 flowchart TD
-    A[Power On / Deploy] --> B[setup: Serial + I2C]
-    B --> C[Init Sensores: BME280, ICM-20602]
-    C --> D[Init GPS: Serial1 9600]
-    D --> E[Init LoRa: 915MHz]
-    E --> F[Init Storage: SD → LittleFS fallback]
-    F --> G[Feedback: 3 beeps + 3 blinks]
-    G --> H[loop: 5Hz]
-    H --> I[GPS update]
-    I --> J[IMU update]
-    J --> K[Coleta dados]
-    K --> L[Valida dados]
-    L --> M[Calcula Vz]
-    M --> N[Formata CSV]
-    N --> O[TX Serial + LoRa]
-    O --> P[Grava Storage]
-    P --> Q[LED toggle]
-    Q --> H
+    START[Power On] --> SERIAL[Serial Init\n115200 baud]
+    SERIAL --> I2C[I2C Init\nSDA=8, SCL=9, 400kHz]
+    I2C --> ACT[Buzzer + LED Init]
+    ACT --> BME{BME280 Init\n0x76}
+    BME -->|OK| BME_OK[✓ BME Ready]
+    BME -->|FAIL| BME_FAIL[✗ BME Error]
+    BME_OK --> ICM{ICM-20602 Init\n0x69}
+    BME_FAIL --> ICM
+    ICM -->|OK| ICM_OK[✓ ICM Ready]
+    ICM -->|FAIL| ICM_FAIL[✗ ICM Error]
+    ICM_OK --> GPS[GPS Init\nSerial1 9600]
+    ICM_FAIL --> GPS
+    GPS --> LORA{LoRa Init\nRFM95W 915MHz}
+    LORA -->|OK| LORA_OK[✓ LoRa Ready]
+    LORA -->|FAIL| LORA_FAIL[✗ LoRa Error]
+    LORA_OK --> FS{Storage Init\nSD > LittleFS}
+    LORA_FAIL --> FS
+    FS -->|OK| FS_OK[✓ FS Ready\nCreate telemetry.csv]
+    FS -->|FAIL| FS_FAIL[✗ No Storage]
+    FS_OK --> WDT[Watchdog Init\n5s timeout]
+    FS_FAIL --> WDT
+    WDT --> STATUS[Print Status Summary]
+    STATUS --> FB{All Critical Sensors OK?}
+    FB -->|Yes| STARTUP_BEEP[3 beeps\n3 blinks]
+    FB -->|No| ERROR_BEEP[5 beeps\n10 fast blinks]
+    STARTUP_BEEP --> LOOP
+    ERROR_BEEP --> LOOP
+    LOOP[Enter Main Loop\n5 Hz]
 ```
 
-## Fluxo de Dados
+## Main Telemetry Loop
+
+```mermaid
+flowchart TD
+    LOOP[Loop Start] --> GPS_UPDATE[GPS Update\nContinuous NMEA parsing]
+    GPS_UPDATE --> CHECK_SAMPLE{Time since\nlast sample > 200ms?}
+    CHECK_SAMPLE -->|No| LOOP
+    CHECK_SAMPLE -->|Yes| WDT_RESET[Feed Watchdog]
+    WDT_RESET --> IMU_UPDATE[ICM-20602 Update\nRead accel + gyro]
+    IMU_UPDATE --> COLLECT[Collect All Sensor Data\nBME + ICM + GPS]
+    COLLECT --> VALIDATE{Data Valid?\nNaN + Range Check}
+    VALIDATE -->|No| SKIP[Skip: set NaN]
+    VALIDATE -->|Yes| VZ_CALC[Calculate Vz\nEMA filter alpha=0.4]
+    VZ_CALC --> GYRO_MAG[Calculate Gyro Magnitude]
+    SKIP --> GYRO_MAG
+    GYRO_MAG --> FORMAT[Format 18-field CSV Packet]
+    FORMAT --> LORA_TX{LoRa Send}
+    LORA_TX -->|Success| LORA_OK2[✓]
+    LORA_TX -->|Fail| LORA_FAIL2[✗ Count failure]
+    LORA_OK2 --> FS_LOG{FS AppendLine}
+    LORA_FAIL2 --> FS_LOG
+    FS_LOG -->|Success| FS_OK2[✓]
+    FS_LOG -->|Fail| FS_FAIL2[✗ Count failure]
+    FS_OK2 --> LED[Toggle Heartbeat LED]
+    FS_FAIL2 --> LED
+    LED --> DEBUG{Debug Enabled\nand 2s elapsed?}
+    DEBUG -->|Yes| PRINT[Print Status:\nCounts, Vz, Failures]
+    DEBUG -->|No| SKIP_PRINT
+    PRINT --> SKIP_PRINT
+    SKIP_PRINT --> UPDATE_TS[Update last_sample\n= now]
+    UPDATE_TS --> LOOP
+```
+
+## Data Validation Pipeline
 
 ```mermaid
 flowchart LR
-    subgraph Sensores
-        BME[BME280: temp/press/hum/alt]
-        ICM[ICM-20602: accel/gyro]
-        GPS[NEO-8M: lat/lon/alt/sats]
-    end
-
-    subgraph Processamento
-        TV[TelemetryModule: coleta + CSV]
-        VV[VerticalVelocity: EMA filter]
-        DV[DataValidation: NaN + range]
-    end
-
-    subgraph Output
-        SER[Serial Monitor]
-        LOR[LoRa 915MHz]
-        FS[SD / LittleFS]
-    end
-
-    BME --> TV
-    ICM --> TV
-    GPS --> TV
-    TV --> DV
-    DV --> VV
-    TV --> SER
-    TV --> LOR
-    TV --> FS
+    RAW[Raw Sensor Data] --> NAN{NaN Check\nax, ay, az,\npressure, altitude, vz}
+    NAN -->|Any NaN| REJECT[✗ Reject Packet]
+    NAN -->|All valid| ACCEL_MAG{Accel Magnitude\n< 20g?}
+    ACCEL_MAG -->|≥ 20g| REJECT
+    ACCEL_MAG -->|< 20g| PRESSURE{Pressure Range\n30-120 kPa?}
+    PRESSURE -->|Out of range| REJECT
+    PRESSURE -->|In range| VZ_RANGE{|Vz| < 200 m/s?}
+    VZ_RANGE -->|≥ 200 m/s| REJECT
+    VZ_RANGE -->|< 200 m/s| ACCEPT[✓ Valid Data → Process & Transmit]
 ```
 
-## Fluxo de Storage (SD + LittleFS Fallback)
+## Storage Fallback Decision
 
 ```mermaid
 flowchart TD
-    A[begin] --> B{Tenta SD.begin(CS)}
-    B -->|Sucesso| C[storage_type = STORAGE_SD]
-    B -->|Falha| D{Tenta LittleFS.begin}
-    D -->|Sucesso| E[storage_type = STORAGE_LITTLEFS]
-    D -->|Falha| F[storage_type = STORAGE_NONE]
-    C --> G[Operacões de arquivo via SD lib]
-    E --> H[Operacões de arquivo via LittleFS lib]
-    F --> I[Sem logging local]
+    FS_INIT[FilesystemModule::begin] --> TRY_SD{SD.begin\nCS=GPIO5}
+    TRY_SD -->|Success| SD_OK[Type = STORAGE_SD]
+    TRY_SD -->|Fail| TRY_LFS{LittleFS.begin}
+    TRY_LFS -->|Success| LFS_OK[Type = STORAGE_LITTLEFS]
+    TRY_LFS -->|Fail| NONE[Type = STORAGE_NONE]
+    SD_OK --> CREATE_FILE[Create /telemetry.csv\nWrite CSV Header]
+    LFS_OK --> CREATE_FILE
+    NONE --> LOG_ERROR[Log: No Storage Available]
+    CREATE_FILE --> READY[System Ready]
+
+    subgraph Runtime Ops
+        APPEND[appendLine] --> DISPATCH{Storage Type?}
+        DISPATCH -->|SD| SD_APPEND[SD.open APPEND]
+        DISPATCH -->|LittleFS| LFS_APPEND[LittleFS.open APPEND]
+        DISPATCH -->|NONE| SKIP_APPEND[Skip - No Storage]
+    end
 ```
 
-## Fluxo de Inicializacao Detalhado
+## LoRa Telemetry Packet (Satellite → Receiver)
 
 ```mermaid
 sequenceDiagram
-    participant S as Serial
-    participant I as I2C Bus
-    participant B as BME280
-    participant C as ICM-20602
-    participant G as GPS
-    participant L as LoRa
-    participant F as Storage
-    participant BZ as Buzzer
+    participant S as Satellite
+    participant L as LoRa RF
+    participant R as Receiver
 
-    S->>S: begin(115200)
-    I->>I: begin(SDA=8, SCL=9, 400kHz)
-    BZ->>BZ: begin
-    B->>I: begin(0x76)
-    alt BME280 OK
-        B-->>S: "BME280 OK"
-    else BME280 FAIL
-        B-->>S: "BME280 ERROR"
+    loop Every 200ms (5Hz)
+        S->>S: Read Sensors
+        S->>S: Validate + Compute Vz
+        S->>S: Format CSV (18 fields)
+        S->>L: beginPacket()
+        S->>L: print(CSV)
+        S->>L: endPacket()
+        L-->>R: RF Packet (915MHz, SF7, 125kHz)
+        R->>R: Receive + Decode
+        R->>R: Add Timestamp + RSSI
+        R->>R: Forward to WebUI (21 fields)
     end
-    C->>I: begin(0x68)
-    alt ICM-20602 OK
-        C-->>S: "ICM-20602 OK"
-    else ICM-20602 FAIL
-        C-->>S: "ICM-20602 ERROR"
-    end
-    G->>G: begin(9600, RX=20, TX=21)
-    L->>L: begin(915MHz)
-    alt LoRa OK
-        L-->>S: "LoRa OK"
-    else LoRa FAIL
-        L-->>S: "LoRa ERROR"
-    end
-    F->>F: begin
-    alt SD OK
-        F-->>S: "Storage: SD"
-    else LittleFS OK
-        F-->>S: "Storage: LittleFS"
-    else No Storage
-        F-->>S: "Storage: NONE"
-    end
-    BZ->>BZ: playStartup (3 beeps)
 ```
 
-## Fluxo de Telemetria (Loop Principal)
-
-```
-A cada 200ms (5Hz):
-
-1. GPS update (sempre)
-   - Le bytes do Serial1
-   - Alimenta TinyGPSPlus parser
-
-2. IMU update
-   - Le 6 bytes accel (0x3B-0x40)
-   - Le 6 bytes gyro (0x43-0x48)
-   - Converte para m/s² e rad/s
-
-3. Coleta BME280
-   - readTemperature() → °C
-   - readPressure() → Pa
-   - readHumidity() → %
-   - getAltitude() → m
-
-4. Coleta GPS
-   - getTimeString() → "HH:MM:SS"
-   - getLatitude/getLongitude → graus
-   - getAltitude() → m
-   - getSatellites() → count
-
-5. Validacao
-   - Verifica NaN em todos os campos
-   - Verifica ranges fisicos
-   - Marca dados como validos/invalidos
-
-6. Calculo Vz
-   - Vz = (altura_atual - altura_anterior) / dt
-   - Filtro EMA: vz_filt = alpha * vz_filt + (1-alpha) * vz_raw
-
-7. Formatacao CSV
-   - TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi
-
-8. Transmissao
-   - Serial.println(packet)
-   - LoRa.send(packet)
-   - Storage.appendLine(packet)
-
-9. Heartbeat
-   - LED toggle
-```
-
-## Fluxo de Desenvolvimento
+## Hardware Test Flowchart
 
 ```mermaid
 flowchart TD
-    A[Testes Unitarios: pio test -e native] --> B[Build: pio run -e helike_esp32c3]
-    B --> C[Testes de Hardware: test_hardware/]
-    C --> D[Integracao de sensores]
-    D --> E[Simulacao e estudo de asa]
-    E --> F[Teste de queda experimental]
-    F --> G[Correlacao sim x real]
-    G --> H[Integracao de firmware final]
+    A[Hardware Validation] --> B[Individual Sensor Tests]
+    B --> B1[BME280 Test]
+    B --> B2[BMP280 Test]
+    B --> B3[ICM-20602 Test]
+    B --> B4[GPS NEO-8M Test]
+
+    A --> C[Storage Tests]
+    C --> C1[SD Card Bare Test]
+    C --> C2[LittleFS/SPIFFS Test]
+    C --> C3[SD + LittleFS Fallback Test]
+
+    A --> D[Integration Tests]
+    D --> D1[v1: ICM + BMP + LittleFS]
+    D --> D2[v2: +20Hz + Vz + Apogee]
+    D --> D3[v3: +GPS + 15-col CSV]
+    D --> D4[Fallback: SD + LFS]
+
+    B1 --> E[Consolidate Firmware]
+    B2 --> E
+    B3 --> E
+    B4 --> E
+    C1 --> E
+    C2 --> E
+    C3 --> E
+    D1 --> E
+    D2 --> E
+    D3 --> E
+    D4 --> E
+    E --> F[Flight Integration]
 ```

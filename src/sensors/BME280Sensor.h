@@ -1,11 +1,11 @@
 /**
  * @file BME280Sensor.h
- * @brief Driver para sensor BME280 (temperatura, pressao, umidade)
+ * @brief Driver for the BME280 sensor (temperature, pressure, humidity)
  *
- * Comunicacao I2C. Fornece leituras de temperatura (C), pressao (Pa),
- * umidade (%) e altitude (m) calculada via formula barometrica.
+ * I2C communication. Provides temperature (C), pressure (Pa),
+ * humidity (%) and altitude (m) calculated via the barometric formula.
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -19,26 +19,26 @@
 
 /**
  * @class BME280Sensor
- * @brief Abstracao para o sensor barometrico BME280
+ * @brief Abstraction for the BME280 barometric sensor
  */
 class BME280Sensor : public ISensor {
 public:
     /**
-     * @brief Construtor
-     * @param seaLevelPressure Pressao ao nivel do mar (hPa)
+     * @brief Constructor
+     * @param seaLevelPressure Sea level pressure reference (hPa)
      */
     BME280Sensor(float seaLevelPressure = BME280_SEALEVEL_HPA);
 
     ///@name ISensor interface
     ///@{
     /**
-     * @brief Retorna o estado atual de inicializacao
+     * @brief Returns the current initialization state
      *
-     * Este overload de begin() nao inicializa o sensor fisicamente.
-     * Apenas retorna o flag _ready, que e definido como true apos
-     * a chamada explicita de begin(TwoWire&, uint8_t).
+     * This begin() overload does NOT physically initialize the sensor.
+     * It only returns the _ready flag, which is set to true after
+     * the explicit begin(TwoWire&, uint8_t) call.
      *
-     * @return true se o sensor ja foi inicializado via begin(TwoWire&, uint8_t)
+     * @return true if the sensor was already initialized via begin(TwoWire&, uint8_t)
      */
     bool begin() override { return _ready; }
     void update() override {}
@@ -48,45 +48,45 @@ public:
     ///@}
 
     /**
-     * @brief Inicializa o sensor I2C
-     * @param wire Barramento I2C
-     * @param addr Endereco I2C do sensor (0x76 ou 0x77)
-     * @return true se inicializado com sucesso
+     * @brief Initializes the I2C sensor
+     * @param wire I2C bus
+     * @param addr I2C address of the sensor (0x76 or 0x77)
+     * @return true if initialized successfully
      */
     bool begin(TwoWire &wire, uint8_t addr = BME280_ADDR);
 
     /**
-     * @brief Le temperatura em Celsius
-     * @return Temperatura ou NAN se erro
+     * @brief Reads temperature in Celsius
+     * @return Temperature or NAN on error
      */
     float getTemperature();
 
     /**
-     * @brief Le pressao em Pa
-     * @return Pressao ou NAN se erro
+     * @brief Reads pressure in Pa
+     * @return Pressure or NAN on error
      */
     float getPressure();
 
     /**
-     * @brief Le umidade em %
-     * @return Umidade ou NAN se erro
+     * @brief Reads humidity in %
+     * @return Humidity or NAN on error
      */
     float getHumidity();
 
     /**
-     * @brief Calcula altitude em metros (relativa ao sea level)
-     * @return Altitude ou NAN se erro
+     * @brief Calculates altitude in meters (relative to sea level)
+     * @return Altitude or NAN on error
      */
     float getAltitude();
 
     /**
-     * @brief Define pressao de referencia para altitude
-     * @param pressure Pressao em hPa
+     * @brief Sets the sea level pressure reference for altitude
+     * @param pressure Pressure in hPa
      */
     void setSeaLevelPressure(float pressure);
 
     /**
-     * @brief Retorna pressao de referencia (hPa)
+     * @brief Returns the reference sea level pressure (hPa)
      */
     float getSeaLevelPressure();
 

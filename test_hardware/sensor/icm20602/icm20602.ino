@@ -1,3 +1,18 @@
+/**
+ * @file icm20602.ino
+ * @brief Hardware validation sketch for the ICM-20602 IMU (I2C)
+ *
+ * Tests the ICM-20602 6-axis IMU reading accelerometer (m/s^2)
+ * and gyroscope (rad/s) data via raw I2C register access.
+ *
+ * Hardware setup:
+ * - I2C: SDA=GPIO8, SCL=GPIO9
+ * - Address: 0x69
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
+ */
+
 #include <Wire.h>
 
 #define ICM_ADDR 0x69

@@ -1,11 +1,11 @@
 /**
  * @file ICM20602Sensor.h
- * @brief Driver para sensor inercial ICM-20602 (acelerometro + giroscopio)
+ * @brief Driver for the ICM-20602 inertial sensor (accelerometer + gyroscope)
  *
- * Comunicacao I2C. Fornece aceleracao (m/s^2) e velocidade angular (rad/s)
- * com ranges configurados para ±16g e ±2000°/s.
+ * I2C communication. Provides acceleration (m/s^2) and angular velocity (rad/s)
+ * with ranges configured for ±16g and ±2000°/s.
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -18,7 +18,7 @@
 
 /**
  * @class ICM20602Sensor
- * @brief Abstracao para o sensor inercial ICM-20602
+ * @brief Abstraction for the ICM-20602 inertial sensor
  */
 class ICM20602Sensor : public ISensor {
 public:
@@ -34,40 +34,40 @@ public:
     ///@}
 
     /**
-     * @brief Inicializa o sensor I2C
-     * @param addr Endereco I2C (0x68 ou 0x69)
-     * @param wire Barramento I2C
-     * @return true se inicializado com sucesso
+     * @brief Initializes the I2C sensor
+     * @param addr I2C address (0x68 or 0x69)
+     * @param wire I2C bus
+     * @return true if initialized successfully
      */
     bool begin(uint8_t addr = 0x69, TwoWire &wire = Wire);
 
     /**
-     * @brief Aceleracao em X (m/s^2)
+     * @brief Acceleration X (m/s^2)
      */
     float getAx() const;
 
     /**
-     * @brief Aceleracao em Y (m/s^2)
+     * @brief Acceleration Y (m/s^2)
      */
     float getAy() const;
 
     /**
-     * @brief Aceleracao em Z (m/s^2)
+     * @brief Acceleration Z (m/s^2)
      */
     float getAz() const;
 
     /**
-     * @brief Velocidade angular em X (rad/s)
+     * @brief Angular velocity X (rad/s)
      */
     float getGx() const;
 
     /**
-     * @brief Velocidade angular em Y (rad/s)
+     * @brief Angular velocity Y (rad/s)
      */
     float getGy() const;
 
     /**
-     * @brief Velocidade angular em Z (rad/s)
+     * @brief Angular velocity Z (rad/s)
      */
     float getGz() const;
 
@@ -85,7 +85,7 @@ private:
     float _gy;
     float _gz;
 
-    // Conversion factors para ±16g (AFS_SEL=3) e ±2000°/s (FS_SEL=3)
+    // Conversion factors for ±16g (AFS_SEL=3) and ±2000°/s (FS_SEL=3)
     // ±16g: 2048 LSB/g -> 16.0 * 9.80665 / 32768.0 m/s² per LSB
     // ±2000°/s: 16.384 LSB/°/s -> pi / (180 * 16.384) rad/s per LSB
     static constexpr float ACCEL_FACTOR = 16.0f * 9.80665f / 32768.0f;

@@ -2,42 +2,44 @@
 
 ## Status
 
-Aceito.
+Accepted.
 
-## Contexto
+## Context
 
-O flight-computer utiliza Arduino IDE para desenvolvimento. O satellite utiliza
-PlatformIO com ambiente nativo para testes unitarios.
+The flight-computer uses Arduino IDE for development. The satellite uses
+PlatformIO with a native environment for unit tests.
 
-## Decisao
+## Decision
 
-Manter PlatformIO como ferramenta de build para o satellite.
+Keep PlatformIO as the build tool for the satellite.
 
 ## Rationale
 
-- **Testes unitarios nativos (Unity)**: Integrados via `pio test -e native`
-- **Build reprodutivel via CLI**: `pio run -e helike_esp32c3`
-- **Multiplos ambientes**: ESP32-C3 (firmware) + native (testes) no mesmo projeto
-- **Gerenciamento de dependencias**: `lib_deps` resolve automaticamente
-- **CI/CD friendly**: Build e testes acessiveis via linha de comando
+- **Native unit tests (Unity)**: Integrated via `pio test -e native`
+- **Reproducible CLI builds**: `pio run -e helike_esp32c3`
+- **Multiple environments**: ESP32-C3 (firmware) + native (tests) in same project
+- **Dependency management**: `lib_deps` resolves automatically
+- **CI/CD friendly**: Build and tests accessible via command line
 
-## Consequencias
+## Consequences
 
-### Positivo
-- Testes automatizados
-- Dependencies resolvidas automaticamente
-- Ambiente de testes separado do hardware
+### Positive
 
-### Negativo
-- Curva de aprendizado para novos membros
-- Requer instalacao do PlatformIO (via pip ou VSCode extension)
+- Automated tests
+- Automatic dependency resolution
+- Separate test environment from hardware
 
-## Alternativas Consideradas
+### Negative
 
-1. **Arduino IDE** (como flight-computer): Simples, mas sem testes nativos
-2. **ESP-IDF nativo**: Mais controle, mas mais complexo para iniciantes
-3. **PlatformIO** (escolhido): Balanceia simplicidade e capacidade de testes
+- Learning curve for new members
+- Requires PlatformIO installation (via pip or VS Code extension)
+
+## Alternatives Considered
+
+1. **Arduino IDE** (like flight-computer) — simple, but no native tests
+2. **ESP-IDF native** — more control, but more complex for beginners
+3. **PlatformIO** (chosen) — balances simplicity and test capability
 
 ## Implementation
 
-Ver `platformio.ini` com ambientes `[env:helike_esp32c3]` e `[env:native]`.
+See `platformio.ini` with environments `[env:helike_esp32c3]` and `[env:native]`.

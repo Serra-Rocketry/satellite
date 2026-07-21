@@ -1,36 +1,48 @@
-# ADR-002: SD Primario com LittleFS Fallback
+# ADR-002: SD Primary with LittleFS Fallback
 
 ## Status
 
-Aceito.
+Accepted.
 
-## Contexto
+## Context
 
-O flight-computer utiliza LittleFS como storage primario para logging CSV.
-O satellite possui um slot para SD card (test_hardware) mas o SD nao esta
-presente em voo real.
+The flight-computer uses LittleFS as the primary storage for CSV logging.
+The satellite has an SD card slot (test_hardware) but SD is not present in
+real flight.
 
-O teste `test_hardware/storage/sd_littlefs_fallback` demonstra o padrao de
-tentar SD primeiro e usar LittleFS como fallback.
+The `test_hardware/storage/sd_littlefs_fallback` test demonstrates the
+pattern: try SD first, use LittleFS as fallback.
 
-## Decisao
+## Decision
 
-Implementar o FilesystemModule com deteccao em runtime:
+Implement FilesystemModule with runtime detection:
 
-1. Tenta `SD.begin(CS)` primeiro
-2. Se falhar, usa `LittleFS.begin(true)` como fallback
-3. Dispatch automatico de operacoes baseado no tipo ativo
+1. Try `SD.begin(CS)` first
+2. If that fails, use `LittleFS.begin(true)` as fallback
+3. Automatic dispatch of operations based on active storage type
 
-Sem flag de compilacao — o modulo sempre compila e detecta o storage disponivel
-em runtime.
+No compile-time flag — the module always compiles and detects available
+storage at runtime.
 
-## Consequencias
+## Consequences
 
-**Positivos**:
-- Funciona em bancada (com SD) e em voo (sem SD)
-- Sem overhead de codigo morto quando SD nao presente
-- Padrao ja validado nos testes de hardware
+### Positive
 
-**Negativos**:
-- SD card library adiciona ~2KB de flash mesmo quando nao usado
-- Complexidade de codigo vs. apenas LittleFS
+- Works on the bench (with SD) and in flight (without SD)
+- No dead code overhead when SD is not present
+- Pattern already validated in hardware tests
+
+### Negative
+
+- SD card library adds ~2KB of flash even when unused
+- More complex than using LittleFS only
+
+## Alternatives Considered
+
+1. **LittleFS only** — simpler but no SD support on the bench
+2. **SD only** — fails in flight without SD card
+3. **SD + LittleFS fallback** (chosen) — works in both scenarios
+
+## Implementation
+
+See `src/modules/FilesystemModule.h` and `src/modules/FilesystemModule.cpp`.

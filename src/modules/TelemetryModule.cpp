@@ -1,6 +1,6 @@
 /**
  * @file TelemetryModule.cpp
- * @brief Implementacao do modulo de telemetria
+ * @brief Telemetry module implementation
  */
 
 #include "TelemetryModule.h"
@@ -60,26 +60,26 @@ void TelemetryModule::collectData(BME280Sensor &bme, ICM20602Sensor &icm, GPSSen
 }
 
 void TelemetryModule::formatPacket(const SensorData &data, char *packet, size_t packetSize) {
-    // 18 campos — sem hora/data (receiver preenche com GPS local)
+    // 18 fields — no time/date (receiver fills with local GPS)
     // TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi
     //
-    // Mapeamento:
-    //   altp = altura barometrica (m)
-    //   temp = temperatura (C)
-    //   umi  = umidade (%)
-    //   p    = pressao (hPa)
-    //   gp   = giroscopio X (rad/s)
-    //   gr   = giroscopio Y (rad/s)
-    //   gy   = giroscopio Z (rad/s)
-    //   ap   = acelerometro X (m/s2)
-    //   ar   = acelerometro Y (m/s2)
-    //   ay   = acelerometro Z (m/s2)
-    //   alt  = altitude GPS (m)
-    //   lat  = latitude (graus)
-    //   lon  = longitude (graus)
-    //   sat  = numero de satelites GPS
+    // Mapping:
+    //   altp = barometric altitude (m)
+    //   temp = temperature (C)
+    //   umi  = humidity (%)
+    //   p    = pressure (hPa)
+    //   gp   = gyroscope X (rad/s)
+    //   gr   = gyroscope Y (rad/s)
+    //   gy   = gyroscope Z (rad/s)
+    //   ap   = accelerometer X (m/s2)
+    //   ar   = accelerometer Y (m/s2)
+    //   ay   = accelerometer Z (m/s2)
+    //   alt  = GPS altitude (m)
+    //   lat  = latitude (degrees)
+    //   lon  = longitude (degrees)
+    //   sat  = number of GPS satellites
 
-    //   rssi = placeholder (-1, receiver preenche)
+    //   rssi = placeholder (-1, receiver fills this)
 
     _packetCount++;
 
@@ -91,13 +91,13 @@ void TelemetryModule::formatPacket(const SensorData &data, char *packet, size_t 
              "%.2f,%.2f,%.2f,"
              "%.2f,%.2f,%.2f,"
              "%.2f,%.6f,%.6f,%u,"
-             "%d",
-             TEAM_ID, data.millis_ts, _packetCount,
-             data.altura, data.temperatura, data.umidade, pressao_hpa,
-             data.gx, data.gy, data.gz,
-             data.ax, data.ay, data.az,
-             data.altura_gps, data.lat, data.lon, data.satellites,
-             -1);    // rssi
+              "%d",
+              TEAM_ID, data.millis_ts, _packetCount,
+              data.altura, data.temperatura, data.umidade, pressao_hpa,
+              data.gx, data.gy, data.gz,
+              data.ax, data.ay, data.az,
+              data.altura_gps, data.lat, data.lon, data.satellites,
+              -1);    // rssi placeholder
 }
 
 bool TelemetryModule::send(const String &packet) {

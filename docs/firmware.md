@@ -1,409 +1,165 @@
-# Firmware — Documentacao Detalhada
+# Firmware Guide
 
-Documentacao de cada modulo do firmware do satellite Helike (#213).
+## Build System
 
-## Indice
+The project uses **PlatformIO** with two environments:
 
-1. [main.cpp](#maincpp)
-2. [config.h](#configh)
-3. [Sensores](#sensores)
-4. [Modulos de Comunicacao](#modulos-de-comunicacao)
-5. [Modulos de Dados](#modulos-de-dados)
-6. [lib/calc](#libcalc)
+| Environment | Target | Purpose |
+|-------------|--------|---------|
+| `helike_esp32c3` | ESP32-C3 | Satellite firmware |
+| `native` | PC (x86_64) | Unit tests (Unity) |
 
----
+### Dependencies
 
-## main.cpp
+Managed automatically by PlatformIO (`lib_deps` in platformio.ini):
 
-**Arquivo**: `src/main.cpp`
+| Library | Version | Used By |
+|---------|---------|---------|
+| `sandeepmistry/LoRa` | ^0.8.0 | LoRaModule (RFM95W) |
+| `adafruit/Adafruit BME280 Library` | ^2.2.4 | BME280Sensor |
+| `mikalhart/TinyGPSPlus` | ^1.0.3 | GPSSensor |
 
-Ponto de entrada do sistema. Contem `setup()` (inicializacao unica) e `loop()`
-(leitura e transmissao continua).
+### Build Configuration
 
-### setup()
+Key settings in `platformio.ini`:
 
-Sequencia de inicializacao:
-
-```
-Serial → I2C → Buzzer/LED → BME280 → ICM-20602 → GPS → LoRa → Storage → Feedback
-```
-
-Cada modulo e inicializado com validacao. Sensores falham de forma nao-critica
-(sistema continua operando). Storage e LoRa sao reportados mas nao bloqueiam.
-
-O feedback sonoro (3 beeps) e visual (3 piscadas) indica sucesso na inicializacao
-dos sensores criticos (BME280 + ICM-20602).
-
-### loop()
-
-Execucao controlada por `millis()` a cada `SAMPLE_INTERVAL_MS` (200ms = 5Hz):
-
-```
-GPS update → IMU update → Coleta dados → Valida → Calcula Vz → Formata CSV → TX → LED toggle
+```ini
+[env:helike_esp32c3]
+board = esp32-c3-devkitm-1
+board_build.mcu = esp32c3
+board_build.f_cpu = 160000000L
+build_src_filter = +<*> -<sensors_disabled/**>
+build_flags =
+    -D CORE_DEBUG_LEVEL=4
+    -D CONFIG_FREERTOS_UNICORE=1
+    -D SERIAL_USB_BUFFER_SIZE=64
+    -I lib
 ```
 
-O GPS e atualizado a cada iteracao (necessario para manter o parser TinyGPSPlus
-atualizado). A IMU e atualizada apenas no intervalo de amostragem.
+The `build_src_filter` excludes the `sensors_disabled/` directory (legacy
+GPSModule files kept for reference).
 
-### Estado Global
+## Build and Upload Commands
 
-| Variavel | Tipo | Descricao |
-|----------|------|-----------|
-| `g_last_sample` | `uint32_t` | Timestamp do ultimo sample |
-| `g_last_debug_print` | `uint32_t` | Timestamp do ultimo print debug |
-| `g_bme_ok` | `bool` | BME280 operacional? |
-| `g_icm_ok` | `bool` | ICM-20602 operacional? |
-| `g_lora_ok` | `bool` | LoRa operacional? |
+### Build All
 
----
-
-## config.h
-
-**Arquivo**: `src/config.h`
-
-Centraliza todas as configuracoes do sistema.
-
-### Identificacao
-
-| Constante | Valor | Descricao |
-|-----------|-------|-----------|
-| `TEAM_ID` | `"#213"` | Identificador da equipe |
-| `MISSION_NAME` | `"Helike PocketQube"` | Nome da missao |
-
-### Pinout
-
-| Constante | Valor | Interface |
-|-----------|-------|-----------|
-| `I2C_SDA` | 8 | I2C data |
-| `I2C_SCL` | 9 | I2C clock |
-| `LORA_MOSI` | 7 | SPI LoRa |
-| `LORA_MISO` | 5 | SPI LoRa |
-| `LORA_SCK` | 6 | SPI LoRa |
-| `LORA_CS` | 10 | SPI chip select |
-| `LORA_RST` | 4 | LoRa reset |
-| `LORA_DIO0` | 3 | LoRa IRQ |
-| `GPS_RX` | 20 | UART GPS |
-| `GPS_TX` | 21 | UART GPS |
-| `LED_PIN` | 1 | LED indicador |
-| `BUZZER_PIN` | 8 | Buzzer piezo |
-| `BUTTON_PIN` | 2 | Botao de entrada |
-
-### Timing
-
-| Constante | Valor | Descricao |
-|-----------|-------|-----------|
-| `SERIAL_BAUD` | 115200 | Serial monitor |
-| `GPS_BAUD` | 9600 | UART GPS |
-| `SAMPLE_INTERVAL_MS` | 200 | 5Hz sampling |
-| `GPS_READ_INTERVAL_MS` | 1000 | 1Hz GPS |
-| `DEBUG_PRINT_INTERVAL_MS` | 2000 | Print debug 0.5Hz |
-
-### LoRa
-
-| Constante | Valor | Descricao |
-|-----------|-------|-----------|
-| `LORA_FREQ` | 915E6 | Frequencia Americas |
-| `LORA_SYNC_WORD` | 0xF3 | Network ID |
-| `LORA_TX_POWER` | 20 | dBm maximo |
-| `LORA_SPREADING` | 7 | Spreading Factor |
-| `LORA_BANDWIDTH` | 125E3 | 125 kHz |
-
-### Sensores
-
-| Constante | Valor | Descricao |
-|-----------|-------|-----------|
-| `BME280_ADDR` | 0x76 | Endereco I2C |
-| `BME280_SEALEVEL_HPA` | 1013.25 | Pressao referencia |
-| `ICM20602_ADDR` | 0x68 | Endereco I2C |
-| `ACCEL_SCALE` | 16.0 | ±16g |
-| `GYRO_SCALE` | 2000.0 | ±2000°/s |
-
-### Validacao
-
-| Constante | Valor | Descricao |
-|-----------|-------|-----------|
-| `VALID_MAX_ACCEL` | 20g | Aceleração maxima |
-| `VALID_MIN_PRESSURE` | 30000 Pa | Pressao minima |
-| `VALID_MAX_PRESSURE` | 120000 Pa | Pressao maxima |
-| `VALID_MAX_VZ` | 200 m/s | Vz maximo |
-
----
-
-## Sensores
-
-### BME280Sensor
-
-**Arquivos**: `src/sensors/BME280Sensor.h`, `src/sensors/BME280Sensor.cpp`
-
-Driver para o sensor BME280 via I2C. Utiliza a biblioteca `Adafruit_BME280`.
-
-**API**:
-
-| Metodo | Retorno | Descricao |
-|--------|---------|-----------|
-| `begin(wire, addr)` | `bool` | Inicializa sensor I2C |
-| `getTemperature()` | `float` | Temperatura em Celsius |
-| `getPressure()` | `float` | Pressao em Pa |
-| `getHumidity()` | `float` | Umidade em % |
-| `getAltitude()` | `float` | Altitude em m (relativa ao sea level) |
-| `isReady()` | `bool` | Sensor operacional? |
-| `setSeaLevelPressure(hPa)` | `void` | Define pressao referencia |
-
-**Conversion factors**: ±16g para acelerometro, ±2000°/s para giroscopio.
-
-### ICM20602Sensor
-
-**Arquivos**: `src/sensors/ICM20602Sensor.h`, `src/sensors/ICM20602Sensor.cpp`
-
-Driver para o IMU ICM-20602 via I2C. Acesso direto aos registradores do sensor.
-
-**WHO_AM_I**: `0x12`
-
-**API**:
-
-| Metodo | Retorno | Descricao |
-|--------|---------|-----------|
-| `begin(addr, wire)` | `bool` | Inicializa e verifica WHO_AM_I |
-| `update()` | `void` | Le accel + gyro (6 bytes cada) |
-| `getAx()` / `getAy()` / `getAz()` | `float` | Aceleracao m/s² |
-| `getGx()` / `getGy()` / `getGz()` | `float` | Velocidade angular rad/s |
-| `isReady()` | `bool` | Sensor operacional? |
-
-**Registradores**:
-- `0x6B` (PWR_MGMT_1): wake up (bit 6 = 0)
-- `0x75` (WHO_AM_I): identificacao
-- `0x3B-0x40`: accel data (6 bytes, big-endian)
-- `0x43-0x48`: gyro data (6 bytes, big-endian)
-
-**Conversion factors**:
-- Accel: `9.80665 / 2048.0` m/s² por LSB (±16g, 16-bit)
-- Gyro: `π / (180 * 16.384)` rad/s por LSB (±2000°/s, 16-bit)
-
-### GPSSensor
-
-**Arquivos**: `src/sensors/GPSSensor.h`, `src/sensors/GPSSensor.cpp`
-
-Wrapper para o GPS NEO-8M via Serial1. Utiliza a biblioteca `TinyGPSPlus`.
-
-**API**:
-
-| Metodo | Retorno | Descricao |
-|--------|---------|-----------|
-| `begin()` | `bool` | Inicia Serial1 (9600 baud) |
-| `update()` | `void` | Alimenta parser com dados seriais |
-| `getTimeString()` | `string` | "HH:MM:SS" ou "nan" |
-| `getDateString()` | `string` | "DD/MM/YYYY" ou "nan" |
-| `getLatitude()` | `float` | Latitude ou NAN |
-| `getLongitude()` | `float` | Longitude ou NAN |
-| `getAltitude()` | `float` | Altitude MSL (m) ou NAN |
-| `getSatellites()` | `uint8_t` | Count ou 0 |
-| `isValid()` | `bool` | Fix 3D valido? |
-| `isUpdated()` | `bool` | Dados novos? (consome flag) |
-
-**Nota**: `isUpdated()` nao e const porque consome o flag interno.
-
----
-
-## Modulos de Comunicacao
-
-### LoRaModule
-
-**Arquivos**: `src/modules/LoRaModule.h`, `src/modules/LoRaModule.cpp`
-
-Driver para o radio RFM95W via SPI. Utiliza a biblioteca `LoRa`.
-
-**API**:
-
-| Metodo | Retorno | Descricao |
-|--------|---------|-----------|
-| `begin()` | `bool` | Inicializa SPI + LoRa 915MHz |
-| `send(message)` | `bool` | Transmite pacote |
-| `isReady()` | `bool` | Radio operacional? |
-
-**Configuracao**: SF7, 125kHz bandwidth, 20dBm TX power, CRC habilitado.
-
-### BuzzerModule
-
-**Arquivos**: `src/modules/BuzzerModule.h`, `src/modules/BuzzerModule.cpp`
-
-Feedback sonoro via buzzer piezoeletrico.
-
-**API**:
-
-| Metodo | Descricao |
-|--------|-----------|
-| `begin()` | Configura pino como output |
-| `playStartup()` | 3 beeps curtos (80ms, 80ms pausa) |
-| `playError()` | 5 beeps rapidos (80ms, 40ms pausa) |
-| `playBeep()` | 1 beep curto (80ms) |
-| `playContinuous(ms)` | Tom continuo |
-| `stop()` | Para qualquer som |
-
-**Frequencia**: 500 Hz.
-
-### LEDModule
-
-**Arquivos**: `src/modules/LEDModule.h`, `src/modules/LEDModule.cpp`
-
-Feedback visual via LED.
-
-**API**:
-
-| Metodo | Descricao |
-|--------|-----------|
-| `begin()` | Configura pino como output |
-| `on()` | Liga LED |
-| `off()` | Desliga LED |
-| `blink(times, interval)` | Pisca N vezes |
-| `blinkFast(times)` | Pisca rapido (100ms) |
-| `toggle()` | Alterna estado |
-
----
-
-## Modulos de Dados
-
-### TelemetryModule
-
-**Arquivos**: `src/modules/TelemetryModule.h`, `src/modules/TelemetryModule.cpp`
-
-Aggrega dados dos sensores, formata em CSV e transmite via Serial + LoRa.
-
-**API**:
-
-| Metodo | Retorno | Descricao |
-|--------|---------|-----------|
-| `begin()` | `bool` | Inicializa LoRa |
-| `collectData(bme, icm, gps, data)` | `void` | Preenche SensorData |
-| `formatPacket(data, packet)` | `void` | Monta linha CSV |
-| `send(packet)` | `bool` | TX Serial + LoRa |
-| `getPacketCount()` | `uint32_t` | Contador de pacotes |
-
-**Formato CSV**:
-```
-TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi
+```bash
+pio run
 ```
 
-### FilesystemModule
+### Build ESP32-C3 Firmware
 
-**Arquivos**: `src/modules/FilesystemModule.h`, `src/modules/FilesystemModule.cpp`
+```bash
+pio run -e helike_esp32c3
+```
 
-Storage com SD primario e LittleFS como fallback (runtime detection).
+### Upload to Satellite
 
-**API**:
+```bash
+pio run -e helike_esp32c3 -t upload --upload-port /dev/ttyACM0
+```
 
-| Metodo | Retorno | Descricao |
-|--------|---------|-----------|
-| `begin()` | `bool` | Tenta SD, fallback LittleFS |
-| `createFile(path, header)` | `bool` | Cria arquivo com header |
-| `appendLine(line)` | `bool` | Append linha CSV |
-| `isReady()` | `bool` | Storage ativo? |
-| `getType()` | `StorageType` | SD / LittleFS / NONE |
-| `getTypeString()` | `const char*` | "SD" / "LittleFS" / "NONE" |
-| `getLineCount()` | `uint32_t` | Numero de linhas |
-| `close()` | `void` | Fecha arquivos |
+### Serial Monitor
 
-**StorageType enum**:
+```bash
+pio device monitor -b 115200
+```
+
+### Run Unit Tests
+
+```bash
+pio test -e native            # All tests
+pio test -e native -v         # Verbose output
+```
+
+## Hardware Test Sketches
+
+Individual `.ino` sketches in `test_hardware/` validate specific hardware
+components before integration.
+
+### Sensor tests (`test_hardware/sensor/`)
+
+| Sketch | Tests |
+|--------|-------|
+| `bme280/bme280.ino` | BME280 temperature, pressure, humidity, altitude |
+| `bmp280/bmp280.ino` | BMP280 temperature, pressure, altitude |
+| `gps_neo8m/gps_neo8m.ino` | NEO-8M GPS NMEA parsing |
+| `icm20602/icm20602.ino` | ICM-20602 accelerometer, gyroscope |
+
+### Integration tests (`test_hardware/integration/`)
+
+| Sketch | Description |
+|--------|-------------|
+| `sensor_logging_lfs/` | ICM-20602 + BMP280, LittleFS logging |
+| `sensor_logging_lfs_v2/` | v2: +20Hz, Vz, validation, apogee detection |
+| `sensor_logging_v3/` | v3: +GPS NEO-8M, 15-column CSV |
+| `sensor_logging_fallback/` | SD + LittleFS fallback with persistent file |
+
+### Storage tests (`test_hardware/storage/`)
+
+| Sketch | Description |
+|--------|-------------|
+| `sd_bare/` | Bare SD card read/write |
+| `bmp280_littlefs/` | BMP280 + SPIFFS/LittleFS |
+| `sd_littlefs_fallback/` | SD failed -> LittleFS fallback |
+
+### Compile and Upload a Hardware Test
+
+```bash
+# Method 1: Using PlatformIO CLI
+pio run -e helike_esp32c3 --project-option="src_dir=test_hardware/sensor/bme280"
+
+# Method 2: Open .ino in VS Code with PlatformIO and click Upload
+```
+
+## Firmware Boot Sequence
+
+```text
+Power On
+  │
+  ├─ Serial (115200 baud, wait 2s for USB)
+  ├─ I2C (400 kHz Fast Mode)
+  ├─ Buzzer + LED (indicate startup)
+  ├─ BME280 (I2C address 0x76)
+  ├─ ICM-20602 (I2C address 0x69, WHO_AM_I = 0x12)
+  ├─ GPS (Serial1, 9600 baud)
+  ├─ LoRa (RFM95W, 915 MHz)
+  ├─ Storage (SD > LittleFS)
+  ├─ Watchdog (5s timeout)
+  │
+  └─ Main Loop (5 Hz)
+       ├─ Read GPS
+       ├─ Update IMU
+       ├─ Collect sensor data
+       ├─ Validate (NaN + range checks)
+       ├─ Calculate Vz (EMA filter)
+       ├─ Format CSV packet
+       ├─ Transmit (Serial + LoRa)
+       ├─ Log (SD/LittleFS)
+       ├─ Toggle LED
+       └─ Feed watchdog
+```
+
+## Debugging
+
+The system provides three debug outputs:
+
+1. **Serial console** (115200 baud): All initialization messages and periodic
+   debug prints every 2 seconds
+2. **LED heartbeat**: Toggles every sample (5 Hz = 10 toggles/sec)
+3. **Buzzer tones**: Startup (3 beeps) or error (5 beeps) on init
+
+### Debug Configuration
+
+In `src/config.h`:
 
 ```cpp
-enum StorageType {
-    STORAGE_NONE = 0,
-    STORAGE_SD,
-    STORAGE_LITTLEFS
-};
+#define DEBUG_ENABLED      1     // Enable serial debug output
+#define LORA_DEBUG_LOGS    0     // Enable LoRa-specific debug
 ```
 
----
+### Watchdog
 
-## lib/calc
-
-Modulos header-only reutilizaveis. Nao dependem de hardware.
-
-### SensorData
-
-**Arquivo**: `lib/calc/SensorData.h`
-
-Struct padronizada com 14 campos:
-
-```cpp
-struct SensorData {
-    unsigned long millis_ts;
-    float ax, ay, az;          // m/s²
-    float gx, gy, gz;          // rad/s
-    float pressao;              // Pa
-    float temperatura;          // °C
-    float umidade;              // %
-    float altura;                // m (barometrica)
-    float vz;                    // m/s
-    float mag_giroscopia;        // rad/s
-    float lat;                   // graus
-    float lon;                   // graus
-    float altura_gps;            // m (MSL)
-    uint8_t satellites;          // count
-};
-```
-
-### VerticalVelocity
-
-**Arquivo**: `lib/calc/VerticalVelocity.h`
-
-Calcula velocidade vertical por diferenciacao numerica com filtro EMA.
-
-**API**:
-
-| Metodo | Retorno | Descricao |
-|--------|---------|-----------|
-| `update(altura, millis)` | `float` | Vz filtrada (m/s) |
-| `current()` | `float` | Valor atual do filtro |
-| `previous()` | `float` | Ultimo valor retornado |
-| `reset()` | `void` | Reseta estado interno |
-
-**Parametro**: `alpha` (0.0 = max suavizacao, 1.0 = sem filtro). Default: 0.4.
-
-### ApogeeDetection
-
-**Arquivo**: `lib/calc/ApogeeDetection.h`
-
-Detecta apogeu por threshold de Vz negativa.
-
-**API**:
-
-| Metodo | Retorno | Descricao |
-|--------|---------|-----------|
-| `update(vz, millis, altitude)` | `bool` | true = apogeu detectado |
-| `isDescending()` | `bool` | Em descida? |
-| `event()` | `ApogeeEvent&` | Dados do evento |
-| `reset()` | `void` | Reseta deteccao |
-
-**ApogeeEvent**:
-
-```cpp
-struct ApogeeEvent {
-    bool detected;
-    unsigned long timestamp_ms;
-    float altitude_max;
-    float velocidade_max_descida;
-};
-```
-
-### DataValidation
-
-**Arquivo**: `lib/calc/DataValidation.h`
-
-Valida dados contra NaN e ranges fisicos.
-
-**API**:
-
-| Metodo | Retorno | Descricao |
-|--------|---------|-----------|
-| `isValid(data)` | `bool` | Todos campos validos? |
-| `config()` | `ValidationConfig&` | Config atual |
-
-**Validacoes**:
-- NaN em ax, ay, az, pressao, altura, vz
-- Magnitude da accel contra `max_accel_ms2`
-- Pressao contra `[min_pressure_pa, max_pressure_pa]`
-- |Vz| contra `max_vz_ms`
-
-**Configuracoes predefinidas**:
-- `defaultConfig()`: ±16g, 30000-120000 Pa, |Vz| < 100 m/s
-- `liberalConfig()`: ±50g, mesmo range de pressao
+The ESP32-C3 TWDT (Task WatchDog Timer) is configured with a 5-second timeout.
+If `esp_task_wdt_reset()` is not called within this window, the system resets.
+This prevents lockups from I2C hangs or sensor stalls.

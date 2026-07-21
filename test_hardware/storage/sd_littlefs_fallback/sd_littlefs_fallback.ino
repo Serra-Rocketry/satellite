@@ -1,6 +1,22 @@
-/*
- * Teste BMP280 com Salvamento em SD com Fallback para LittleFS
- * Tenta SD primeiro, se falhar usa LittleFS
+/**
+ * @file sd_littlefs_fallback.ino
+ * @brief BMP280 + SD/LittleFS fallback storage test
+ *
+ * Tests the SD-to-LittleFS fallback pattern with BMP280 sensor
+ * data and incremental CSV file creation.
+ *
+ * Hardware setup (ESP32-C3 Super Mini):
+ * - I2C: SDA=GPIO8, SCL=GPIO9 (BMP280)
+ * - SD CS: GPIO5
+ * - Shared SPI: MOSI=6, MISO=7, SCK=4
+ *
+ * Pattern:
+ * 1. Try SD first
+ * 2. Fallback to LittleFS
+ * 3. Create incremental CSV file
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
  */
 
 #include <Wire.h>

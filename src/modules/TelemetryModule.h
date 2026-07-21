@@ -1,11 +1,11 @@
 /**
  * @file TelemetryModule.h
- * @brief Modulo de formatacao e transmissao de telemetria
+ * @brief Telemetry formatting and transmission module
  *
- * Monta pacotes CSV com dados dos sensores e envia via Serial e LoRa.
- * Formato: 18 campos (sem hora/data — preenchidos pelo receiver com GPS local).
+ * Builds CSV packets from sensor data and transmits via Serial and LoRa.
+ * Format: 18 fields (no time/date — filled by the receiver with local GPS).
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -29,18 +29,18 @@ public:
     void collectData(BME280Sensor &bme, ICM20602Sensor &icm, GPSSensor &gps, SensorData &data);
 
     /**
-     * @brief Formata dados em linha CSV (18 campos)
+     * @brief Formats sensor data into a CSV line (18 fields)
      *
-     * Monta o pacote CSV no buffer fornecido. Os campos hora/data sao omitidos
-     * (preenchidos pelo receiver com GPS local). O campo rssi e placeholder (-1)
-     * e substituido pelo receiver com o RSSI real do LoRa.
+     * Builds the CSV packet in the provided buffer. Time/date fields are omitted
+     * (filled by the receiver with local GPS). The rssi field is a placeholder (-1)
+     * replaced by the receiver with the actual LoRa RSSI.
      *
-     * Formato:
+     * Format:
      * TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi
      *
-     * @param data      Dados estruturados do sensor (SensorData)
-     * @param packet    Buffer de saida (char*) para a linha CSV
-     * @param packetSize Tamanho do buffer de saida
+     * @param data      Structured sensor data (SensorData)
+     * @param packet    Output buffer (char*) for the CSV line
+     * @param packetSize Size of the output buffer
      *
      * @return void
      */

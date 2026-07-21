@@ -1,6 +1,6 @@
 /**
  * @file GPSSensor.cpp
- * @brief Implementacao do wrapper GPS NEO-8M
+ * @brief GPS NEO-8M wrapper implementation
  */
 
 #include "GPSSensor.h"

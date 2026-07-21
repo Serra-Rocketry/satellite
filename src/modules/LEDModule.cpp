@@ -1,6 +1,6 @@
 /**
  * @file LEDModule.cpp
- * @brief Implementacao do modulo LED
+ * @brief LED module implementation
  */
 
 #include "LEDModule.h"

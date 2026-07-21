@@ -1,6 +1,6 @@
 /**
  * @file LoRaModule.cpp
- * @brief Implementacao do modulo LoRa RFM95W
+ * @brief RFM95W LoRa module implementation
  */
 
 #include "LoRaModule.h"
@@ -15,7 +15,7 @@ bool LoRaModule::begin() {
         return false;
     }
 
-    // Configurar parametros LoRa (funcoes retornam void, sem checagem direta)
+    // Configure LoRa parameters (functions return void, no direct check)
     LoRa.setSyncWord(LORA_SYNC_WORD);
     LoRa.setTxPower(LORA_TX_POWER);
     LoRa.setSpreadingFactor(LORA_SPREADING);

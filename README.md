@@ -1,143 +1,159 @@
 # Helike — PocketQube Mission (#213 - LASC 2026)
 
-Projeto de satelite PocketQube da Serra Rocketry, com foco no Sistema de
-Recuperacao Autorrotativo Bioinspirado (SRAB) e triangulacao LoRa.
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)](.)
+[![License](https://img.shields.io/badge/license-MIT-blue)](.)
+[![Platform](https://img.shields.io/badge/platform-ESP32--C3-orange)](.)
 
-## Status
+PocketQube satellite project by **Serra Rocketry Team** for the Latin American
+Space Challenge (LASC) 2026. Focus on bioinspired autorotating recovery system
+(SRAB) and LoRa-based telemetry triangulation.
 
-- Projeto em desenvolvimento.
-- Foco atual em validacao de sensores e estudo aerodinamico.
-- Estudos de asa em `extras/wing-analysis/`.
-- Testes de hardware em `test_hardware/`.
-- Testes unitarios nativos em `test/`.
+## Overview
 
-## Objetivos
+The Helike satellite collects flight telemetry (IMU, barometric data, GPS)
+and transmits it via LoRa radio at 915 MHz to a ground station. The payload
+is a passive autorotating recovery system inspired by maple seed aerodynamics.
 
-- Coletar telemetria de voo com sensores embarcados.
-- Transmitir dados via LoRa em 915 MHz.
-- Avaliar triangulacao LoRa para localizacao e recuperacao.
-- Validar recuperacao com arquitetura bioinspirada (SRAB/samara).
+## Features
 
-## Arquitetura resumida
+- BME280 environmental sensor (temperature, pressure, humidity)
+- ICM-20602 6-axis IMU (accelerometer + gyroscope)
+- NEO-8M GPS receiver (position, altitude, time)
+- RFM95W LoRa radio (915 MHz, SF7, 125 kHz)
+- SD card (primary) + LittleFS (fallback) data logging
+- 18-field CSV telemetry packet format
+- Vertical velocity computation (EMA filter)
+- Automatic apogee detection
+- Data validation (NaN + physical range checks)
+- 5 Hz sample rate
 
-Missao Helike (#213 - LASC 2026) — Serra Rocketry.
-Plataforma unica: **ESP32-C3 Super Mini**.
+## Hardware Requirements
 
-### Sensores e subsistemas principais
+| Component | Model | Interface |
+|-----------|-------|-----------|
+| MCU | ESP32-C3 Super Mini | - |
+| Barometric | BME280 (or BMP280) | I2C (0x76) |
+| IMU | ICM-20602 | I2C (0x69) |
+| GPS | NEO-8M | UART (9600 baud) |
+| Radio | RFM95W | SPI (915 MHz) |
+| Storage | microSD card + LittleFS | SPI / flash |
 
-- BME280 para pressao, temperatura e umidade (I2C).
-- ICM-20602 para aceleracao e rotacao (I2C).
-- GPS NEO-8M para posicao e altitude (UART).
-- Modulo LoRa RFM95W em 915 MHz (SPI).
-- SD + LittleFS fallback para armazenamento local.
+## Software Requirements
 
-## Estrutura do repositorio
+- [PlatformIO](https://platformio.org/) (VS Code extension or CLI)
+- Python 3.8+ (for analysis scripts in `extras/`)
 
-```text
-satellite/
-|-- README.md
-|-- AGENTS.md
-|-- platformio.ini
-|-- CHANGELOG.md
-|-- lib/
-|   `-- calc/                 # Modulos de calculo reutilizaveis
-|       |-- SensorData.h
-|       |-- VerticalVelocity.h
-|       |-- ApogeeDetection.h
-|       `-- DataValidation.h
-|-- firmware/                 # Firmware principal (em desenvolvimento)
-|-- test/                     # Testes unitarios nativos (Unity)
-|   |-- test_vz/
-|   |-- test_apogee/
-|   `-- test_validation/
-|-- test_hardware/            # Sketches de validacao de hardware
-|   |-- sensor/               #   Testes isolados de cada sensor
-|   |-- integration/          #   Testes multi-sensor + logging
-|   |-- storage/              #   Testes de sistema de arquivos
-|   `-- docs/                 #   Documentacao dos testes
-|-- extras/
-|   `-- wing-analysis/        # Estudo de asa autorrotativa
-|       |-- src/              # Scripts Python
-|       |-- geometry/         # Perfis DXF
-|       |-- results/          # Saidas graficas e CSVs
-|       `-- docs/             # Documentacao SRAB (teoria, resultados, scripts, proposta)
-|-- hardware/                 # Schematics, BOM, PCB
-|-- docs/                     # Documentacao geral
-`-- .opencode/                # Configuracao de ferramentas
-```
+Dependencies managed automatically by PlatformIO:
 
-## Build e Testes
+| Library | Version |
+|---------|---------|
+| sandeepmistry/LoRa | ^0.8.0 |
+| Adafruit BME280 Library | ^2.2.4 |
+| TinyGPSPlus | ^1.0.3 |
 
-### Firmware embarcado (ESP32-C3 Super Mini)
+## Quick Start
+
+### 1. Build the Firmware
 
 ```bash
-pio run                           # Build all
-pio run -e helike_esp32c3  # ESP32-C3 Super Mini
+pio run -e helike_esp32c3
+```
 
-# Upload
+### 2. Upload to Satellite
+
+```bash
 pio run -e helike_esp32c3 -t upload --upload-port /dev/ttyACM0
+```
 
-# Monitor serial
+### 3. Monitor Serial Output
+
+```bash
 pio device monitor -b 115200
 ```
 
-### Testes unitarios nativos (Unity)
+### 4. Run Unit Tests
 
 ```bash
-pio test -e native             # Roda todos os testes nativos
-pio test -e native -v          # Com output detalhado
-```
-
-### Testes de hardware
-
-Os sketches em `test_hardware/` sao compilados e carregados individualmente:
-
-```bash
-# Exemplo: compilar um teste de sensor
-pio run -e helike_esp32c3 --project-option="src_dir=test_hardware/sensor/bmp280"
-```
-
-Ou abrir o arquivo `.ino` no VS Code com PlatformIO e clicar em "Upload".
-
-## Fluxo de desenvolvimento recomendado
-
-1. Validar sensores isolados em `test_hardware/sensor/`.
-2. Rodar integracao de sensores em `test_hardware/integration/`.
-3. Executar testes unitarios: `pio test -e native`.
-4. Executar estudos aerodinamicos em `extras/wing-analysis/`.
-5. Consolidar resultados em documentacao tecnica.
-6. Integrar firmware final em `firmware/`.
-
-## lib/calc — Modulos de Calculo
-
-Modulos header-only (sem dependencia de hardware) para logica de voo:
-
-| Modulo | Arquivo | Funcao |
-|--------|---------|--------|
-| `VerticalVelocity` | `lib/calc/VerticalVelocity.h` | Velocidade vertical por EMA |
-| `ApogeeDetection` | `lib/calc/ApogeeDetection.h` | Deteccao de apogeu |
-| `DataValidation` | `lib/calc/DataValidation.h` | Validacao de telemetria |
-| `SensorData` | `lib/calc/SensorData.h` | Struct padronizada |
-
-## Documentacao
-
-- Guia de hardware: `docs/hardware.md`.
-- Arquitetura de software: `docs/software.md`.
-- Documentacao por skill: `.opencode/README.md`.
-- Testes de hardware: `test_hardware/docs/`.
-- Estudo de asa: `extras/wing-analysis/docs/README.md`.
-- BOM: `hardware/CDB_bom.md`.
-
-## Ferramentas de qualidade
-
-```bash
-# Markdown lint
-npx -y markdownlint-cli "README.md" "docs/**/*.md" "test_hardware/docs/**/*.md" "extras/**/*.md" "hardware/**/*.md"
-
-# Testes nativos
 pio test -e native
 ```
 
-## Time
+## Repository Structure
 
-Serra Rocketry — Missao Helike (#213 - LASC 2026)
+```text
+satellite/
+├── src/                       # Main firmware source
+│   ├── main.cpp               # Entry point (setup + loop)
+│   ├── config.h               # Global configuration
+│   ├── sensors/               # Sensor drivers (ISensor interface)
+│   │   ├── BME280Sensor.h/.cpp
+│   │   ├── ICM20602Sensor.h/.cpp
+│   │   └── GPSSensor.h/.cpp
+│   └── modules/               # System modules
+│       ├── LoRaModule.h/.cpp
+│       ├── TelemetryModule.h/.cpp
+│       ├── FilesystemModule.h/.cpp
+│       ├── LEDModule.h/.cpp
+│       └── BuzzerModule.h/.cpp
+├── lib/calc/                  # Header-only calculation library
+│   ├── SensorData.h
+│   ├── VerticalVelocity.h
+│   ├── ApogeeDetection.h
+│   └── DataValidation.h
+├── test/                      # Native unit tests (Unity)
+│   ├── test_vz/
+│   ├── test_apogee/
+│   └── test_validation/
+├── test_hardware/             # Hardware validation sketches
+│   ├── sensor/                # Isolated sensor tests
+│   ├── integration/           # Multi-sensor integration
+│   └── storage/               # Filesystem tests
+├── docs/                      # Documentation
+│   ├── software.md
+│   ├── hardware.md
+│   ├── firmware.md
+│   ├── flowchart.md
+│   └── adr/                   # Architecture Decision Records
+├── extras/
+│   └── wing-analysis/         # SRAB aerodynamic study
+├── hardware/                  # CAD and PCB files
+└── platformio.ini             # PlatformIO configuration
+```
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Software Architecture](docs/software.md) | Module structure, data flow, validation |
+| [Hardware Specs](docs/hardware.md) | Pinout, sensors, LoRa configuration |
+| [Firmware Guide](docs/firmware.md) | Build, upload, testing, debug |
+| [Flowcharts](docs/flowchart.md) | System diagrams (Mermaid) |
+| [ADRs](docs/adr/) | Architecture Decision Records |
+| [Hardware Tests](test_hardware/docs/) | Bench guides and checklists |
+| [Wing Analysis](extras/wing-analysis/docs/) | SRAB aerodynamics |
+
+## Development Workflow
+
+1. Validate individual sensors in `test_hardware/sensor/`
+2. Run integration tests in `test_hardware/integration/`
+3. Execute unit tests: `pio test -e native`
+4. Run aerodynamic studies: `extras/wing-analysis/`
+5. Consolidate results in technical documentation
+6. Integrate final firmware
+
+## Quality Tools
+
+```bash
+# Markdown linting
+npx -y markdownlint-cli "README.md" "docs/**/*.md" "test_hardware/docs/**/*.md" "extras/**/*.md" "hardware/**/*.md"
+
+# Native unit tests
+pio test -e native
+```
+
+## License
+
+MIT License — see LICENSE file for details.
+
+## Team
+
+**Serra Rocketry Team** — Missão Helike (#213 - LASC 2026)

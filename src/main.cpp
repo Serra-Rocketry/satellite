@@ -1,18 +1,18 @@
 /**
  * @file main.cpp
- * @brief Firmware do satellite Helike PocketQube (#213 - LASC 2026)
+ * @brief Firmware for the Helike PocketQube satellite (#213 - LASC 2026)
  *
- * CONTEXTO CRITICO: O satellite fica COMPLETAMENTE DESLIGADO (sem energia)
- * ate o deploy do foguete no apogeu. Ao receber energia, o sistema ja esta
- * em descida.
+ * CRITICAL CONTEXT: The satellite remains COMPLETELY POWERED OFF (no energy)
+ * until the rocket deploys at apogee. Upon power-on, the system is already
+ * descending.
  *
- * Fluxo de operacao:
- * 1. setup(): inicializa Serial, I2C, sensores, LoRa, buzzer/LED
- * 2. loop(): le sensores a cada SAMPLE_INTERVAL_MS, monta CSV, TX Serial+LoRa
+ * Operation flow:
+ * 1. setup(): initializes Serial, I2C, sensors, LoRa, buzzer/LED, storage
+ * 2. loop(): reads sensors every SAMPLE_INTERVAL_MS, builds CSV, TX via Serial + LoRa
  *
- * Sem FSM, sem filesystem, sem FreeRTOS — apenas loop continuo.
+ * No FSM, no FreeRTOS — just a continuous loop.
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -39,7 +39,7 @@
 #include "modules/FilesystemModule.h"
 
 //==============================================================================
-// OBJETOS GLOBAIS (estaticos, sem heap)
+// GLOBAL OBJECTS (static, no heap allocation)
 //==============================================================================
 
 static TwoWire i2c_bus = Wire;
@@ -54,7 +54,7 @@ static DataValidation g_validator(ValidationConfig{VALID_MAX_ACCEL, VALID_MIN_PR
 static FilesystemModule g_fs;
 
 //==============================================================================
-// ESTADO
+// STATE
 //==============================================================================
 
 static uint32_t g_last_sample = 0;
@@ -70,17 +70,18 @@ static uint32_t g_fs_failures = 0;
 //==============================================================================
 
 /**
- * @brief Inicializacao unica do sistema
+ * @brief One-time system initialization
  *
- * Sequencia:
- * 1. Serial para debug
- * 2. I2C para sensores
- * 3. Buzzer/LED para feedback
- * 4. BME280 (temperatura, pressao, umidade)
- * 5. ICM-20602 (acelerometro, giroscopio)
- * 6. GPS (posicao, tempo)
- * 7. LoRa (telemetria)
- * 8. Watchdog
+ * Sequence:
+ * 1. Serial for debug output
+ * 2. I2C for sensors
+ * 3. Buzzer/LED for feedback
+ * 4. BME280 (temperature, pressure, humidity)
+ * 5. ICM-20602 (accelerometer, gyroscope)
+ * 6. GPS (position, time)
+ * 7. LoRa (telemetry radio)
+ * 8. Storage (SD primary, LittleFS fallback)
+ * 9. Watchdog
  */
 void setup() {
     // --- Serial ---
@@ -135,7 +136,7 @@ void setup() {
         Serial.println(F("[LORA] ERROR: RFM95W not found!"));
     }
 
-    // --- Storage (SD primario, LittleFS fallback) ---
+    // --- Storage (SD primary, LittleFS fallback) ---
     if (g_fs.begin()) {
         String csv_header = "TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi";
         g_fs.createFile("/telemetry.csv", csv_header);
@@ -145,7 +146,7 @@ void setup() {
         Serial.println(F("[FS] ERRO: Nenhum storage disponivel!"));
     }
 
-    // --- Status final ---
+    // --- Status summary ---
     Serial.println();
     Serial.println(F("--- Initialization Summary ---"));
     Serial.print(F("  BME280:    ")); Serial.println(g_bme_ok ? F("OK") : F("FAIL"));
@@ -154,7 +155,7 @@ void setup() {
     Serial.print(F("  LoRa:      ")); Serial.println(g_lora_ok ? F("OK") : F("FAIL"));
     Serial.println();
 
-    // --- Feedback sonoro/visual ---
+    // --- Audio/visual feedback ---
     if (g_bme_ok && g_icm_ok) {
         g_buzzer.playStartup();
         g_led.blink(3, 300);
@@ -167,7 +168,7 @@ void setup() {
     esp_task_wdt_init(WATCHDOG_TIMEOUT_MS * 1000, true);
     esp_task_wdt_add(NULL); // Subscribe current task
 
-    // --- Inicializa timestamps ---
+    // --- Initialize timestamps ---
     g_last_sample = millis();
     g_last_debug_print = millis();
 
@@ -176,49 +177,49 @@ void setup() {
 }
 
 //==============================================================================
-// LOOP
+// MAIN LOOP
 //==============================================================================
 
 /**
- * @brief Loop principal — leitura e transmissao de telemetria
+ * @brief Main loop — sensor reading and telemetry transmission
  *
- * A cada SAMPLE_INTERVAL_MS:
- * 1. Le GPS (sempre, para manter parser atualizado)
- * 2. Atualiza IMU
- * 3. Coleta dados BME280
- * 4. Valida dados
- * 5. Calcula Vz
- * 6. Monta pacote CSV
- * 7. Transmite Serial + LoRa
+ * Every SAMPLE_INTERVAL_MS:
+ * 1. Read GPS (always, to keep parser fresh)
+ * 2. Update IMU
+ * 3. Collect BME280 data
+ * 4. Validate data
+ * 5. Calculate Vz
+ * 6. Build CSV packet
+ * 7. Transmit via Serial + LoRa
  * 8. Toggle LED (heartbeat)
  * 9. Feed watchdog
  */
 void loop() {
     unsigned long now = millis();
 
-    // --- GPS update (sempre, para manter parser fresco) ---
+    // --- GPS update (always, to keep parser fresh) ---
     g_gps.update();
 
-    // --- Loop principal no intervalo de amostragem ---
+    // --- Main loop at sample interval ---
     if (now - g_last_sample < SAMPLE_INTERVAL_MS) {
         return;
     }
     // --- Feed watchdog ---
     esp_task_wdt_reset();
 
-    // --- Atualiza IMU ---
+    // --- Update IMU ---
     if (g_icm_ok) {
         g_icm.update();
     }
 
-    // --- Coleta dados ---
+    // --- Collect data ---
     SensorData data;
     g_telemetry.collectData(g_bme, g_icm, g_gps, data);
 
-    // --- Valida dados ---
+    // --- Validate data ---
     bool valid = g_validator.isValid(data);
 
-    // --- Calcula Vz (pular primeiro sample — filtro sem historico) ---
+    // --- Calculate Vz (skip first sample — filter has no history) ---
     static bool g_first_sample = true;
     if (valid && !isnan(data.altura)) {
         if (g_first_sample) {
@@ -231,25 +232,25 @@ void loop() {
         data.vz = NAN;
     }
 
-    // --- Calcula magnitude giroscopia ---
+    // --- Calculate gyroscope magnitude ---
     if (valid) {
         data.mag_giroscopia = sqrtf(data.gx * data.gx + data.gy * data.gy + data.gz * data.gz);
     } else {
         data.mag_giroscopia = NAN;
     }
 
-    // --- Monta pacote CSV ---
+    // --- Build CSV packet ---
     char packetBuf[160];
     g_telemetry.formatPacket(data, packetBuf, sizeof(packetBuf));
     String packet(packetBuf);
 
-    // --- Transmite ---
+    // --- Transmit ---
     if (!g_telemetry.send(packet)) {
         g_lora_failures++;
         Serial.println(F("[LORA] ERROR: send() failed"));
     }
 
-    // --- Grava em LittleFS (se ativo) ---
+    // --- Log to storage (LittleFS/SD) ---
     if (!g_fs.appendLine(packet)) {
         g_fs_failures++;
         Serial.println(F("[FS] ERROR: appendLine() failed"));
@@ -258,7 +259,7 @@ void loop() {
     // --- Heartbeat LED ---
     g_led.toggle();
 
-    // --- Debug periodico ---
+    // --- Periodic debug print ---
     if (DEBUG_ENABLED && (now - g_last_debug_print >= DEBUG_PRINT_INTERVAL_MS)) {
         g_last_debug_print = now;
         unsigned long loop_duration = now - g_last_sample;

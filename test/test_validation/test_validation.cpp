@@ -1,6 +1,18 @@
 /**
  * @file test_validation.cpp
- * @brief Testes unitarios para DataValidation
+ * @brief Unit tests for the DataValidation class
+ *
+ * Tests data validation including:
+ * - Valid data passes all checks
+ * - NaN detection for accel, pressure, altitude, Vz
+ * - Out-of-range acceleration fails
+ * - Out-of-range pressure (too low, too high) fails
+ * - Out-of-range Vz fails
+ * - Liberal config allows higher acceleration
+ * - Negative Vz within range passes
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
  */
 
 #include "unity.h"

@@ -1,11 +1,11 @@
 /**
  * @file ISensor.h
- * @brief Interface abstrata comum para todos os sensores
+ * @brief Abstract interface for all satellite sensors
  *
- * Define o contrato minimo que todo sensor deve implementar:
- * iniciacao, atualizacao periodica, e sinalizacao de dados novos.
+ * Defines the minimum contract that every sensor must implement:
+ * initialization, periodic update, and new data signaling.
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -16,36 +16,36 @@
 
 /**
  * @class ISensor
- * @brief Interface abstrata para sensores do satellite
+ * @brief Abstract interface for satellite sensors
  */
 class ISensor {
 public:
     virtual ~ISensor() {}
 
     /**
-     * @brief Inicializa o sensor
-     * @return true se inicializado com sucesso
+     * @brief Initializes the sensor
+     * @return true if initialized successfully
      */
     virtual bool begin() = 0;
 
     /**
-     * @brief Atualiza leituras do sensor
-     * @note Chamar periodicamente no loop principal
+     * @brief Updates sensor readings
+     * @note Call periodically in the main loop
      */
     virtual void update() = 0;
 
     /**
-     * @brief Verifica se sensor esta operacional
+     * @brief Checks if sensor is operational
      */
     virtual bool isReady() const = 0;
 
     /**
-     * @brief Verifica se ha dados novos desde a ultima leitura
+     * @brief Checks if new data is available since last read
      */
     virtual bool hasNewData() const = 0;
 
     /**
-     * @brief Marca que os dados foram lidos/consumidos
+     * @brief Marks data as read/consumed
      */
     virtual void markDataRead() = 0;
 };

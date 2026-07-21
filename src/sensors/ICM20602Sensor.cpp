@@ -1,3 +1,15 @@
+/**
+ * @file ICM20602Sensor.cpp
+ * @brief ICM-20602 inertial sensor driver implementation
+ *
+ * Implements raw I2C register access for the ICM-20602, including
+ * wake-up, WHO_AM_I verification, range configuration, and data
+ * acquisition for accelerometer and gyroscope.
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
+ */
+
 #include "ICM20602Sensor.h"
 
 ICM20602Sensor::ICM20602Sensor()
@@ -23,7 +35,7 @@ bool ICM20602Sensor::begin(uint8_t addr, TwoWire &wire) {
     return false;
   }
 
-  // Configurar ranges:
+  // Configure ranges:
   // GYRO_CONFIG (0x1B): FS_SEL = 3 → ±2000°/s (0x18 = 0b00011000)
   _wire->beginTransmission(_addr);
   _wire->write(0x1B);
@@ -49,23 +61,23 @@ bool ICM20602Sensor::begin(uint8_t addr, TwoWire &wire) {
 void ICM20602Sensor::update() {
   if (!_ready) return;
 
-  // Ler dados do acelerometro (0x3B a 0x40)
+  // Read accelerometer data (0x3B to 0x40)
   _wire->beginTransmission(_addr);
   _wire->write(0x3B);
   _wire->endTransmission(false);
   if (_wire->requestFrom(_addr, 6) != 6) {
-    return; // Erro I2C: dados indisponiveis
+    return; // I2C error: data unavailable
   }
   int16_t ax_raw = (_wire->read() << 8) | _wire->read();
   int16_t ay_raw = (_wire->read() << 8) | _wire->read();
   int16_t az_raw = (_wire->read() << 8) | _wire->read();
 
-  // Ler dados do giroscopio (0x43 a 0x4A)
+  // Read gyroscope data (0x43 to 0x4A)
   _wire->beginTransmission(_addr);
   _wire->write(0x43);
   _wire->endTransmission(false);
   if (_wire->requestFrom(_addr, 6) != 6) {
-    return; // Erro I2C: dados indisponiveis
+    return; // I2C error: data unavailable
   }
   int16_t gx_raw = (_wire->read() << 8) | _wire->read();
   int16_t gy_raw = (_wire->read() << 8) | _wire->read();
@@ -93,14 +105,18 @@ void ICM20602Sensor::wakeUp() {
   // Already done in begin()
 }
 
+/**
+ * @brief Tests I2C connection by reading WHO_AM_I register
+ * @return true if WHO_AM_I matches expected value (0x12 for ICM-20602)
+ */
 bool ICM20602Sensor::testConnection() {
   _wire->beginTransmission(_addr);
-  _wire->write(0x75); // WHO_AM_I
+  _wire->write(0x75); // WHO_AM_I register
   _wire->endTransmission(false);
   _wire->requestFrom(_addr, 1);
   if (_wire->available() != 1) {
     return false;
   }
   uint8_t who = _wire->read();
-  return (who == 0x12); // ICM-20602 returns 0x12
+  return (who == 0x12); // ICM-20602 expected ID
 }

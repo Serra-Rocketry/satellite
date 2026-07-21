@@ -1,24 +1,25 @@
 /**
  * @file SensorData.h
- * @brief Estrutura padronizada de telemetria dos sensores
+ * @brief Standardized sensor telemetry data structure
  *
- * Agrupa todas as leituras de IMU (ICM-20602), barometro (BME280) e GPS (NEO-8M)
- * em uma unica estrutura para logging, validacao e analise.
+ * Groups all sensor readings from the ICM-20602 IMU, BME280 barometer,
+ * and NEO-8M GPS into a single structure for logging, validation,
+ * and post-flight analysis.
  *
- * Unidades:
- * - ax/ay/az: m/s^2
- * - gx/gy/gz: rad/s
- * - pressao: Pa
- * - temperatura: °C
- * - umidade: %
- * - altura: metros (barometrica, relativa ao solo)
- * - vz: m/s (positivo = subindo)
- * - mag_giroscopia: rad/s (magnitude total)
- * - lat/lon: graus decimais (GPS)
- * - altura_gps: metros MSL (GPS)
- * - satellites: numero de satelites em fix
+ * Units:
+ * - ax/ay/az: m/s^2 (acceleration)
+ * - gx/gy/gz: rad/s (angular velocity)
+ * - pressao: Pa (pressure)
+ * - temperatura: °C (temperature)
+ * - umidade: % (humidity)
+ * - altura: m (barometric altitude, relative to ground)
+ * - vz: m/s (vertical velocity, positive = ascending)
+ * - mag_giroscopia: rad/s (total gyroscope magnitude)
+ * - lat/lon: decimal degrees (GPS)
+ * - altura_gps: m MSL (GPS altitude)
+ * - satellites: number of satellites in fix
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 

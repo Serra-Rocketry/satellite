@@ -1,12 +1,12 @@
 /**
  * @file DataValidation.h
- * @brief Validacao de telemetria contra limites fisicos e NaN
+ * @brief Telemetry data validation against physical limits and NaN
  *
- * Verifica cada campo da struct SensorData contra:
- * - Valores NaN (not-a-number)
- * - Faixas fisicas de operacao (aceleracao, pressao, Vz)
+ * Checks each field of SensorData against:
+ * - NaN (not-a-number) values
+ * - Physical operating ranges (acceleration, pressure, Vz)
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -18,15 +18,15 @@
 
 /**
  * @struct ValidationConfig
- * @brief Limites configuraveis para validacao de dados dos sensores
+ * @brief Configurable limits for sensor data validation
  */
 struct ValidationConfig {
-  float max_accel_ms2;    ///< Aceleracao maxima em m/s^2
-  float min_pressure_pa;  ///< Pressao minima em Pa
-  float max_pressure_pa;  ///< Pressao maxima em Pa
-  float max_vz_ms;        ///< |Vz| maxima em m/s
+  float max_accel_ms2;    ///< Maximum acceleration in m/s^2
+  float min_pressure_pa;  ///< Minimum pressure in Pa
+  float max_pressure_pa;  ///< Maximum pressure in Pa
+  float max_vz_ms;        ///< Maximum |Vz| in m/s
 
-  /** @brief Configuracao padrao para ±16g */
+  /** @brief Default configuration for ±16g */
   static ValidationConfig defaultConfig() {
     return {
       .max_accel_ms2   = 16.0f * 9.80665f,
@@ -36,7 +36,7 @@ struct ValidationConfig {
     };
   }
 
-  /** @brief Configuracao mais permissiva para ±50g */
+  /** @brief More permissive configuration for ±50g */
   static ValidationConfig liberalConfig() {
     return {
       .max_accel_ms2   = 50.0f * 9.80665f,
@@ -49,17 +49,17 @@ struct ValidationConfig {
 
 /**
  * @class DataValidation
- * @brief Validacao de telemetria contra limites fisicos e NaN
+ * @brief Telemetry data validation against physical limits and NaN
  *
- * Verifica cada campo da struct SensorData contra:
- * - Valores NaN (not-a-number)
- * - Faixas fisicas de operacao (aceleracao, pressao, Vz)
+ * Checks each field of SensorData against:
+ * - NaN (not-a-number) values
+ * - Physical operating ranges (acceleration, pressure, Vz)
  *
- * Uso:
+ * Usage:
  * @code
  * DataValidation dv;
  * if (!dv.isValid(data)) {
- *   Serial.println("Dado invalido, ignorando...");
+ *   Serial.println("Invalid data, skipping...");
  *   return;
  * }
  * @endcode
@@ -67,20 +67,20 @@ struct ValidationConfig {
 class DataValidation {
 public:
   /**
-   * @param cfg Configuracao de limites (defaultConfig ou liberalConfig)
+   * @param cfg Limits configuration (defaultConfig or liberalConfig)
    */
   DataValidation(ValidationConfig cfg = ValidationConfig::defaultConfig())
     : _cfg(cfg) {}
 
   /**
-   * @brief Valida uma leitura completa dos sensores
-   * @param d Dados do sensor a validar
-   * @return true se todos os campos estao dentro dos limites
+   * @brief Validates a complete sensor reading
+   * @param d Sensor data to validate
+   * @return true if all fields are within limits
    *
-   * @note Verifica NaN em ax, ay, az, pressao, altura, vz
-   * @note Verifica magnitude da aceleracao contra max_accel_ms2
-   * @note Verifica pressao contra [min_pressure_pa, max_pressure_pa]
-   * @note Verifica |Vz| contra max_vz_ms
+   * @note Checks NaN on ax, ay, az, pressure, altitude, vz
+   * @note Checks acceleration magnitude against max_accel_ms2
+   * @note Checks pressure against [min_pressure_pa, max_pressure_pa]
+   * @note Checks |Vz| against max_vz_ms
    */
   bool isValid(const SensorData& d) const {
     if (isnan(d.ax) || isnan(d.ay) || isnan(d.az)) return false;
@@ -96,7 +96,7 @@ public:
     return true;
   }
 
-  /** @return Configuracao atual de limites */
+  /** @return Current limits configuration */
   const ValidationConfig& config() const { return _cfg; }
 
 private:

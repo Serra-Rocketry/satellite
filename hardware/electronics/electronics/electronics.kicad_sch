@@ -2485,16 +2485,6 @@
 		)
 		(uuid "614b62f3-b59d-4c18-82a6-a2b7e1ba72f5")
 	)
-	(label "CLK_SD"
-		(at 129.54 86.36 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "62afdcf8-e351-4f74-bc07-6c515106e453")
-	)
 	(label "MOSI"
 		(at 203.2 50.8 180)
 		(effects
@@ -2735,6 +2725,16 @@
 		)
 		(uuid "ecf83cb7-fb14-4d74-be4d-7a94e9c3b030")
 	)
+	(label "SCK"
+		(at 203.2 48.26 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "edb7d569-963e-48f3-b8f4-5f840d7d09a8")
+	)
 	(label "CS_SD"
 		(at 203.2 53.34 180)
 		(effects
@@ -2765,15 +2765,15 @@
 		)
 		(uuid "fc40bfa5-0d14-4719-8c0b-6077216b2e91")
 	)
-	(label "CLK_SD"
-		(at 203.2 48.26 180)
+	(label "SCK"
+		(at 129.54 86.36 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right bottom)
 		)
-		(uuid "fecdbdc4-6980-4d0b-a851-ffb2338212f1")
+		(uuid "fd2e3bda-88fd-4084-ad27-5c5fe92d6821")
 	)
 	(symbol
 		(lib_id "custom_lib:SD_Card_mini_module")

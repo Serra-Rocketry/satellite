@@ -1,11 +1,11 @@
 /**
  * @file GPSSensor.h
- * @brief Wrapper para o GPS NEO-8M com TinyGPSPlus
+ * @brief GPS NEO-8M wrapper with TinyGPSPlus parser
  *
- * Comunicacao Serial1 (UART) a 9600 baud. Fornece tempo, data,
- * coordenadas e numero de satelites.
+ * Serial1 (UART) communication at 9600 baud. Provides time, date,
+ * coordinates, altitude, and satellite count.
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -19,7 +19,7 @@
 
 /**
  * @class GPSSensor
- * @brief Abstracao para o modulo GPS NEO-8M
+ * @brief Abstraction for the NEO-8M GPS module
  */
 class GPSSensor : public ISensor {
 public:
@@ -35,48 +35,48 @@ public:
     ///@}
 
     /**
-     * @brief Tempo UTC formatado HH:MM:SS
-     * @return String com tempo ou "nan" se invalido
+     * @brief UTC time formatted as HH:MM:SS
+     * @return Time string or "nan" if invalid
      */
     String getTimeString() const;
 
     /**
-     * @brief Data formatada DD/MM/YYYY
-     * @return String com data ou "nan" se invalido
+     * @brief Date formatted as DD/MM/YYYY
+     * @return Date string or "nan" if invalid
      */
     String getDateString() const;
 
     /**
-     * @brief Latitude em graus decimais
-     * @return Latitude ou NAN se sem fix
+     * @brief Latitude in decimal degrees
+     * @return Latitude or NAN if no fix
      */
     float getLatitude() const;
 
     /**
-     * @brief Longitude em graus decimais
-     * @return Longitude ou NAN se sem fix
+     * @brief Longitude in decimal degrees
+     * @return Longitude or NAN if no fix
      */
     float getLongitude() const;
 
     /**
-     * @brief Altitude GPS em metros (MSL)
-     * @return Altitude ou NAN se sem fix
+     * @brief GPS altitude in meters (MSL)
+     * @return Altitude or NAN if no fix
      */
     float getAltitude() const;
 
     /**
-     * @brief Numero de satelites em fix
-     * @return Count ou 0 se sem fix
+     * @brief Number of satellites in fix
+     * @return Count or 0 if no fix
      */
     uint8_t getSatellites() const;
 
     /**
-     * @brief Verifica se tem fix 3D valido
+     * @brief Checks if valid 3D fix is available
      */
     bool isValid() const;
 
     /**
-     * @brief Verifica se o parser tem dados novos (consome o flag)
+     * @brief Checks if parser has new data (consumes the flag)
      */
     bool isUpdated();
 

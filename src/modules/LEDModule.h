@@ -1,10 +1,10 @@
 /**
  * @file LEDModule.h
- * @brief Modulo de feedback visual via LED
+ * @brief Visual feedback module via LED indicator
  *
- * Controla o LED indicador de estado do sistema.
+ * Controls the system status LED indicator.
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -16,42 +16,42 @@
 
 /**
  * @class LEDModule
- * @brief Controle do LED para feedback visual
+ * @brief LED control for visual feedback
  */
 class LEDModule {
 public:
     LEDModule();
 
     /**
-     * @brief Inicializa o pino do LED
+     * @brief Initializes the LED pin
      */
     void begin();
 
     /**
-     * @brief Liga LED
+     * @brief Turns LED on
      */
     void on();
 
     /**
-     * @brief Desliga LED
+     * @brief Turns LED off
      */
     void off();
 
     /**
-     * @brief Pisca LED N vezes com intervalo
-     * @param times Numero de piscadas
-     * @param interval_ms Intervalo entre piscadas (ms)
+     * @brief Blinks LED N times with interval
+     * @param times Number of blinks
+     * @param interval_ms Interval between blinks (ms)
      */
     void blink(uint8_t times, uint16_t interval_ms = 200);
 
     /**
-     * @brief Pisca LED rapido (intervalo 50ms)
-     * @param times Numero de piscadas
+     * @brief Fast blink (50ms interval)
+     * @param times Number of blinks
      */
     void blinkFast(uint8_t times);
 
     /**
-     * @brief Alterna estado do LED
+     * @brief Toggles LED state
      */
     void toggle();
 

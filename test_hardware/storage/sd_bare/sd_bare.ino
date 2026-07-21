@@ -1,13 +1,30 @@
-// Inclusão de bibliotecas
+/**
+ * @file sd_bare.ino
+ * @brief SD card bare read/write test
+ *
+ * Tests basic SD card read/write operations with incremental
+ * file naming (Dados_001.csv, Dados_002.csv, ...).
+ *
+ * Hardware setup (ESP32-C3 Super Mini):
+ * - CS: GPIO5
+ * - MOSI: GPIO6 (shared with LoRa SPI)
+ * - MISO: GPIO7 (shared with LoRa SPI)
+ * - SCK: GPIO4 (shared with LoRa SPI)
+ *
+ * Note: SD and LoRa share the same SPI bus with different CS pins
+ * (SD=5, LoRa=10).
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
+ */
+
 #include "FS.h"
 #include "SD.h"
 #include "SPI.h"
 
-// Definições de pinos e constantes
 #define INTERVAL 200
-#define CS_PIN 5      // Pino do cartão SD
+#define CS_PIN 5      // SD card CS pin
 
-//determinando nome
 String file_name = "";
 String file_dir  = "";
 

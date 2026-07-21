@@ -1,6 +1,6 @@
 /**
  * @file BuzzerModule.cpp
- * @brief Implementacao do modulo buzzer
+ * @brief Buzzer module implementation
  */
 
 #include "BuzzerModule.h"

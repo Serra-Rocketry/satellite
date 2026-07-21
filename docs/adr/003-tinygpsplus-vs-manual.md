@@ -1,42 +1,44 @@
-# ADR-003: TinyGPSPlus vs. Parsing NMEA Manual
+# ADR-003: TinyGPSPlus vs. Manual NMEA Parsing
 
 ## Status
 
-Aceito.
+Accepted.
 
-## Contexto
+## Context
 
-O test_hardware v3 utiliza parsing NMEA manual (leitura caractere a caractere,
-extracao de campos, checksum). A biblioteca TinyGPSPlus oferece uma abstracao
-mais alta com validacao automatica.
+The test_hardware v3 uses manual NMEA parsing (character-by-character
+reading, field extraction, checksum). The TinyGPSPlus library offers
+higher-level abstraction with automatic validation.
 
-## Decisao
+## Decision
 
-Utilizar TinyGPSPlus como parser de GPS. O parsing manual do v3 e mantido
-como referencia em `test_hardware/integration/sensor_logging_v3/`.
+Use TinyGPSPlus as the GPS parser. The manual parsing from v3 is kept as
+reference in `test_hardware/integration/sensor_logging_v3/`.
 
 ## Rationale
 
-- **Menor codigo, menos bugs**: TinyGPSPlus ja implementa validacao de checksum
-  e extracao de campos
-- **Testavel**: Compila em ambiente nativo para testes unitarios
-- **Estavel**: Biblioteca amplamente utilizada na comunidade Arduino/ESP32
+- **Less code, fewer bugs**: TinyGPSPlus implements checksum validation
+  and field extraction
+- **Testable**: Compiles in native environment for unit tests
+- **Stable**: Widely used library in the Arduino/ESP32 community
 
-## Consequencias
+## Consequences
 
-### Positivo
-- Codigo mais limpo e manutenivel
-- Validacao automatica de checksum NMEA
+### Positive
 
-### Negativo
-- TinyGPSPlus adiciona ~3KB de flash
-- Abstracao esconde detalhes do protocolo NMEA
+- Cleaner, more maintainable code
+- Automatic NMEA checksum validation
 
-## Alternativas Consideradas
+### Negative
 
-1. **Parsing manual** (como v3): Mais controle, mas mais codigo e mais bugs
-2. **TinyGPSPlus** (escolhido): Menos codigo, menos bugs, mais rapido de implementar
+- TinyGPSPlus adds ~3KB of flash
+- Abstraction hides NMEA protocol details
+
+## Alternatives Considered
+
+1. **Manual parsing** (like v3) — more control, but more code and more bugs
+2. **TinyGPSPlus** (chosen) — less code, fewer bugs, faster to implement
 
 ## Implementation
 
-Ver `src/sensors/GPSSensor.h` e `src/sensors/GPSSensor.cpp`.
+See `src/sensors/GPSSensor.h` and `src/sensors/GPSSensor.cpp`.

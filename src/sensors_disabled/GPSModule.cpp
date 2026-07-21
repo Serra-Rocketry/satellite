@@ -1,11 +1,21 @@
+/**
+ * @file GPSModule.cpp
+ * @brief Legacy GPS module implementation (DISABLED from build)
+ *
+ * @deprecated Replaced by src/sensors/GPSSensor.cpp which implements the
+ *             ISensor interface. Kept for reference only.
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
+ */
+
 #include "GPSModule.h"
 
-GPSModule::GPSModule(HardwareSerial &serialPort, uint32_t baud = 9600)
+GPSModule::GPSModule(HardwareSerial &serialPort, uint32_t baud)
   : _serial(serialPort), _baud(baud), _ready(false) {}
 
 bool GPSModule::begin() {
   _serial.begin(_baud);
-  // Wait a bit for serial to stabilize? Not strictly necessary.
   _ready = true;
   return true;
 }
@@ -30,12 +40,12 @@ float GPSModule::getLongitude() {
 
 float GPSModule::getAltitude() {
   if (!_ready) return NAN;
-  return _gps.altitude.meters(); // Returns meters
+  return _gps.altitude.meters();
 }
 
 float GPSModule::getSpeed() {
   if (!_ready) return NAN;
-  return _gps.speed.kmh(); // km/h
+  return _gps.speed.kmh();
 }
 
 uint8_t GPSModule::getSatellites() {
@@ -45,8 +55,6 @@ uint8_t GPSModule::getSatellites() {
 
 uint8_t GPSModule::getFixQuality() {
   if (!_ready) return 255;
-  // TinyGPSPlus doesn't directly give fix quality; we can infer from satellites > 4 or HDOP
-  // For simplicity, return 1 if location is valid, else 0
   return _gps.location.isValid() ? 1 : 0;
 }
 

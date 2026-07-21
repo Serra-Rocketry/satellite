@@ -1,17 +1,22 @@
-/*
- * Teste do GPS NEO-8M via UART
- * 
- * Protocolo: NMEA (National Marine Electronics Association)
- * Baud rate: 9600 (padrão do NEO-8M)
- * 
- * Pinos (ESP32-C3):
- * - RX: GPIO 20 (recebe dados do GPS)
- * - TX: GPIO 21 (envia comandos para GPS)
- * 
- * Mensagens NMEA monitoradas:
- * - $GPRMC: Dados de posição e velocidade
- * - $GPGGA: Dados de localização com qualidade
- * - $GPGSA: Dados de satélites e DOP
+/**
+ * @file gps_neo8m.ino
+ * @brief Hardware validation sketch for the NEO-8M GPS module (UART)
+ *
+ * Tests GPS NMEA parsing with manual checksum validation.
+ * Monitors $GPRMC, $GPGGA, and $GPGSA sentences.
+ *
+ * Hardware setup:
+ * - UART: RX=GPIO20, TX=GPIO21
+ * - Baud: 9600
+ * - Protocol: NMEA 0183
+ *
+ * Features:
+ * - Manual NMEA checksum verification
+ * - Coordinate conversion (NMEA ddmm.mmmm -> decimal degrees)
+ * - Satellite count, HDOP/VDOP, fix quality/type tracking
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
  */
 
 #include <HardwareSerial.h>

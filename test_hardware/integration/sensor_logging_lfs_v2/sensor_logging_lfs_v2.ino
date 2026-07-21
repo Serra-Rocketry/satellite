@@ -1,14 +1,20 @@
-/*
- * Teste Unificado de Sensores - Versão Melhorada (v2)
- * 
- * Melhorias implementadas:
- * - Taxa de aquisição: 500ms → 50ms (20 Hz)
- * - Cálculo de taxa de descida (Vz)
- * - Validação de dados (NaN, outliers)
- * - Detecção de apogeu automática
- * - Melhor tratamento de erros
- * 
- * ICM-20602 + BMP280 com logging CSV
+/**
+ * @file sensor_logging_lfs_v2.ino
+ * @brief Unified sensor test v2 — ICM-20602 + BMP280 with improved features
+ *
+ * Improvements over v1:
+ * - 500ms -> 50ms (20 Hz) sample rate
+ * - Vertical velocity (Vz) calculation
+ * - Data validation (NaN, outliers)
+ * - Automatic apogee detection
+ * - Better error handling
+ *
+ * Hardware setup (ESP32-C3):
+ * - I2C: SDA=GPIO8, SCL=GPIO9
+ * - Storage: LittleFS
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
  */
 
 #include <Wire.h>

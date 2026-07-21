@@ -1,6 +1,6 @@
 /**
  * @file FilesystemModule.cpp
- * @brief Implementacao: SD primario, LittleFS fallback
+ * @brief Implementation: SD primary, LittleFS fallback
  */
 
 #include "FilesystemModule.h"
@@ -12,7 +12,7 @@ FilesystemModule::FilesystemModule(uint8_t sd_cs_pin)
 }
 
 bool FilesystemModule::begin() {
-    // Tenta SD primeiro
+    // Try SD first
     Serial.println(F("[FS] Tentando SD card..."));
     if (SD.begin(_sd_cs_pin) && SD.cardType() != CARD_NONE) {
         _type = STORAGE_SD;
@@ -24,7 +24,7 @@ bool FilesystemModule::begin() {
 
     Serial.println(F("[FS] SD nao disponivel. Tentando LittleFS..."));
 
-    // Fallback: LittleFS
+    // Fallback to LittleFS
     if (LittleFS.begin(true)) {
         _type = STORAGE_LITTLEFS;
         Serial.print(F("[FS] LittleFS OK ("));

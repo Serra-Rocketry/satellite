@@ -1,11 +1,11 @@
 /**
  * @file LoRaModule.h
- * @brief Modulo de comunicacao LoRa com RFM95W
+ * @brief LoRa communication module for the RFM95W radio
  *
- * Comunicacao SPI. Envia pacotes de telemetria via radio LoRa
- * na frequencia configurada (915MHz Americas).
+ * SPI communication. Sends telemetry packets via LoRa radio
+ * at the configured frequency (915 MHz for the Americas).
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -15,30 +15,29 @@
 #include <Arduino.h>
 #include <LoRa.h>
 #include "config.h"
-
 /**
  * @class LoRaModule
- * @brief Controle do radio LoRa RFM95W
+ * @brief RFM95W LoRa radio controller
  */
 class LoRaModule {
 public:
     LoRaModule();
 
     /**
-     * @brief Inicializa LoRa com pinos e frequencia configurados
-     * @return true se inicializado com sucesso
+     * @brief Initializes LoRa with configured pins and frequency
+     * @return true if initialized successfully
      */
     bool begin();
 
     /**
-     * @brief Envia mensagem via LoRa
-     * @param message String a transmitir
-     * @return true se transmitiu com sucesso
+     * @brief Sends a message via LoRa
+     * @param message String to transmit
+     * @return true if transmission was successful
      */
     bool send(const String &message);
 
     /**
-     * @brief Verifica se modulo esta operacional
+     * @brief Checks if module is operational
      */
     bool isReady() const { return _ready; }
 

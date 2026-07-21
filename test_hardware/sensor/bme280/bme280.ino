@@ -1,19 +1,18 @@
-/*
- * Teste do BME280 via I2C
- * 
- * BME280 integra 3 sensores:
- * - Barômetro (pressão) - 300 to 1100 hPa
- * - Termômetro (temperatura) - -40 to 85°C
- * - Higrômetro (umidade) - 0 to 100% RH
- * 
- * Protocolo: I2C
- * Endereço I2C: 0x76 ou 0x77 (padrão: 0x76 quando SDO=GND)
- * 
- * Pinos (ESP32-C3):
- * - SDA: GPIO 8
- * - SCL: GPIO 9
- * 
- * Este teste usa a biblioteca Adafruit_BME280 (recomendada)
+/**
+ * @file bme280.ino
+ * @brief Hardware validation sketch for the BME280 sensor (I2C)
+ *
+ * Tests the BME280 environmental sensor reading temperature (C),
+ * pressure (hPa/Pa), humidity (% RH), and barometric altitude (m).
+ * Also computes dew point and heat index.
+ *
+ * Hardware setup:
+ * - I2C: SDA=GPIO8, SCL=GPIO9
+ * - Address: 0x76 (SDO=GND) or 0x77 (SDO=VCC)
+ * - Library: Adafruit_BME280
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
  */
 
 #include <Wire.h>

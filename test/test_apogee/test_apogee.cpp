@@ -1,3 +1,20 @@
+/**
+ * @file test_apogee.cpp
+ * @brief Unit tests for the ApogeeDetection class
+ *
+ * Tests apogee detection including:
+ * - No detection while ascending
+ * - Detection at Vz threshold crossing
+ * - Altitude and timestamp recording
+ * - Maximum descent speed tracking
+ * - Single-shot detection (only once)
+ * - Descending flag state
+ * - Reset clears all events
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
+ */
+
 #include <unity.h>
 #include "calc/ApogeeDetection.h"
 

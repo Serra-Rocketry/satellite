@@ -1,16 +1,16 @@
 /**
  * @file FilesystemModule.h
- * @brief Modulo de storage com SD como primario e LittleFS como fallback
+ * @brief Storage module with SD as primary and LittleFS as fallback
  *
- * Segue o padrao do test_hardware:
- * 1. Tenta SD.begin() primeiro
- * 2. Se falhar, usa LittleFS.begin() como fallback
- * 3. Operacoes de arquivo fazem dispatch automatico
+ * Follows the test_hardware pattern:
+ * 1. Attempts SD.begin() first
+ * 2. If that fails, uses LittleFS.begin() as fallback
+ * 3. File operations dispatch automatically based on active type
  *
- * Em voo real (sem SD card), o sistema detecta ausencia e usa LittleFS.
- * Em bancada (com SD), grava no SD para facilidade de leitura.
+ * In real flight (no SD card), the system detects absence and uses LittleFS.
+ * On the bench (with SD), it writes to SD for easy data retrieval.
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -22,65 +22,65 @@
 
 /**
  * @enum StorageType
- * @brief Tipo de storage ativo
+ * @brief Active storage type
  */
 enum StorageType {
-    STORAGE_NONE = 0,       ///< Nenhum storage disponivel
-    STORAGE_SD,             ///< SD card ativo
-    STORAGE_LITTLEFS        ///< LittleFS ativo (fallback)
+    STORAGE_NONE = 0,       ///< No storage available
+    STORAGE_SD,             ///< SD card active
+    STORAGE_LITTLEFS        ///< LittleFS active (fallback)
 };
 
 /**
  * @class FilesystemModule
- * @brief Gerencia SD primario com LittleFS fallback
+ * @brief Manages SD primary with LittleFS fallback
  */
 class FilesystemModule {
 public:
     FilesystemModule(uint8_t sd_cs_pin = 5);
 
     /**
-     * @brief Inicializa storage: SD primeiro, LittleFS como fallback
-     * @return true se algum storage foi inicializado
+     * @brief Initializes storage: SD first, LittleFS as fallback
+     * @return true if any storage was initialized
      */
     bool begin();
 
     /**
-     * @brief Cria arquivo com header
-     * @param path Caminho (ex: "/telemetry.csv")
-     * @param header Linha header
-     * @return true se criou com sucesso
+     * @brief Creates file with header line
+     * @param path File path (e.g. "/telemetry.csv")
+     * @param header Header line
+     * @return true if created successfully
      */
     bool createFile(const String &path, const String &header);
 
     /**
-     * @brief Append linha a arquivo existente
-     * @param line Linha CSV
-     * @return true se gravou com sucesso
+     * @brief Appends a line to an existing file
+     * @param line CSV line
+     * @return true if written successfully
      */
     bool appendLine(const String &line);
 
     /**
-     * @brief Verifica se ha storage ativo
+     * @brief Checks if storage is active
      */
     bool isReady() const { return _type != STORAGE_NONE; }
 
     /**
-     * @brief Retorna tipo de storage ativo
+     * @brief Returns the active storage type
      */
     StorageType getType() const { return _type; }
 
     /**
-     * @brief Retorna string descritiva do storage
+     * @brief Returns a descriptive string for the storage type
      */
     const char* getTypeString() const;
 
     /**
-     * @brief Numero de linhas gravadas
+     * @brief Number of lines written
      */
     uint32_t getLineCount() const { return _lineCount; }
 
     /**
-     * @brief Fecha arquivos e desmonta
+     * @brief Closes files and unmounts
      */
     void close();
 

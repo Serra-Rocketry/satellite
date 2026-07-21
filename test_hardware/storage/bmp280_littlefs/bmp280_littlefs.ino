@@ -1,6 +1,18 @@
-/*
- * Teste BMP280 com Salvamento em SPIFFS
- * Salva dados de pressão e altura em arquivo CSV
+/**
+ * @file bmp280_littlefs.ino
+ * @brief BMP280 + SPIFFS/LittleFS storage test
+ *
+ * Tests BMP280 sensor with SPIFFS file storage including
+ * write and read-back verification.
+ *
+ * Hardware setup (ESP32-C3):
+ * - I2C: SDA=GPIO8, SCL=GPIO9 (BMP280)
+ * - Storage: SPIFFS (internal flash)
+ *
+ * Note: Focuses on BMP280 + filesystem only (no ICM-20602).
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
  */
 
 #include <Wire.h>

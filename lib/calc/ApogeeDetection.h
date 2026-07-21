@@ -1,12 +1,12 @@
 /**
  * @file ApogeeDetection.h
- * @brief Deteccao automatica de apogeu por threshold de velocidade vertical
+ * @brief Automatic apogee detection via vertical velocity threshold
  *
- * Monitora a velocidade vertical e detecta o apogeu quando Vz cruza
- * o threshold negativo (transicao subida -> descida). Mantem registro
- * da altitude maxima atingida e da velocidade maxima de descida.
+ * Monitors vertical velocity and detects apogee when Vz crosses
+ * a negative threshold (ascent -> descent transition). Tracks
+ * peak altitude and maximum descent speed.
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -15,31 +15,31 @@
 
 /**
  * @struct ApogeeEvent
- * @brief Resultado da deteccao de apogeu
+ * @brief Result of apogee detection
  */
 struct ApogeeEvent {
-  bool detected;              ///< Apogeu foi detectado? (Vz cruzou threshold negativo)
-  unsigned long timestamp_ms; ///< Timestamp da deteccao em ms
-  float altitude_max;         ///< Altitude maxima registrada durante a subida (pico)
-  float velocidade_max_descida; ///< Maior |Vz| registrada durante a descida
+  bool detected;              ///< Was apogee detected? (Vz crossed negative threshold)
+  unsigned long timestamp_ms; ///< Detection timestamp in ms
+  float altitude_max;         ///< Maximum altitude recorded during ascent (peak)
+  float velocidade_max_descida; ///< Highest |Vz| recorded during descent
 };
 
 /**
  * @class ApogeeDetection
- * @brief Deteccao automatica de apogeu por threshold de velocidade vertical
+ * @brief Automatic apogee detection via vertical velocity threshold
  *
- * Monitora a velocidade vertical e detecta o apogeu quando Vz cruza
- * o threshold negativo (transicao subida -> descida). Mantem registro
- * da altitude maxima atingida e da velocidade maxima de descida.
+ * Monitors vertical velocity and detects apogee when Vz crosses
+ * a negative threshold (ascent -> descent transition). Tracks
+ * peak altitude and maximum descent speed.
  *
- * Uso:
+ * Usage:
  * @code
  * ApogeeDetection ad(-0.5f);
  *
  * void loop() {
  *   float vz = ...;
  *   if (ad.update(vz, millis(), altitude)) {
- *     Serial.println("Apogeu detectado!");
+ *     Serial.println("Apogee detected!");
  *   }
  * }
  * @endcode
@@ -47,14 +47,14 @@ struct ApogeeEvent {
 class ApogeeDetection {
 public:
   /**
-   * @param vz_threshold Threshold de Vz (m/s) para considerar descida
-   *        Valores tipicos: -0.5 (liberal) a -2.0 (conservador)
+   * @param vz_threshold Vz threshold (m/s) to consider descent
+   *        Typical values: -0.5 (liberal) to -2.0 (conservative)
    */
   ApogeeDetection(float vz_threshold = -0.5f)
     : _threshold(vz_threshold), _descending(false), _altitude_peak(-1e6f),
       _event{false, 0, 0.0f, 0.0f} {}
 
-  /** @brief Reseta deteccao e eventos */
+  /** @brief Resets detection and events */
   void reset() {
     _descending = false;
     _altitude_peak = -1e6f;
@@ -62,14 +62,14 @@ public:
   }
 
   /**
-   * @brief Atualiza deteccao com nova leitura
-   * @param vz Velocidade vertical atual (m/s)
-   * @param millis_ts Timestamp da leitura (ms)
-   * @param altitude Altitude atual (m)
-   * @return true se apogeu foi detectado nesta chamada (transicao)
+   * @brief Updates detection with a new reading
+   * @param vz Current vertical velocity (m/s)
+   * @param millis_ts Reading timestamp (ms)
+   * @param altitude Current altitude (m)
+   * @return true if apogee was detected on this call (transition)
    *
-   * @note Retorna true apenas uma vez (primeira deteccao)
-   * @note A altitude maxima e rastreada continuamente durante a subida
+   * @note Returns true only once (first detection)
+   * @note Peak altitude is tracked continuously during ascent
    */
   bool update(float vz, unsigned long millis_ts, float altitude) {
     if (altitude > _altitude_peak) {
@@ -94,10 +94,10 @@ public:
     return false;
   }
 
-  /** @return true se esta em fase de descida */
+  /** @return true if currently in descent phase */
   bool isDescending() const { return _descending; }
 
-  /** @return Referencia const para o evento de apogeu */
+  /** @return Const reference to the apogee event */
   const ApogeeEvent& event() const { return _event; }
 
 private:

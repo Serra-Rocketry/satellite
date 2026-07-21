@@ -1,19 +1,21 @@
-/***************************************************************************
-  This is a library for the BMP280 humidity, temperature & pressure sensor
-
-  Designed specifically to work with the Adafruit BMP280 Breakout
-  ----> http://www.adafruit.com/products/2651
-
-  These sensors use I2C or SPI to communicate, 2 or 4 pins are required
-  to interface.
-
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit andopen-source hardware by purchasing products
-  from Adafruit!
-
-  Written by Limor Fried & Kevin Townsend for Adafruit Industries.
-  MIT license, see LICENSE.txt for more information
- ***************************************************************************/
+/**
+ * @file bmp280.ino
+ * @brief Hardware validation sketch for the BMP280 sensor (I2C)
+ *
+ * Tests the BMP280 barometric sensor reading temperature (C),
+ * pressure (Pa), and approximate altitude (m).
+ *
+ * Adapted from Adafruit BMP280 library example.
+ * Original by Limor Fried & Kevin Townsend for Adafruit Industries.
+ *
+ * Hardware setup:
+ * - I2C: SDA=GPIO8, SCL=GPIO9
+ * - Address: 0x76
+ * - Library: Adafruit_BMP280
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
+ */
 
 #include <Wire.h>
 #include <SPI.h>

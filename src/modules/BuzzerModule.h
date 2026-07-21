@@ -1,10 +1,10 @@
 /**
  * @file BuzzerModule.h
- * @brief Modulo de feedback sonoro via buzzer piezoeletrico
+ * @brief Audio feedback module via piezo buzzer
  *
- * Gera padroes de beeps para indicar estados do sistema.
+ * Generates beep patterns to indicate system states.
  *
- * @author #213 Avionics
+ * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
 
@@ -16,39 +16,39 @@
 
 /**
  * @class BuzzerModule
- * @brief Controle do buzzer para feedback audio
+ * @brief Buzzer control for audio feedback
  */
 class BuzzerModule {
 public:
     BuzzerModule();
 
     /**
-     * @brief Inicializa o pino do buzzer
+     * @brief Initializes the buzzer pin
      */
     void begin();
 
     /**
-     * @brief Sinal de boot (3 beeps curtos)
+     * @brief Startup signal (3 short beeps)
      */
     void playStartup();
 
     /**
-     * @brief Sinal de erro (5 beeps rapidos)
+     * @brief Error signal (5 fast beeps)
      */
     void playError();
 
     /**
-     * @brief Beep curto de confirmacao
+     * @brief Short confirmation beep
      */
     void playBeep();
 
     /**
-     * @brief Sinal continuo (para debug)
+     * @brief Continuous tone (for debugging)
      */
     void playContinuous(uint16_t duration_ms);
 
     /**
-     * @brief Para qualquer som
+     * @brief Stops any sound
      */
     void stop();
 

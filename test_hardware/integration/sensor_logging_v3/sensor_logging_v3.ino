@@ -1,23 +1,26 @@
-/*
- * Teste Unificado de Sensores - Versão 3 (v3)
- * 
- * Componentes integrados:
- * - ICM-20602 (IMU: acelerômetro + giroscópio) via I2C
- * - BME280 (pressão + temperatura + umidade) via I2C
- * - GPS NEO-8M (posição + altitude + velocidade) via UART
- * 
- * Melhorias implementadas:
- * - Taxa de aquisição: 50ms (20 Hz)
- * - Cálculo de taxa de descida (Vz)
- * - Validação de dados (NaN, outliers)
- * - Detecção de apogeu automática
- * - Integração GPS com validação de altitude
- * - Logging CSV com 15 colunas
- * 
- * Pinouts (ESP32-C3):
+/**
+ * @file sensor_logging_v3.ino
+ * @brief Unified sensor test v3 — ICM-20602 + BME280 + NEO-8M GPS
+ *
+ * Full telemetry pipeline with 20Hz acquisition, Vz calculation,
+ * data validation, automatic apogee detection, GPS integration,
+ * and CSV logging to LittleFS (15 columns).
+ *
+ * Hardware setup (ESP32-C3):
  * - I2C: SDA=GPIO8, SCL=GPIO9
  * - UART GPS: RX=GPIO20, TX=GPIO21
- * - LittleFS: storage para arquivos CSV
+ * - Storage: LittleFS
+ *
+ * Features:
+ * - 20 Hz sample rate (50 ms)
+ * - Vertical velocity (Vz) with EMA filter
+ * - Data validation (NaN, range checks)
+ * - Automatic apogee detection
+ * - Manual NMEA GPS parsing
+ * - CSV logging to LittleFS
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
  */
 
 #include <Wire.h>

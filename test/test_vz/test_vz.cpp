@@ -1,3 +1,19 @@
+/**
+ * @file test_vz.cpp
+ * @brief Unit tests for the VerticalVelocity class
+ *
+ * Tests vertical velocity calculation including:
+ * - Stationary (zero velocity)
+ * - Ascending (positive Vz)
+ * - Descending (negative Vz)
+ * - EMA approximation for both ascent and descent
+ * - Reset state clearing
+ * - Zero time delta edge case
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
+ */
+
 #include <unity.h>
 #include "calc/VerticalVelocity.h"
 

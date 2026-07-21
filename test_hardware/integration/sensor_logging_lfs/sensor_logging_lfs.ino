@@ -1,7 +1,16 @@
-/*
- * Teste Unificado de Sensores
- * Acelerômetro (ICM20602) + Giroscópio (ICM20602) + Pressão + Altura (BMP280)
- * Salva dados em arquivo CSV via LittleFS
+/**
+ * @file sensor_logging_lfs.ino
+ * @brief Unified sensor test — ICM-20602 + BMP280 with LittleFS logging
+ *
+ * Reads accelerometer, gyroscope, pressure, and altitude data.
+ * Logs CSV output to LittleFS for bench testing.
+ *
+ * Hardware setup (ESP32-C3):
+ * - I2C: SDA=GPIO8, SCL=GPIO9
+ * - Storage: LittleFS
+ *
+ * @author Serra Rocketry Team — Mission #213
+ * @date 2026
  */
 
 #include <Wire.h>
