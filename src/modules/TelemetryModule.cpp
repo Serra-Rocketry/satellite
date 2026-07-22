@@ -60,7 +60,7 @@ void TelemetryModule::collectData(BME280Sensor &bme, ICM20602Sensor &icm, GPSSen
 }
 
 void TelemetryModule::formatPacket(const SensorData &data, char *packet, size_t packetSize) {
-    // 18 fields — no time/date (receiver fills with local GPS)
+    // 18 fields + '#' terminator — no time/date (receiver fills with local GPS)
     // TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi
     //
     // Mapping:
@@ -91,8 +91,8 @@ void TelemetryModule::formatPacket(const SensorData &data, char *packet, size_t 
              "%.2f,%.2f,%.2f,"
              "%.2f,%.2f,%.2f,"
              "%.2f,%.6f,%.6f,%u,"
-              "%d",
-              TEAM_ID, data.millis_ts, _packetCount,
+             "%d#",                         // '#' = end-of-packet marker for receiver validation
+             TEAM_ID, data.millis_ts, _packetCount,
               data.altura, data.temperatura, data.umidade, pressao_hpa,
               data.gx, data.gy, data.gz,
               data.ax, data.ay, data.az,
