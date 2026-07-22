@@ -1,8 +1,9 @@
 /**
  * @file BuzzerModule.h
- * @brief Audio feedback module via piezo buzzer
+ * @brief Audio feedback module via active buzzer
  *
- * Generates beep patterns to indicate system states.
+ * Active buzzer has a built-in oscillator — just needs DC HIGH/LOW.
+ * No PWM / LEDC required.
  *
  * @author Serra Rocketry Team — Mission #213
  * @date 2026
@@ -14,50 +15,28 @@
 #include <Arduino.h>
 #include "config.h"
 
-// Use LEDC directly instead of tone() which has a bug on ESP32-C3 core
-#define BUZZER_LEDC_CHANNEL 0
-#define BUZZER_LEDC_RES     8   // 8-bit resolution
-
-/**
- * @class BuzzerModule
- * @brief Buzzer control for audio feedback
- */
 class BuzzerModule {
 public:
     BuzzerModule();
 
-    /**
-     * @brief Initializes the buzzer pin
-     */
     void begin();
 
-    /**
-     * @brief Startup signal (3 short beeps)
-     */
+    /** Startup signal (3 short beeps) */
     void playStartup();
 
-    /**
-     * @brief Error signal (5 fast beeps)
-     */
+    /** Error signal (5 fast beeps) */
     void playError();
 
-    /**
-     * @brief Short confirmation beep
-     */
+    /** Short confirmation beep */
     void playBeep();
 
-    /**
-     * @brief Continuous tone (for debugging)
-     */
+    /** Continuous tone (for debugging) */
     void playContinuous(uint16_t duration_ms);
 
-    /**
-     * @brief Stops any sound
-     */
+    /** Stops any sound */
     void stop();
 
 private:
-    static const uint16_t FREQUENCY = 500;     // Hz
     static const uint16_t SHORT_MS = 80;
     static const uint16_t LONG_MS = 300;
     static const uint16_t PAUSE_MS = 80;
