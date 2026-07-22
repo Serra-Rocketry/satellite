@@ -100,10 +100,10 @@ All sensors implement the `ISensor` abstract interface:
 
 ## Data Flow
 
-### CSV Packet Format (18 fields)
+### CSV Packet Format (18 fields + end-of-packet marker)
 
 ```text
-TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi
+TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi#
 ```
 
 | Field | Source | Unit | Description |
@@ -126,6 +126,12 @@ TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi
 | lon | GPS | deg | Longitude |
 | sat | GPS | - | Satellite count |
 | rssi | placeholder | dBm | RSSI (-1, filled by receiver) |
+| **#** | **terminator** | - | **End-of-packet marker** |
+
+**`#` end-of-packet marker**: The `#` character terminates every packet. The
+ground station receiver uses it to verify integrity: if a line does not end
+with `#`, the packet was truncated or corrupted during LoRa transmission and
+should be discarded.
 
 Time/date fields are intentionally omitted — they are filled by the ground
 station receiver using its local GPS for precise synchronization.
