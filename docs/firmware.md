@@ -154,8 +154,10 @@ Without these flags, `Serial` maps to UART0, not the USB CDC port.
 
 ### 2. tone() / LEDC
 `tone()` crashes with `ledc: ledc_get_duty(): LEDC is not initialized` on ESP32-C3.
-**Fix**: Use `ledcSetup()` + `ledcAttachPin()` + `ledcWrite()` directly.
-The BuzzerModule implements this workaround.
+**Fix**: Use `ledcSetup()` + `ledcAttachPin()` + `ledcWrite()` instead of `tone()`.
+(The BuzzerModule uses `digitalWrite` — active buzzer has built-in oscillator,
+so no PWM is needed. The LEDC bug remains relevant for passive buzzers or
+PWM-driven peripherals.)
 
 ### 3. I2C resetI2C()
 Do NOT use GPIO-level I2C bus recovery (`pinMode`/`digitalWrite` on SDA/SCL)

@@ -87,7 +87,7 @@ All sensors implement the `ISensor` abstract interface:
 | TelemetryModule | `TelemetryModule.h/.cpp` | Data collection, CSV formatting, transmission |
 | FilesystemModule | `FilesystemModule.h/.cpp` | SD primary + LittleFS fallback |
 | LEDModule | `LEDModule.h/.cpp` | Heartbeat and status LED (GPIO1) |
-| BuzzerModule | `BuzzerModule.h/.cpp` | Startup/error beeps (GPIO0) |
+| BuzzerModule | `BuzzerModule.h/.cpp` | Startup/error beeps via digitalWrite (GPIO0, active buzzer) |
 
 ### `lib/calc/` — Calculation Library (Header-only, No Hardware Deps)
 

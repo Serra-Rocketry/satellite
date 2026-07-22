@@ -7,14 +7,14 @@
 - **GPS**: NEO-8M (UART, 9600 baud)
 - **Sensors**: BME280 (I2C, primary) with BMP280 fallback, ICM-20602 (I2C)
 - **Storage**: SD card slot (GPIO10, SPI) + LittleFS flash (fallback)
-- **Actuators**: LED (GPIO3), Piezo buzzer (GPIO0)
+- **Actuators**: LED (GPIO3), Active buzzer (GPIO0)
 
 ## Pinout (ESP32-C3 Super Mini — per schematic)
 
 ```text
                      ESP32-C3 Super Mini
   ┌─────────────────────────────────────────────┐
-  │  0  BUZZER ─────────── Piezo buzzer         │
+  │  0  BUZZER ─────────── Active buzzer        │
   │  1  RESET ──────────── RFM95W (LoRa RST)    │
   │  2  DIO0 ───────────── RFM95W (LoRa IRQ)    │
   │  3  LED ────────────── Status indicator     │
@@ -34,7 +34,7 @@
 
 | GPIO | Label       | Function / Protocol | Connected To              |
 |------|-------------|---------------------|---------------------------|
-| 0    | BUZZER      | PWM (ledcWrite)     | Piezo buzzer              |
+| 0    | BUZZER      | GPIO (digitalWrite) | Active buzzer              |
 | 1    | RESET       | GPIO output         | RFM95W (pin 6, RST)      |
 | 2    | DIO0        | GPIO input (IRQ)    | RFM95W (pin 14, DIO0)    |
 | 3    | LED         | GPIO output         | Status indicator          |
@@ -55,8 +55,8 @@
 - **I2C bus is shared** between BME280/BMP280 and ICM-20602. Both use address 0x76
   (BME/BMP) and 0x69 (ICM).
 - **UART**: GPS uses Serial1 with custom pins RX=GPIO20, TX=GPIO21.
-- **Buzzer uses ledcWrite directly** (not tone()) to avoid an ESP32-C3 core bug
-  where the LEDC driver is not initialized before tone() accesses it.
+- **Buzzer**: Active buzzer (built-in oscillator) — controlled via `digitalWrite`.
+  No PWM required.
 
 ## Sensor Specifications
 
@@ -125,8 +125,11 @@ Satellite and receiver MUST use identical LoRa parameters:
 
 ### 1. tone() / LEDC Bug
 The Arduino core for ESP32-C3 has a bug where `tone()` fails with
-`ledc: ledc_get_duty(745): LEDC is not initialized`.  
-**Fix**: The firmware uses `ledcSetup()` + `ledcAttachPin()` + `ledcWrite()` directly.
+`ledc: ledc_get_duty(745): LEDC is not initialized`.
+**Fix**: Use `ledcSetup()` + `ledcAttachPin()` + `ledcWrite()` instead of `tone()`.
+(The buzzer module uses `digitalWrite` since the active buzzer has a built-in
+oscillator — no PWM needed. The bug remains relevant for passive buzzers or
+PWM-driven peripherals.)
 
 ### 2. USB CDC Serial
 `Serial.println()` output does not appear unless the firmware is compiled with:
