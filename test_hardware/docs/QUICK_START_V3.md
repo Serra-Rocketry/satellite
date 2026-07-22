@@ -6,8 +6,8 @@
 # Arduino IDE → Tools → Manage Libraries
 
 Procurar e instalar:
-✓ Adafruit_BME280
-✓ Adafruit_Sensor
+Adafruit_BME280 (or BMP280)
+Adafruit_Sensor
 ```
 
 Já estão built-in:
@@ -42,7 +42,7 @@ TX (comando) ──────► GPIO 21 (TX)
 
 ```
 === Teste GPS NEO-8M ===
-✓ GPS UART inicializado
+GPS UART inicializado
 Aguardando dados NMEA...
 
 --- Status GPS ---
@@ -91,8 +91,8 @@ SCL        ─────► GPIO 9
 ```
 === Teste BME280 ===
 Procurando BME280 no endereço 0x76
-✓ BME280 encontrado!
-✓ Sensor configurado
+BME280 encontrado!
+Sensor configurado
   - Modo: Normal
   - Amostragem: 2x (todos)
   - Tempo espera: 1000ms
@@ -149,16 +149,16 @@ UART GPS (RX=GPIO20, TX=GPIO21):
 ICM-20602 + BME280 + GPS NEO-8M
 
 === Inicializando Sensores ===
-✓ ICM20602 encontrado!
-✓ BME280 inicializado!
-✓ GPS UART inicializado!
-✓ LittleFS montado!
+ICM20602 encontrado!
+BME280 inicializado!
+GPS UART inicializado!
+LittleFS montado!
 
 === Status dos Sensores ===
-ICM20602: ✓ OK
-BME280:   ✓ OK
-GPS:      ✓ OK
-Storage:  ✓ OK
+ICM20602: OK
+BME280:   OK
+GPS:      OK
+Storage:  OK
 
 === Taxa de Aquisição: 20 Hz (50 ms) ===
 === Iniciando Leituras ===

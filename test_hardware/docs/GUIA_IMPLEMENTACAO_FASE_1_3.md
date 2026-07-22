@@ -1,4 +1,7 @@
 # Guia de Implementação - Fase 1.3: Testes Experimentais de Queda
+> **NOTA**: BME280 e BMP280 são intercambiáveis. O firmware atual tenta
+> BME280 primeiro; se não encontrado, usa BMP280 (umidade = NAN).
+
 
 ## Visao Geral
 
@@ -154,7 +157,7 @@ ICM-20602 + BME280 + GPS NEO-8M
 
 ---
 
-## ⚠️ Checklist de Validação de Hardware (CRÍTICO)
+## Checklist de Validação de Hardware (CRÍTICO)
 
 **Executar ANTES de qualquer teste de queda**
 
@@ -162,7 +165,7 @@ ICM-20602 + BME280 + GPS NEO-8M
 
 - [ ] **Medir tensão de TX do GPS com multímetro DC**
   - Esperado: 0V ou 3.3V (nunca 5V!)
-  - ⚠️ **Risco**: Se GPS transmitir em 5V direto, danificará GPIO 20 (RX) do ESP32-C3
+  - **Risco**: Se GPS transmitir em 5V direto, danificará GPIO 20 (RX) do ESP32-C3
   - **Correção**: Usar level shifter ou resistor voltage divider (10kΩ + 20kΩ)
 
 - [ ] **Verificar fios da antena GPS**
@@ -327,7 +330,7 @@ Apogeu detector: Pode detectar "flutuação" inicial
 **Comparação com simulação**:
 
 ```
-⚠️ IMPORTANTE: Em quedas de 10m NÃO atingimos regime terminal!
+IMPORTANTE: Em quedas de 10m NÃO atingimos regime terminal!
    
 Simulação (`extras/wing-analysis/results/test_2_asa2/samara_pq_impact_report.txt`):
    - Config 2×R124mm: v₀ = 27.65 m/s (regime terminal)
@@ -359,7 +362,7 @@ ID  | Config          | Simul v_terminal | Vz_esperado* | Vz_medido | Variação
 T01 | 2 asas,0.6mm    | 27.61 m/s        | -8 a -12 m/s | -9.2 m/s  | ±5%      | ✅
 T02 | 2 asas,0.4mm    | 27.61 m/s        | -7 a -11 m/s | -8.8 m/s  | ±4%      | ✅
 T03 | 3 asas,0.6mm    | 23.81 m/s        | -9 a -13 m/s | -11.1 m/s | ±3%      | ✅
-T04 | 6 asas,0.6mm    | 17.85 m/s        | -11 a -15 m/s| -12.5 m/s | +8%      | ⚠️ (mais lento)
+T04 | 6 asas,0.6mm    | 17.85 m/s        | -11 a -15 m/s| -12.5 m/s | +8%      | (mais lento)
 
 *Vz_esperado = Simulação de altura 10m com mesmo coef. aerodinâmico (não usar v_terminal direto!)
 ```
@@ -509,12 +512,12 @@ Config: {simul_config}
 Simulação (regime terminal): {simul_vz_terminal:.2f} m/s
 Teste real (Vz médio estável): {abs(vz_estavel_medio):.2f} ± {vz_estavel_std:.2f} m/s
 
-⚠️  NOTA: Teste em 10m NÃO atinge regime terminal
+ NOTA: Teste em 10m NÃO atinge regime terminal
    Compare com simulação para MESMA ALTURA usando script de física
    (calcular posição teórica em t=tempo_queda_real)
 
 Critério: Desvio padrão (5 reps) < 5% da média
-Status: {"✅ VALIDADO" if vz_estavel_std < (abs(vz_estavel_medio) * 0.05) else "❌ REJEITAR - Instabilidade"}
+Status: {"VALIDADO" if vz_estavel_std < (abs(vz_estavel_medio) * 0.05) else "REJEITAR - Instabilidade"}
 """)
 ```
 
