@@ -30,3 +30,6 @@ hardware/CDB/~*.lck
 extras/wing-analysis/docs/*.pdf
 
 *.ini
+
+# Node.js
+node_modules/
