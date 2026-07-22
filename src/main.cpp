@@ -156,6 +156,9 @@ void loop() {
     // --- Feed watchdog ---
     esp_task_wdt_reset();
 
+    // --- Update IMU ---
+    g_icm.update();
+
     // --- Collect data ---
     SensorData data;
     g_telemetry.collectData(g_bme, g_icm, g_gps, data);
