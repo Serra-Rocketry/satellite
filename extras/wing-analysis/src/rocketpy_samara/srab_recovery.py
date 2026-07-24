@@ -257,7 +257,7 @@ class SRABRecovery:
             kw.get("theta_dot_0", 0.0),
             kw.get("phi_dot_0", 0.1),
             float(flight.vz(t_apo)),  # real vz at apogeu
-            float(flight.apogee),  # real altitude at apogeu
+            float(flight.apogee - flight.env.elevation),  # altitude AGL (env datum)
         ]
 
         env = self.env or getattr(flight, "env", None)

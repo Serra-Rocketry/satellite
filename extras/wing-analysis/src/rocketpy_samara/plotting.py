@@ -290,8 +290,14 @@ def plot_trajectory_map(srab_sol, lat, lon, filename=None, zoom=16):
     m_per_deg_lat = 111320.0
     m_per_deg_lon = 111320.0 * np.cos(lat_rad)
 
-    lats = lat + srab_sol.y / m_per_deg_lat
-    lngs = lon + srab_sol.x / m_per_deg_lon
+    x_corrigido = srab_sol.x - srab_sol.x[0]  # Força o primeiro ponto a ser 0
+    y_corrigido = srab_sol.y - srab_sol.y[0]  # Força o primeiro ponto a ser 0
+
+    lats = lat + y_corrigido / m_per_deg_lat
+    lngs = lon + x_corrigido / m_per_deg_lon
+
+    # lats = lat + srab_sol.y / m_per_deg_lat
+    # lngs = lon + srab_sol.x / m_per_deg_lon
 
     # Amostrar trajetória
     step = max(1, len(lats) // 200)
@@ -314,7 +320,10 @@ def plot_trajectory_map(srab_sol, lat, lon, filename=None, zoom=16):
     # Liberação
     _folium.Marker(
         [lat, lon],
-        popup=f"Liberação ({srab_sol.altitude[0]:.0f} m)",
+        popup=(f"Deploy<br>"
+               f"{srab_sol.altitude[0]:.0f} m<br>" 
+               f"lat={lat:.6f}<br>" 
+               f"lon={lon:.6f}"),
         icon=_folium.Icon(color="green", icon="cloud", prefix="fa"),
     ).add_to(m)
 
@@ -323,8 +332,8 @@ def plot_trajectory_map(srab_sol, lat, lon, filename=None, zoom=16):
         [lats[-1], lngs[-1]],
         popup=(
             f"Impacto<br>"
-            f"x={srab_sol.x_impact:.1f} m<br>"
-            f"y={srab_sol.y_impact:.1f} m<br>"
+            f"lat={lats[-1]:.6f}<br>"  
+            f"lon={lngs[-1]:.6f}<br>"
             f"v={srab_sol.v_impact:.2f} m/s"
         ),
         icon=_folium.Icon(color="red", icon="bullseye", prefix="fa"),
