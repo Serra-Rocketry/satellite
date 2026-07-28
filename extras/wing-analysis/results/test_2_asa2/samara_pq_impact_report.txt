@@ -1,0 +1,17 @@
+======================================================================
+IMPACT REPORT
+======================================================================
+DXF profile:             geometry/Asa2.DXF
+Status: GROUND IMPACT DETECTED
+Impact time:             2.78 s
+Altitude at final state: -0.00 m
+Impact speed |v|:        8.01 m/s
+Vertical speed vz:       -8.01 m/s
+Impact kinetic energy:   6.42 J
+Angular speed phi_dot:   31.88 rad/s
+Angular speed spin:      304.41 rpm
+Mean Reynolds number:    13807
+Initial potential energy: 39.24 J
+Final kinetic energy:     6.42 J
+Dissipated energy:        32.82 J
+Total frontal area:      147.28 cm²

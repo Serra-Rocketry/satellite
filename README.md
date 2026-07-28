@@ -1,77 +1,159 @@
-# Aviônica - Computador de Bordo
+# Helike — PocketQube Mission (#213 - LASC 2026)
 
-Este projeto é o computador de bordo (CDB) para o foguete SR1500 da equipe de foguetemodelismo Serra Rocketry. O CDB utiliza sensores e módulos para monitorar a altitude, localização GPS, e controlar a abertura do paraquedas para garantir um voo seguro.
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)](.)
+[![License](https://img.shields.io/badge/license-MIT-blue)](.)
+[![Platform](https://img.shields.io/badge/platform-ESP32--C3-orange)](.)
 
-## Funcionalidades
+PocketQube satellite project by **Serra Rocketry Team** for the Latin American
+Space Challenge (LASC) 2026. Focus on bioinspired autorotating recovery system
+(SRAB) and LoRa-based telemetry triangulation.
 
-- Leitura de altitude utilizando o sensor BMP280.
-- Monitoramento de localização GPS com o módulo GPS NEO-6m.
-- Comunicação via LoRa para transmissão de dados com a base operacional.
-- Controle de um servo motor para abertura do paraquedas.
-- Armazenamento de dados em LittleFS.
-- Monitoramento de aceleração e giroscópio utilizando o sensor MPU6050.
-- Registro de dados em formato CSV para análise posterior.
-- Sinalização com buzzer para indicar status de operação.
+## Overview
 
-## Hardware Utilizado
+The Helike satellite collects flight telemetry (IMU, barometric data, GPS)
+and transmits it via LoRa radio at 915 MHz to a ground station. The payload
+is a passive autorotating recovery system inspired by maple seed aerodynamics.
 
-- ESP32
-- Sensor de pressão BMP280
-- Módulo GPS NEO-6m
-- Módulo LoRa
-- Servo motor
-- Buzzer
-- LED
-- Step down
-- Baterias 18650
-- Sensor MPU6050
+## Features
 
-## Configuração de Pinos
+- BME280 environmental sensor (temperature, pressure, humidity)
+- ICM-20602 6-axis IMU (accelerometer + gyroscope)
+- NEO-8M GPS receiver (position, altitude, time)
+- RFM95W LoRa radio (915 MHz, SF7, 125 kHz)
+- SD card (primary) + LittleFS (fallback) data logging
+- 18-field CSV telemetry packet format
+- Vertical velocity computation (EMA filter)
+- Automatic apogee detection
+- Data validation (NaN + physical range checks)
+- 5 Hz sample rate
 
-- **BUZZER_PIN**: 0
-- **SERVO_PIN**: 13
-- **RX_GPS**: 20
-- **TX_GPS**: 21
-- **SS_LORA**: 7
-- **RST_LORA**: 1
-- **DIO0_LORA**: 2
+## Hardware Requirements
 
-## Bibliotecas Utilizadas
+| Component | Model | Interface |
+|-----------|-------|-----------|
+| MCU | ESP32-C3 Super Mini | - |
+| Barometric | BME280 (or BMP280) | I2C (0x76) |
+| IMU | ICM-20602 | I2C (0x69) |
+| GPS | NEO-8M | UART (9600 baud) |
+| Radio | RFM95W | SPI (915 MHz) |
+| Storage | microSD card + LittleFS | SPI / flash |
 
-- **Wire**
-- **SPI**
-- **Adafruit_BMP280**
-- **ESP32Servo**
-- **TinyGPS++**
-- **FS**
-- **LittleFS**
-- **LoRa**
-- **Adafruit_MPU6050**
-- **Adafruit_Sensor**
+## Software Requirements
 
-## Estrutura do Código
+- [PlatformIO](https://platformio.org/) (VS Code extension or CLI)
+- Python 3.8+ (for analysis scripts in `extras/`)
 
-- **setup()**: Configura os sensores, módulos e inicializa as variáveis.
-- **loop()**: Realiza leituras periódicas dos sensores, verifica a altitude e controla a abertura do paraquedas.
-- **setupLittleFS()**: Inicializa o sistema de arquivos LittleFS.
-- **setupBMP()**: Configura o sensor BMP280.
-- **setupLoRa()**: Inicializa o módulo LoRa.
-- **setupMPU()**: Configura o sensor MPU6050.
-- **setupServo()**: Configura o servo motor.
-- **buzzSignal()**: Controla o buzzer para sinalização.
-- **logData()**: Registra e imprime os dados do momento.
-- **handleParachute()**: Controla a abertura do paraquedas com base na altitude.
-- **checkHighest()**: Verifica a maior altitude alcançada.
-- **writeFile()**: Escreve dados no arquivo LittleFS.
-- **appendFile()**: Anexa dados ao arquivo LittleFS.
-- **printBoth()**: Imprime mensagens no Serial e envia via LoRa.
-- **sendLoRa()**: Envia mensagens via LoRa.
-- **GPSData()**: Obtém dados do GPS (latitude, longitude, satélites, altitude, data e hora).
-- **BMPData()**: Obtém dados do sensor BMP280 (altitude e pressão).
-- **MPUData()**: Obtém dados do sensor MPU6050 (aceleração e giroscópio).
-- **getDataString()**: Concatena os dados do GPS, BMP280, MPU6050 e status do paraquedas em uma string.
+Dependencies managed automatically by PlatformIO:
 
-## Códigos de Apoio
+| Library | Version |
+|---------|---------|
+| sandeepmistry/LoRa | ^0.8.0 |
+| Adafruit BME280 Library | ^2.2.4 |
+| TinyGPSPlus | ^1.0.3 |
 
-Os códigos contidos em `/extras` são apoios ao desenvolvimento. Esses códigos são funcionais e testados.
-Os códigos contidos em `/test`são apoios ao desenvolvimento, como etapas para construção do código final. 
+## Quick Start
+
+### 1. Build the Firmware
+
+```bash
+pio run -e helike_esp32c3
+```
+
+### 2. Upload to Satellite
+
+```bash
+pio run -e helike_esp32c3 -t upload --upload-port /dev/ttyACM0
+```
+
+### 3. Monitor Serial Output
+
+```bash
+pio device monitor -b 115200
+```
+
+### 4. Run Unit Tests
+
+```bash
+pio test -e native
+```
+
+## Repository Structure
+
+```text
+satellite/
+├── src/                       # Main firmware source
+│   ├── main.cpp               # Entry point (setup + loop)
+│   ├── config.h               # Global configuration
+│   ├── sensors/               # Sensor drivers (ISensor interface)
+│   │   ├── BME280Sensor.h/.cpp
+│   │   ├── ICM20602Sensor.h/.cpp
+│   │   └── GPSSensor.h/.cpp
+│   └── modules/               # System modules
+│       ├── LoRaModule.h/.cpp
+│       ├── TelemetryModule.h/.cpp
+│       ├── FilesystemModule.h/.cpp
+│       ├── LEDModule.h/.cpp
+│       └── BuzzerModule.h/.cpp
+├── lib/calc/                  # Header-only calculation library
+│   ├── SensorData.h
+│   ├── VerticalVelocity.h
+│   ├── ApogeeDetection.h
+│   └── DataValidation.h
+├── test/                      # Native unit tests (Unity)
+│   ├── test_vz/
+│   ├── test_apogee/
+│   └── test_validation/
+├── test_hardware/             # Hardware validation sketches
+│   ├── sensor/                # Isolated sensor tests
+│   ├── integration/           # Multi-sensor integration
+│   └── storage/               # Filesystem tests
+├── docs/                      # Documentation
+│   ├── software.md
+│   ├── hardware.md
+│   ├── firmware.md
+│   ├── flowchart.md
+│   └── adr/                   # Architecture Decision Records
+├── extras/
+│   └── wing-analysis/         # SRAB aerodynamic study
+├── hardware/                  # CAD and PCB files
+└── platformio.ini             # PlatformIO configuration
+```
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Software Architecture](docs/software.md) | Module structure, data flow, validation |
+| [Hardware Specs](docs/hardware.md) | Pinout, sensors, LoRa configuration |
+| [Firmware Guide](docs/firmware.md) | Build, upload, testing, debug |
+| [Flowcharts](docs/flowchart.md) | System diagrams (Mermaid) |
+| [ADRs](docs/adr/) | Architecture Decision Records |
+| [Hardware Tests](test_hardware/docs/) | Bench guides and checklists |
+| [Wing Analysis](extras/wing-analysis/docs/) | SRAB aerodynamics |
+
+## Development Workflow
+
+1. Validate individual sensors in `test_hardware/sensor/`
+2. Run integration tests in `test_hardware/integration/`
+3. Execute unit tests: `pio test -e native`
+4. Run aerodynamic studies: `extras/wing-analysis/`
+5. Consolidate results in technical documentation
+6. Integrate final firmware
+
+## Quality Tools
+
+```bash
+# Markdown linting
+npx -y markdownlint-cli "README.md" "docs/**/*.md" "test_hardware/docs/**/*.md" "extras/**/*.md" "hardware/**/*.md"
+
+# Native unit tests
+pio test -e native
+```
+
+## License
+
+MIT License — see LICENSE file for details.
+
+## Team
+
+**Serra Rocketry Team** — Missão Helike (#213 - LASC 2026)
