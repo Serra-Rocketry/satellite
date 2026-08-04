@@ -1,0 +1,715 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\ifLuaTeX
+  \usepackage{luacolor}
+  \usepackage[soul]{lua-ul}
+\else
+  \usepackage{soul}
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Team \textless Team Name\textgreater{} - Mission \textless Mission Name\textgreater{}},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Team \hl{\textless Team Name\textgreater{}} - Mission
+\hl{\textless Mission Name\textgreater{}}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\textbf{Abstract}
+
+The Mission Report shall contain an Abstract. At a minimum, the abstract
+shall identify the mission category in which the team is competing,
+identify any unique/defining design characteristics of the project, and
+provide whatever additional information may be necessary to convey any
+other high-level project or program goals \& objectives.
+
+\textbf{Authors}
+
+First A. Author. \emph{Business or Academic Affiliation, State, Country,
+Zip Code.}
+
+Second B. Author. \emph{Business or Academic Affiliation, State,
+Country, Zip Code.}
+
+Third C. Author. \emph{Business or Academic Affiliation, State, Country,
+Zip Code.}
+
+Fourth D. Author. \emph{Business or Academic Affiliation, State,
+Country, Zip Code.}
+
+Nth N. Author. \emph{Business or Academic Affiliation, State, Country,
+Zip Code}
+
+\textbf{Nomenclature}
+
+\emph{A} = amplitude of oscillation
+
+\emph{a} = cylinder diameter
+
+\emph{C\textsubscript{p}} = pressure coefficient
+
+\emph{Cx} = force coefficient in the \emph{x} direction
+
+\emph{Cy} = force coefficient in the \emph{y} direction
+
+c = chord
+
+d\emph{t} = time step
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Introduction}
+\end{enumerate}
+
+The Mission Report shall contain an Introduction. This section provides
+an overview of the academic program, stakeholders, team structure, and
+mission organization and management strategies. The introduction may
+repeat some of the content included in the abstract, because the
+abstract is intended to act as a standalone synopsis if necessary.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  \textbf{Procedure for the Latin American Space Challenge Mission
+  Report Submission}
+\end{enumerate}
+
+On or before the date specified in the Integrated Master Schedule prior
+to the event, teams shall submit a single digital PDF copy of their
+Mission Report. Mission reports shall be no longer than 50 pages. If
+exceeding 10 Megabytes in size may need to be uploaded to a cloud server
+if the permissions allow the judges unrestricted access to the document.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\item
+  \textbf{General Guidelines and Required Elements}
+\end{enumerate}
+
+The following section outlines general (non-formatting) guidelines to
+follow if desired. Mission Reports will contain all elements identified
+in the LASC LCSM, RCSM or SCSM documents, which is available for
+download on the LASC website (https://www.lasc.space/documents). Missing
+or incomplete elements will result in loss of points. The following
+required items are provided for quick reference, and teams should
+consult the LCSM, RCSM and SCSM for detailed guidance. Missions are
+permitted to add other technical elements to their discretion. No table
+of contents is required.
+
+\subsection{Report Body}\label{report-body}
+
+\begin{itemize}
+\item
+  Abstract
+\item
+  Introduction
+\item
+  System Architecture and Concept of Operations
+\item
+  Weights, Measures, and Performance Data
+\item
+  Computational Simulation
+\item
+  Conclusion and Lessons Learned
+\end{itemize}
+
+\subsection{Required Report
+Appendices}\label{required-report-appendices}
+
+\begin{itemize}
+\item
+  Hazard Analysis
+\item
+  Risk Assessment
+\item
+  Engineering Drawings
+\item
+  Optional Appendix
+\end{itemize}
+
+\subsection{List of References}\label{list-of-references}
+
+\begin{itemize}
+\item
+  References are required and must follow the format under
+  ``References'' at the end of this document.
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\item
+  \textbf{Detailed Formatting Instructions}
+\end{enumerate}
+
+The styles and formats for the AIAA Papers Template have been
+incorporated into the structure of this document. If you are using
+Microsoft Word 2001 or later, please use this template to prepare your
+manuscript. Regardless of which program you use to prepare your
+manuscript, please use the formatting instructions contained in this
+document as a guide.
+
+\subsection{Document Text}\label{document-text}
+
+The default font for the Project Technical Report is Times New Roman,
+10-point size. In the electronic template, use the ``Text'' or
+``Normal'' style from the pull-down menu to format all primary text for
+your manuscript. The first line of every paragraph should be indented,
+and all lines should be single-spaced. Default margins are 1'' on all
+sides. In the electronic version of this template, all margins and other
+formatting is preset. There should be no additional lines between
+paragraphs.
+
+\begin{quote}
+Extended quotes, such as this example, are to be used when material
+being cited is longer than a few sentences, or the standard quotation
+format is not practical. In this Word template, the appropriate style is
+``Extended Quote'' from the drop-down menu. Extended quotes are to be in
+Times New Roman, 9-point font, indented 0.4'' and full justified.
+\end{quote}
+
+\emph{NOTE:} If you are using the electronic template to format your
+manuscript, the required spacing and formatting will be applied
+automatically, simply by using the appropriate style designation from
+the pull-down menu.
+
+\subsection{Headings}\label{headings}
+
+The title of your paper should be typed in bold, 24-point type, with
+capital and lower-case letters, and centered at the top of the page. The
+names of the authors, business or academic affiliation, city, and
+state/province should follow on separate lines below the title. The
+names of authors with the same affiliation can be listed on the same
+line above their collective affiliation information. Author names are
+centered, and affiliations are centered and in italic type immediately
+below the author names. The affiliation line for each author is to
+include that author's city, state, and zip/postal code (or city,
+province, zip/postal code and country, as appropriate). The first-page
+footnotes (lower left-hand side) contain the job title and department
+name, and street address/mail stop for each author. Author email
+addresses may be included also.
+
+Major headings (``Heading 1'' in the template style list) are bold
+11-point font, flush-left, and numbered with numerals.
+
+\begin{quote}
+Subheadings (``Heading 2'' in the template style list) are bold, flush
+left, and numbered with capital letters. Sub-Subheadings (``Heading 3''
+in the template style list) are italic, flush left, and numbered (1. 2.
+3. etc.)
+\end{quote}
+
+\subsection{Abstract}\label{abstract}
+
+The abstract should appear at the beginning of your paper. It should be
+one paragraph long (not an introduction) and complete (no reference
+numbers). It should indicate subjects dealt with in the paper and state
+the objectives of the investigation. Newly observed facts and
+conclusions of the experiment or argument discussed in the paper must be
+stated in summary form; readers should not have to read the paper to
+understand the abstract. The abstract should be bold, indented 3 picas
+(1/2'') on each side, and separated from the rest of the document by -
+blank lines above and below the abstract text.
+
+\subsection{Nomenclature}\label{nomenclature}
+
+Papers with many symbols may benefit from a nomenclature list that
+defines all symbols with units, inserted between the abstract and the
+introduction. If one is used, it must contain all the symbology used in
+the manuscript, and the definitions should not be repeated in the text.
+In all cases, identify the symbols used if they are not widely
+recognized in the profession. Define acronyms in the text, not in the
+nomenclature.
+
+\subsection{Footnotes and References}\label{footnotes-and-references}
+
+Footnotes, where they appear, should be placed above the 1'' margin at
+the bottom of the page. To insert footnotes into the template, use the
+Insert\textgreater Footnote feature from the main menu as necessary.
+Numbered footnotes as formatted automatically in the template are
+acceptable, but superscript symbols are the preferred AIAA style, in the
+sequence, *, †, ‡, §, ¶, \#, **. ††, ‡‡, §§, etc.
+
+List and number all references at the end of the paper. Corresponding
+bracketed numbers are used to cite references in the text {[}1{]},
+unless the citation is an integral part of the sentence (e.g., ``It is
+shown in Ref. {[}2{]} that\ldots'') or follows a mathematical
+expression: ``A\textsuperscript{2} + B = C (Ref. {[}3{]}).'' For
+multiple citations, separate reference numbers with commas {[}4, 5{]},
+or use a dash to show a range {[}6-8{]}. Reference citations in the text
+should be in numerical order.
+
+In the reference list, give all authors' names; do not use ``et
+al\emph{.}'' unless there are more than 10 authors. Papers that have not
+been published should be cited as ``unpublished''; papers that have been
+submitted or accepted for publication should be cited as ``submitted for
+publication.'' Private communications and personal websites should
+appear as footnotes rather than in the reference list.
+
+References should be cited according to the standard publication
+reference style (for examples, see the ``References'' section of this
+template). Never edit titles in references to conform to AIAA style of
+spellings, abbreviations, etc. Names and locations of publishers should
+be listed; month and year should be included for reports and papers. For
+papers published in translation journals, please give the English
+citation first, followed by the original foreign language citation.
+
+\subsection{Images, Figures, and
+Tables}\label{images-figures-and-tables}
+
+All artwork, captions, figures, graphs, and tables will be reproduced
+exactly as submitted. Be sure to position any figures, tables, graphs,
+or pictures as you want them printed.
+
+Do not insert your tables and figures in text boxes. Figures should have
+no background, borders, or outlines. In the electronic template, use the
+``Figure'' style from the pull-down formatting menu to type caption
+text. You may also insert the caption by going to the References menu
+and choosing Insert Caption. Make sure the label is ``Fig.,'' and type
+your caption text in the box provided. Captions are bold with a single
+tab (no hyphen or other character) between the figure number and figure
+description.
+
+\includegraphics[width=3.45833in,height=2.63194in,alt={Image}]{./media/image1.jpg}
+
+\textbf{Fig. 1. Magnetization as a function of applied fields.}
+
+Place figure captions below all figures; place table titles above the
+tables. If your figure has multiple parts, include the labels ``a),''
+``b),'' etc. below and to the left of each part, above the figure
+caption. Please verify that the figures and tables you mention in the
+text exist. \emph{Please do not include captions as part of the figures,
+and do not put captions in separate text boxes linked to the figures}.
+When citing a figure in the text, use the abbreviation ``Fig.'' except
+at the beginning of a sentence. Do not abbreviate ``Table.'' Number each
+different type of illustration (i.e., figures, tables, images)
+sequentially with relation to other illustrations of the same type.
+
+Figure axis labels are often a source of confusion. Use words rather
+than symbols. As in the example to the right, write the quantity
+``Magnetization'' rather than just ``M.'' Do not enclose units in
+parenthesis, but rather separate them from the preceding text by commas.
+Do not label axes only with units. As in Fig. 1, for example, write
+``Magnetization, kA/m'' not just ``kA/m.'' Do not label axes with a
+ratio of quantities and units. For example, write ``Temperature, K,''
+not ``Temperature/K.''
+
+Multipliers can be especially confusing. Write ``Magnetization, kA/m''
+or ``Magnetization, 10\textsuperscript{3} A/m.'' Do not write
+``Magnetization (A/m) x 1000'' because the reader would not then know
+whether the top axis label in Fig. 1 meant 16000 A/m or 0.016 A/m.
+Figure labels must be legible, and all text within figures should be
+uniform in style and size, no smaller than 8-point type.
+
+\subsection{Equations, Numbers, Symbols, and
+Abbreviations}\label{equations-numbers-symbols-and-abbreviations}
+
+Equations are centered and numbered consecutively, with equation numbers
+in parentheses flush right, as in Eq. (1). Insert a blank line above and
+below the equation. First use the equation editor to create the
+equation. If you are using Microsoft Word, use either the Microsoft
+Equation Editor or the MathType add-on
+(\href{http://www.mathtype.com}{\ul{http://www.mathtype.com}}) for
+equations in your paper, use the function
+(Insert\textgreater Object\textgreater Create New\textgreater Microsoft
+Equation \emph{or} MathType Equation) to insert it into the document.
+Please note that ``Float over text'' should \emph{not} be selected. To
+insert the equation into the document:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi})}
+\item
+  Select the ``Equation'' style from the pull-down formatting menu and
+  hit ``tab'' once.
+\item
+  Insert the equation, hit ``tab'' again,
+\item
+  Enter the equation number in parentheses.
+\end{enumerate}
+
+A sample equation is included here, formatted using the preceding
+instructions. To make your equation more compact, you can use the
+solidus (/), the exp function, or appropriate exponents. Use parentheses
+to avoid ambiguities in denominators.
+
+\includegraphics[width=3.09028in,height=0.54861in,alt={Image2}]{./media/image2.jpg}
+(1)
+
+Be sure that the symbols in your equation are defined before the
+equation appears or immediately following. Italicize symbols (\emph{T}
+might refer to temperature, but T is the unit tesla). Refer to ``Eq.
+(1),'' not ``(1)'' or ``equation (1)'' except at the beginning of a
+sentence: ``Equation (1) is\ldots'' Equations can be labeled other than
+``Eq.'' should they represent inequalities, matrices, or boundary
+conditions. If what is represented is more than one equation, the
+abbreviation ``Eqs.'' can be used.
+
+Define abbreviations and acronyms the first time they are used in the
+text, even after they have already been defined in the abstract. Very
+common abbreviations such as AIAA, SI, ac, and dc do not have to be
+defined. Abbreviations that incorporate periods should not have spaces:
+write ``P.R.,'' not ``P. R.'' Delete periods between initials if the
+abbreviation has three or more initials; e.g., U.N. but ESA. Do not use
+abbreviations in the title unless they are unavoidable (for instance,
+``AIAA'' in the title of this article).
+
+\subsection{General Grammar and Preferred
+Usage}\label{general-grammar-and-preferred-usage}
+
+Use only one space after periods or colons. Hyphenate complex modifiers:
+``zero-field-cooled magnetization.'' Avoid dangling participles, such
+as, ``Using Eq. (1), the potential was calculated.'' {[}It is not clear
+who or what used Eq. (1).{]} Write instead ``The potential was
+calculated using Eq. (1),'' or ``Using Eq. (1), we calculated the
+potential.''
+
+Use a zero before decimal points: ``0.25,'' not ``.25.'' Use
+``cm\textsuperscript{2},'' not ``cc.'' Indicate sample dimensions as
+``0.1 cm x 0.2 cm,'' not ``0.1 x 0.2 cm\textsuperscript{2}.'' The
+preferred abbreviation for ``seconds'' is ``s,'' not ``sec.'' Do not mix
+complete spellings and abbreviations of units: use
+``Wb/m\textsuperscript{2}'' or ``webers per square meter,'' not
+``webers/m\textsuperscript{2}.'' When expressing a range of values,
+write ``7 to 9'' or ``7-9,'' not ``7\textasciitilde9.''
+
+A parenthetical statement at the end of a sentence is punctuated outside
+of the closing parenthesis (like this). (A parenthetical sentence is
+punctuated within parenthesis.) In American English, periods and commas
+are placed within quotation marks, like ``this period.'' Other
+punctuation is ``outside''! Avoid contractions; for example, write ``do
+not'' instead of ``don't.'' The serial comma is preferred: ``A, B, and
+C'' instead of ``A, B and C.''
+
+If you wish, you may write in the first person singular or plural and
+use the active voice (``I observed that\ldots'' or ``We observed
+that\ldots'' instead of ``It was observed that\ldots''). Remember to
+check spelling. If your native language is not English, please ask a
+native English-speaking colleague to proofread your paper.
+
+The word ``data'' is plural, not singular (i.e., ``data are,'' not
+``data is''). The subscript for the permeability of vacuum
+µ\textsubscript{0} is zero, not a lowercase letter ``o.'' The term for
+residual magnetization is ``remanence''; the adjective is ``remanent'';
+do not write ``remnance'' or ``remnant.'' The word ``micrometer'' is
+preferred over ``micron'' when spelling out this unit of measure. A
+graph within a graph is an ``inset,'' not an ``insert.'' The word
+``alternatively'' is preferred to the word ``alternately'' (unless you
+really mean something that alternates). Use the word ``whereas'' instead
+of ``while'' (unless you are referring to simultaneous events). Do not
+use the word ``essentially'' to mean ``approximately'' or
+``effectively.'' Do not use the word ``issue'' as a euphemism for
+``problem.'' When compositions are not specified, separate chemical
+symbols by en-dashes; for example, ``NiMn'' indicates the intermetallic
+compound Ni\textsubscript{0.5}Mn\textsubscript{0.5} whereas ``Ni--Mn''
+indicates an alloy of some composition
+Ni\textsubscript{x}Mn\textsubscript{1-x}.
+
+Be aware of the different meanings of the homophones ``affect'' (usually
+a verb) and ``effect'' (usually a noun), ``complement'' and
+``compliment,'' ``discreet'' and ``discrete,'' ``principal'' (e.g.,
+``principal investigator'') and ``principle'' (e.g., ``principle of
+measurement''). Do not confuse ``imply'' and ``infer.''
+
+Prefixes such as ``non,'' ``sub,'' ``micro,'' ``multi,'' and ``"ultra''
+are not independent words; they should be joined to the words they
+modify, usually without a hyphen. There is no period after the ``et'' in
+the abbreviation ``et al\emph{.}'' The abbreviation ``i.e.,'' means
+``that is,'' and the abbreviation ``e.g.,'' means ``for example'' (these
+abbreviations are not italicized).
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\item
+  \textbf{Conclusions and Lessons Learned}
+\end{enumerate}
+
+The Mission Report shall contain Conclusions and Lessons Learned. This
+section shall include the lessons learned during the design,
+manufacturing, and testing of the project, both from a team management
+and technical development perspective. Furthermore, this section should
+include strategies for corporate knowledge transfer from senior team
+members to the rising underclassmen who will soon take their place.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{5}
+\item
+  \textbf{References}
+\end{enumerate}
+
+The following pages are intended to provide examples of the different
+reference types. All references should be in 9-point font, with the
+first line flush left and reference numbers inserted in brackets. You
+are not required to indicate the type of reference; different types are
+shown here for illustrative purposes only. The DOI (digital object
+identifier) should be incorporated in every reference for which it is
+available (see Ref. 1 sample); for more information on DOIs, visit
+www.doi.org or \href{http://www.crossref.org}{www.crossref.org}.
+
+\subsection{Periodicals}\label{periodicals}
+
+{[}1{]} Vatistas, G. H., Lin, S., and Kwok, C. K., ``Reverse Flow Radius
+in Vortex Chambers,'' \emph{AIAA Journal}, Vol. 24, No. 11, 1986, pp.
+1872, 1873.
+
+doi: 10.2514/3.13046
+
+{[}2{]} Alyanak, E. J., and Pendleton, E., ``Aeroelastic Tailoring and
+Active Aeroelastic Wing Impact on a Lambda Wing Configuration,'' Journal
+of Aircraft, published online 10 Nov. 2016.
+
+doi: 10.2514/1.C033040
+
+{[}3{]} Dornheim, M. A., ``Planetary Flight Surge Faces Budget
+Realities,'' \emph{Aviation Week and Space Technology}, Vol. 145, No.
+24, 9 Dec. 1996, pp. 44--46.
+
+{[}4{]} Terster, W., ``NASA Considers Switch to Delta 2,'' \emph{Space
+News}, Vol. 8, No. 2, 13--19 Jan. 1997, pp. 1, 18.
+
+All of the preceding information is required. The journal issue number
+(``No. 11'' in Ref. 1) is preferred, but the month (Nov.) can be
+substituted if the issue number is not available. Use the complete date
+for daily and weekly publications. Transactions follow the same style as
+other journals.
+
+\subsection{Books}\label{books}
+
+{[}5{]} Peyret, R., and Taylor, T. D., \emph{Computational Methods in
+Fluid Flow}, 2\textsuperscript{nd} ed., Springer-Verlag, New York, 1983,
+Chaps. 7, 14.
+
+{[}6{]} Oates, G. C. (ed.), \emph{Aerothermodynamics of Gas Turbine and
+Rocket Propulsion}, AIAA Education Series, AIAA, New York, 1984, pp. 19,
+136.
+
+{[}7{]} Volpe, R., ``Techniques for Collision Prevention, Impact
+Stability, and Force Control by Space Manipulators,''
+\emph{Teleoperation and Robotics in Space}, edited by S. B. Skaar and C.
+F. Ruoff, Progress in Astronautics and Aeronautics, AIAA, Washington,
+DC, 1994, pp. 175--212.
+
+Publisher, place, and date of publication are required for all books. No
+state or country is required for major cities: New York, London, Moscow,
+etc. A differentiation must always be made between Cambridge, MA, and
+Cambridge, England, UK. Note that series titles are in Roman type.
+
+\subsection{Proceedings}\label{proceedings}
+
+{[}8{]} Thompson, C. M., ``Spacecraft Thermal Control, Design, and
+Operation,'' \emph{AIAA Guidance, Navigation, and Control Conference},
+CP849, Vol. 1, AIAA, Washington, DC, 1989, pp. 103--115
+
+{[}9{]} Chi, Y. (ed.), \emph{Fluid Mechanics Proceedings}, NASA SP-255,
+1993.
+
+{[}10{]} Morris, J. D., ``Convective Heat Transfer in Radially Rotating
+Ducts,'' \emph{Proceedings of the Annual Heat Transfer Conference},
+edited by B. Corbell, Vol. 1, Inst. of Mechanical Engineering, New York,
+1992, pp. 227--234.
+
+\subsection{Reports, Theses, and Individual
+Papers}\label{reports-theses-and-individual-papers}
+
+{[}11{]} Chapman, G. T., and Tobak, M., ``Nonlinear Problems in Flight
+Dynamics,'' NASA TM-85940, 1984.
+
+{[}12{]} Brandis, A. M., Johnston, C. O., and Cruden, B. A.,
+``Nonequilibrium Radiation for Earth Entry,'' AIAA Paper 2016-3690, June
+2016.
+
+{[}13{]} Steger, J. L., Jr., Nietubicz, C. J., and Heavey, J. E., ``A
+General Curvilinear Grid Generation Program for Projectile
+Configurations,'' U.S. Army Ballistic Research Lab., Rept.
+ARBRL-MR03142, Aberdeen Proving Ground, MD, Oct. 1981.
+
+{[}14{]} Tseng, K., ``Nonlinear Green's Function Method for Transonic
+Potential Flow,'' Ph.D. Dissertation, Aeronautics and Astronautics
+Dept., Boston Univ., Cambridge, MA, 1983.
+
+Government agency reports do not require locations. For reports such as
+NASA TM-85940, neither insert nor delete dashes; leave them as provided.
+Place of publication \emph{should} be given, although it is not
+mandatory, for military and company reports. Always include a city and
+state for universities. Papers need only the name of the sponsor;
+neither the sponsor's location nor the conference name and location is
+required. \emph{Do not confuse proceedings references with conference
+papers}.
+
+\subsection{Electronic Publications}\label{electronic-publications}
+
+Regularly issued electronic journals and other publications are
+permitted as references. Include the DOI if provided; otherwise provide
+the full URL. Archived data sets also may be referenced if the material
+is openly accessible, and the repository is committed to achieving the
+data indefinitely. References to electronic data available only from
+personal websites or commercial, academic, or government ones where
+there is no commitment to archiving the data are not permitted in the
+reference list.
+
+{[}15{]} Atkins, C. P., and Scantelbury, J. D., ``The Activity
+Coefficient of Sodium Chloride in a Simulated Pore Solution
+Environment,'' \emph{Journal of Corrosion Science and Engineering}
+{[}online journal{]}, Vol. 1, No. 1, Paper 2, URL:
+\href{http://www.cp/umist.ac.uk/JCSE/vol1/vol1.html}{\ul{http://www.cp/umist.ac.uk/JCSE/vol1/vol1.html}}
+{[}retrieved 13 April 1998{]}.
+
+{[}16{]} Vickers, A., ``10-110 mm/hr Hypodermic Gravity Design A,''
+\emph{Rainfall Simulation Database} {[}online database{]}, URL:
+\href{http://www.geog.le.ac.uk/bgrg/lab.htm}{\ul{http://www.geog.le.ac.uk/bgrg/lab.htm}}
+{[}retrieved 15 March 2006{]}.
+
+Break website addresses after punctuation, and do not hyphenate at line
+breaks.
+
+\emph{Computer Software}
+
+{[}17{]} TAPP, Thermochemical and Physical Properties, Software Package,
+Ver. 1.0, E. S. Microware, Hamilton, OH, 1992.
+
+Include a version number and the company name and location of software
+packages.
+
+\emph{Patents}
+
+Patents appear infrequently. Be sure to include the patent number and
+date.
+
+{[}18{]} Scherrer, R., Overholster, D., and Watson, K., Lockheed Corp.,
+Burbank, CA, U.S. Patent Application for a ``Vehicle,'' Docket No.
+P-01-1532, filed 11 Feb. 1979.
+
+\emph{Private Communications and Websites}
+
+References to private communications and personal website addresses are
+not permitted. They may, however, be incorporated into the main text of
+a manuscript or may appear in footnotes.
+
+\emph{Unpublished Papers and Books}
+
+Unpublished works can be used as references as long as they are being
+considered for publication or can be located by the reader (such as
+papers that are part of an archival collection). If a journal paper or a
+book is being considered for publication, choose the format that
+reflects the status of the work (depending upon whether it has been
+accepted for publication):
+
+{[}19{]} Doe, J., ``Title of Paper,'' \emph{Name of Journal} (to be
+published).
+
+{[}20{]} Doe, J., ``Title of Chapter,'' \emph{Name of Book}, edited
+by\ldots, Publisher's name and location (to be published).
+
+{[}21{]} Doe, J., ``Title of Work,'' Name of Archive, Univ. (or
+organization), City, State, Year (unpublished).
+
+Unpublished works in an archive \emph{must} include the name of the
+archive and the name and location of the university or other
+organization where the archive is held. Also include any cataloging
+information that may be provided.
+
+\textbf{\hfill\break
+}
+
+\textbf{Hazard Analysis Appendix}
+
+The first Mission Report appendix shall contain a Hazard Analysis
+Report. This appendix shall address as applicable, hazardous material
+handling, transportation, storage procedures, and any other aspects of
+the design which pose potential hazards to operating personnel. A
+mitigation approach -- by process and/or design -- shall be defined for
+each hazard identified.
+
+\textbf{\hfill\break
+}
+
+\textbf{Risk Assessment Appendix}
+
+The second Mission Report appendix shall contain a Risk Assessment. This
+appendix shall summarize risk and reliability concepts associated with
+the project. All identified failure modes which pose a risk to mission
+success shall be recorded in a matrix, organized according to the
+mission phases identified by CONOPS.
+
+\textbf{\hfill\break
+}
+
+\textbf{Engineering Drawings and Optional Appendix}
+
+The final Mission Report appendix shall contain Engineering Drawings and
+optional appendices. This appendix shall include any revision controlled
+technical drawings necessary to define significant subsystems or
+components, and other optional appendices can include, but are not
+limited to further Subsystem Details, Launch Support Equipment Details,
+Detailed Structural and Mechanical Calculation, Detailed Logical Process
+Diagrams, Detailed Software Architecture, and Detailed Electrical
+Architecture.
+
+\end{document}
+
+

@@ -1,0 +1,47 @@
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  \textbf{System Architecture and Concept of Operations}
+\end{enumerate}
+
+% TODO: Fonte -> Second-brain/01_Projetos_Ativos/helike-mission-report.md
+% (secoes IV "Arquitetura do Sistema" e V "Conceito de Operacoes").
+% Requisito SCSM: System Architecture Overview com figura cutaway do projeto
+% integrado + Mission ConOps Overview identificando as fases da missao.
+
+\subsection{System Architecture}
+
+% TODO: diagrama de blocos dos subsistemas (SRAB central, EPS, MCU ESP32-C3,
+% sensores, telemetria LoRa+GPS, armazenamento SD+LittleFS).
+% Estrutura prevista:
+%   - Helike #213, PocketQube 1P (50x50x50 mm), ~200 g
+%   - SRAB (foco central): 4 asas autorrotativas passivas
+%   - EPS: Li-Ion + BMS, RBF pin + 2 kill switches
+%   - MCU: ESP32-C3 Super Mini, FSM + scheduler cooperativo
+%   - Telemetria: LoRa RFM95W 915 MHz + GPS NEO-8M (suporte a localizacao)
+%   - Sensores: BME280 + ICM-20602; Armazenamento: SD + LittleFS
+
+\subsection{Subsystem Descriptions}
+
+\subsubsection{Recovery (SRAB)}
+
+% TODO: descricao do Sistema de Recuperacao Autorrotativo Bioinspirado
+% (4 asas, deployment passivo, v_terminal previsto 10.05 m/s).
+
+\subsubsection{Electrical Power System}
+
+% TODO: bateria Li-Ion 6000 mAh, BMS, autonomia > 40 h (requisito SCSM >= 4 h),
+% orcamento de potencia ~145 mA.
+
+\subsubsection{Avionics and Telemetry}
+
+% TODO: ESP32-C3, sensores, LoRa 915 MHz, GPS; funcao de suporte (nao missao).
+
+\subsection{Concept of Operations}
+
+% TODO: fases FSM: SAFE -> PRE-FLIGHT -> BOOST -> COAST -> APOGEE ->
+% EJECTION+SRAB -> DESCENT -> IMPACT -> POST-LANDING.
+% Fase central: Ejection + SRAB deploy (passivo, sem atuadores).
+% Fase de demonstracao: SRAB descent (rotacao ~440 rpm, v_terminal ~10 m/s).
+% Fase final: impacto detectado por IMU, buzzer + GPS + 3 beacons RSSI.

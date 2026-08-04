@@ -1,0 +1,34 @@
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\item
+  \textbf{Computational Simulation}
+\end{enumerate}
+
+% TODO: Fonte -> Second-brain/01_Projetos_Ativos/helike-mission-report.md
+% (secao VI "Fundamentacao Teorica" e VII "Resultados Experimentais").
+% Requisito SCSM: Computational Simulation.
+
+\subsection{Theoretical Background}
+
+% TODO: autorrotacao de samaras (Acer rubrum), LEV (Leading-Edge Vortex),
+% modelo matematico de 4a ordem (Newton-Euler reduzido):
+%   estado: theta (conicidade), thetadot, phidot, v0
+%   Blade Element Theory: dF = 1/2 rho w(r) ||U||^2 [CL(alpha), CD(alpha)] dr
+%   CL = 2 pi sin(alpha); CD = CL sin(alpha) + CD0
+
+\subsection{Simulation Methodology}
+
+% TODO: ciclos iterativos: modelagem -> simulacao -> prototipo ABS ->
+% teste de queda -> comparacao sim vs campo -> iteracao geometrica.
+
+\subsection{Results}
+
+% TODO: Teste 1 (Asa1, 4 asas): v_impacto 10.33 m/s, 444.86 rpm, 6.14 deg.
+% Teste 2 (Asa2, 4 asas): v_impacto 10.05 m/s, 439.08 rpm, 11.89 deg,
+% area 122.28 cm2 -> configuracao candidata.
+% Teste 3: validacao da eletronica embarcada (altitude insuficiente para
+% regime rotacional completo).
+% Comparativo Asa2 (4 asas) vs Asa3 (3 asas): 10.05 vs 20.00 m/s; escolha
+% final Asa3 2 asas (~81 cm2, v ~20 m/s dentro da faixa SCSM 20-45 m/s).
+% Proximo passo: Teste 4 (~200 m) para validacao aerodinamica quantitativa.
