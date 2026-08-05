@@ -3,8 +3,66 @@
 
 \textbf{Risk Assessment Appendix}
 
-The second Mission Report appendix shall contain a Risk Assessment. This
-appendix shall summarize risk and reliability concepts associated with
-the project. All identified failure modes which pose a risk to mission
-success shall be recorded in a matrix, organized according to the
-mission phases identified by CONOPS.
+Risk is quantified as $R = P \times S$, where $P$ is the failure
+probability (1--3) and $S$ the severity (1--3). Failure modes are
+organized by mission phase, following the ConOps defined in
+Section 2.
+
+\subsection{Risk Matrix (FMECA)}
+
+\begin{center}
+{\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.5cm}>{\raggedright\arraybackslash}p{6.2cm}>{\raggedright\arraybackslash}p{1.8cm}cccc}
+\toprule
+\textbf{\#} & \textbf{Failure Mode} & \textbf{Phase} & \textbf{P} & \textbf{S} & \textbf{R} & \textbf{Level} \\
+\midrule
+1 & SRAB deployment failure (wings do not open) & Ejection & 2 & 3 & 6 & Critical \\
+2 & Battery failure (thermal runaway) & Flight & 1 & 3 & 3 & Medium \\
+3 & RBF pin does not cut all energy & Pre-launch & 1 & 3 & 3 & Medium \\
+4 & LoRa communication loss & Flight & 2 & 2 & 4 & High \\
+5 & SD storage failure & Flight & 1 & 3 & 3 & Medium \\
+6 & Structural break at launch & Launch & 1 & 3 & 3 & Medium \\
+7 & Kill switch not activated & Integration & 1 & 3 & 3 & Medium \\
+8 & RF interference (other teams) & Flight & 2 & 2 & 4 & High \\
+9 & GPS failure (no fix) & Post-landing & 2 & 1 & 2 & Low \\
+10 & SRAB works but satellite lands in inaccessible area & Recovery & 1 & 2 & 2 & Low \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+\subsection{Mitigations}
+
+\begin{enumerate}
+\item \textbf{SRAB deployment failure (Critical):} passive design
+  with no hinges; drop tests \#1 and \#2 validated deployment; 4 wings
+  provide geometric redundancy — loss of one wing degrades performance
+  but does not prevent recovery.
+\item \textbf{Battery thermal runaway:} BMS with multiple protections;
+  cell cycle testing.
+\item \textbf{RBF pin:} RBF circuit in series with the main power
+  rail.
+\item \textbf{LoRa loss:} local storage (SD) preserves all flight
+  data; LoRa is support, not mission.
+\item \textbf{SD failure:} automatic LittleFS fallback on internal
+  flash.
+\item \textbf{Structural break:} ABS 3D-printed, walls $\geq$1.2 mm;
+  load analysis.
+\item \textbf{Kill switch:} 2 independent kill switches + pre-integration
+  verification.
+\item \textbf{RF interference:} dedicated team ID protocol; 915 MHz
+  channel reservation.
+\item \textbf{GPS failure:} LoRa RSSI triangulation as backup; visual
+  search.
+\item \textbf{Inaccessible landing:} 3 GPS beacons + buzzer for
+  localization.
+\end{enumerate}
+
+\subsection{Criticality Discussion}
+
+Failure mode \#1 (SRAB deployment) is treated as critical and is the
+main driver of the extensive drop-test campaign. Drop tests \#1 and
+\#2 demonstrated that passive deployment works consistently without
+actuators. The remaining risk is bounded by the LASC regulatory
+limits and by the geometric redundancy of the wing arrangement.

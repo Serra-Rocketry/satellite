@@ -5,26 +5,94 @@
   \textbf{Weights, Measures, and Performance Data}
 \end{enumerate}
 
-% TODO: Fonte -> Second-brain/01_Projetos_Ativos/helike-mission-report.md
-% (secao VIII "Peso, Medidas e Dados de Performance").
-% Requisito SCSM: Weights, Measures, and Performance Data.
-
 \subsection{Physical Characteristics}
 
-% TODO: tabela com formato 1P (50x50x50 mm), massa estimada ~200 g,
-% areas (stowed ~25 cm2, deployed ~147 cm2, asas ~122 cm2).
+\begin{center}
+{\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{>{\raggedright}p{5.2cm}l}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Form factor & PocketQube 1P (50$\times$50$\times$50 mm) \\
+Mass (estimated) & $\sim$200 g \\
+Stowed frontal area & $\sim$25 cm$^2$ \\
+Deployed frontal area (SRAB) & $\sim$147 cm$^2$ \\
+SRAB wing area & $\sim$122 cm$^2$ (4 wings, Asa2 geometry) \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+% TODO: fill measured mass after final integration; the 200 g figure
+% is the current estimate used in the SRAB simulation.
 
 \subsection{Recovery Performance}
 
-% TODO: tabela com velocidade terminal prevista (10.05 m/s), faixa
-% regulamentar SCSM (20-45 m/s), margem, rotacao ~440 rpm, energia
-% dissipada 99.5%, REC 10.2.1 notificacao enviada.
+The SRAB recovery performance was evaluated through two drop-test
+campaigns and computational simulation (Section 4):
+
+\begin{center}
+{\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{>{\raggedright}p{5.2cm}l}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Terminal velocity (predicted, Test 2) & 10.05 m/s \\
+Rotation rate (Test 2) & 439 rpm \\
+Cone angle (Test 2) & 11.9$^{\circ}$ \\
+SCSM regulatory range & 20--45 m/s \\
+Margin vs. lower bound & 50\% below \\
+Impact energy dissipated by autorotation & 99.5\% \\
+REC 10.2.1 notification (non-parachute) & Sent \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+% TODO: update terminal velocity to the final selected configuration
+% (Asa3, 2 wings) once the quantitative drop test (Test 4, ~200 m) is
+% performed. The computational model currently predicts ~20 m/s for the
+% Asa3 2-wing configuration, within the SCSM 20-45 m/s range.
 
 \subsection{Power and Autonomy}
 
-% TODO: autonomia > 40 h (margem >10x sobre requisito de 4 h).
+\begin{center}
+{\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{>{\raggedright}p{5.2cm}l}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Battery & Li-Ion 6000 mAh \\
+Average current draw & $\sim$145 mA \\
+Predicted autonomy & $>$40 h \\
+SCSM requirement & $\geq$4 h \\
+Margin & $>$10$\times$ \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
 
 \subsection{Flight Sensors}
 
-% TODO: tabela ICM-20602 (IMU 6-eixos), BME280 (press/temp/umid),
-% NEO-8M (GPS), LoRa RFM95W 915 MHz.
+\begin{center}
+{\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{>{\raggedright}p{3.2cm}ll}
+\toprule
+\textbf{Sensor} & \textbf{Type} & \textbf{Measurement} \\
+\midrule
+ICM-20602 & 6-axis IMU & acceleration + angular rate \\
+BME280 & Environmental & pressure, temperature, humidity \\
+NEO-8M & GPS & position, velocity, time \\
+RFM95W & LoRa radio & 915 MHz telemetry link \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+% TODO: add measured mass, measured current draw and final autonomy
+% bench test results (with 20% margin evidence) as they become
+% available.

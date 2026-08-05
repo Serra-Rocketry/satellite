@@ -5,9 +5,53 @@
   \textbf{Conclusions and Lessons Learned}
 \end{enumerate}
 
-The Mission Report shall contain Conclusions and Lessons Learned. This
-section shall include the lessons learned during the design,
-manufacturing, and testing of the project, both from a team management
-and technical development perspective. Furthermore, this section should
-include strategies for corporate knowledge transfer from senior team
-members to the rising underclassmen who will soon take their place.
+\subsection{Conclusions}
+
+The Helike \#213 mission demonstrates that a bioinspired autorotative
+recovery system (SRAB) is a viable, simpler and more robust
+alternative to conventional parachutes for 1P PocketQubes:
+
+\begin{itemize}
+\item The SRAB achieves the LASC regulatory impact velocity with a
+  fully passive mechanism — no actuators, no pyrotechnics, no
+  software dependency.
+\item The computational model (4th-order rigid body + BEM + LEV
+  correction) reproduces the measured drop-test behavior with
+  sufficient fidelity for design decisions, and the full flight
+  simulation (Dédalo launch vehicle + SRAB descent) certifies the
+  recovery under real GFS conditions.
+\item Compared with a conventional parachute, the SRAB reduces
+  descent time by 36\% and total drift by 36\%, improving recovery
+  accuracy at the cost of a higher — yet compliant — impact energy.
+\item The three-filter review (SCSM compliance, Murphy analysis,
+  timeline discipline) proved to be an effective engineering
+  framework: it caught the non-parachute notification requirement
+  (REC 10.2.1), drove the redundancy decisions in firmware and
+  hardware, and kept the project aligned with the competition
+  deadlines.
+\end{itemize}
+
+\subsection{Lessons Learned}
+
+\begin{itemize}
+\item \textbf{LASC 2025: optimization without redundancy is a trap.}
+  Every subsystem of Helike has a backup path: SD + LittleFS, LoRa +
+  local storage, hardware watchdog, passive recovery that does not
+  depend on electronics.
+\item \textbf{The parachute is the weakest link.} Replacing it with a
+  passive aerodynamic mechanism removes the most failure-prone
+  element of the recovery chain.
+\item \textbf{Iterative drop testing beats simulation alone.} Each
+  test cycle (Asa1 $\rightarrow$ Asa2 $\rightarrow$ Asa3) produced a
+  measurable improvement in the model and in the design; the
+  simulation-validated iteration loop is the core of the project
+  methodology.
+\item \textbf{Compliance is a design input, not a formality.} The
+  SCSM requirements (kill switches, RBF, autonomy, notification)
+  shaped the hardware schematic and the firmware FSM from day one.
+\item \textbf{Team management:} the three-filter reviews force
+  data-driven decisions with evidence artifacts (videos, logs, bench
+  tests), which accelerates the transfer of knowledge from senior
+  members to new members — every filter review is a training
+  opportunity for the next generation of the team.
+\end{itemize}
