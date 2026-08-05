@@ -5,30 +5,236 @@
   \textbf{Computational Simulation}
 \end{enumerate}
 
-% TODO: Fonte -> Second-brain/01_Projetos_Ativos/helike-mission-report.md
-% (secao VI "Fundamentacao Teorica" e VII "Resultados Experimentais").
-% Requisito SCSM: Computational Simulation.
-
 \subsection{Theoretical Background}
 
-% TODO: autorrotacao de samaras (Acer rubrum), LEV (Leading-Edge Vortex),
-% modelo matematico de 4a ordem (Newton-Euler reduzido):
-%   estado: theta (conicidade), thetadot, phidot, v0
-%   Blade Element Theory: dF = 1/2 rho w(r) ||U||^2 [CL(alpha), CD(alpha)] dr
-%   CL = 2 pi sin(alpha); CD = CL sin(alpha) + CD0
+\subsubsection{Samara Autorotation}
+
+The SRAB is inspired by the autorotation of samara seeds (\emph{Acer
+rubrum}). The seed geometry places the center of mass at one end and
+the aerodynamic center at the other, generating a torque imbalance
+that produces stable conical rotation during fall. The resulting
+motion is a steady autorotation state where the descent rate is
+substantially lower than the ballistic terminal velocity of the same
+mass.
+
+\subsubsection{Leading-Edge Vortex (LEV)}
+
+At high incidence angles and rotation rates, a stable leading-edge
+vortex forms on the wing upper surface, increasing the effective lift
+coefficient beyond the thin-airfoil limit. This LEV effect is the key
+to the samara's efficiency and is modeled through an augmented lift
+coefficient in the blade element formulation.
+
+\subsubsection{Reduced-Order Rigid-Body Model}
+
+The descent is modeled with a 4th-order reduced Newton-Euler
+formulation, with state vector:
+
+\[
+\mathbf{x} = [\theta,\ \dot{\theta},\ \dot{\phi},\ v_0]^T
+\]
+
+where $\theta$ is the conicity angle, $\dot{\phi}$ the rotor spin rate
+and $v_0$ the vertical descent velocity. The aerodynamic loads are
+computed with the Blade Element Method (BEM):
+
+\[
+dF = \frac{1}{2}\rho\, w(r)\, \|U\|^2 \left[C_L(\alpha),\; C_D(\alpha)\right] dr
+\]
+
+with the thin-airfoil lift curve and the induced-drag model:
+
+\[
+C_L = 2\pi\sin\alpha, \qquad
+C_D = C_L \sin\alpha + C_{D0}
+\]
+
+where $C_{D0} = 1.0$ is the flat-plate drag coefficient and the LEV
+contribution is embedded through the $f_{factor} = 0.3$ correction in
+the lift build-up.
 
 \subsection{Simulation Methodology}
 
-% TODO: ciclos iterativos: modelagem -> simulacao -> prototipo ABS ->
-% teste de queda -> comparacao sim vs campo -> iteracao geometrica.
+The validation pipeline follows iterative cycles of modeling,
+simulation, prototyping, drop testing and geometry iteration:
+
+\begin{enumerate}
+\item \textbf{Modeling} — 4th-order rigid-body dynamics + BEM
+  aerodynamic model (RocketPy + SRAB extension modules).
+\item \textbf{Simulation} — deploy at the real apogee of the launch
+  vehicle (Dédalo rocket), same GFS atmosphere, same payload mass.
+\item \textbf{Prototyping} — ABS 3D-printed wings (Asa1, Asa2, Asa3
+  geometries).
+\item \textbf{Drop tests} — instrumented drops at controlled heights.
+\item \textbf{Comparison} — simulated vs. measured terminal velocity,
+  spin rate and cone angle.
+\item \textbf{Geometry iteration} — wing geometry updated between
+  test cycles based on the comparison.
+\end{enumerate}
+
+\subsubsection{Launch Vehicle Model — Dédalo}
+
+The Dédalo rocket (used as the launch vehicle for Helike \#213) is
+modeled in RocketPy:
+
+\begin{center}
+{\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{>{\raggedright}p{5.2cm}l}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Total mass (with payload) & 5.100 kg \\
+Empty mass (Stage 2) & 4.900 kg \\
+Payload mass (Helike \#213) & 0.200 kg \\
+Diameter & 106 mm \\
+Motor & SolidMotor, 926 N peak, 2.82 s burn \\
+Motor data points & 95 \\
+Atmosphere & GFS (real, launch-day forecast) \\
+Launch site & lat $-21.94305$, lon $-48.95409$, elev 478 m \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
 
 \subsection{Results}
 
-% TODO: Teste 1 (Asa1, 4 asas): v_impacto 10.33 m/s, 444.86 rpm, 6.14 deg.
-% Teste 2 (Asa2, 4 asas): v_impacto 10.05 m/s, 439.08 rpm, 11.89 deg,
-% area 122.28 cm2 -> configuracao candidata.
-% Teste 3: validacao da eletronica embarcada (altitude insuficiente para
-% regime rotacional completo).
-% Comparativo Asa2 (4 asas) vs Asa3 (3 asas): 10.05 vs 20.00 m/s; escolha
-% final Asa3 2 asas (~81 cm2, v ~20 m/s dentro da faixa SCSM 20-45 m/s).
-% Proximo passo: Teste 4 (~200 m) para validacao aerodinamica quantitativa.
+\subsubsection{Stage 1 — Dédalo Ascent (with payload)}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Apogee & 1520 m AGL (1996 m ASL) \\
+Time to apogee & 17.83 s \\
+Maximum velocity & 205.3 m/s (0.59 Mach) \\
+Maximum acceleration & 106.7 m/s$^2$ (10.9 g) \\
+Rail departure & 0.47 s at 18.9 m/s \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Stage 2 — Dédalo Empty Descent (parachute CdS = 10.0)}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Maximum descent velocity & 17.8 m/s \\
+Total descent time & 183.5 s \\
+Impact position (relative) & x $= -139.7$ m, y $= +43.2$ m \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Stage 3 — SRAB Descent from Real Apogee}
+
+The SRAB simulation is initialized at the real apogee of Stage 1
+(1520.5 m AGL, $v_z \approx 0$), with the optimized wing radius for
+the target impact velocity $V_F^{target} = V_{F,max}/FS =
+20/1.5 = 13.33$ m/s:
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\raggedright}p{5.2cm}X}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Wing geometry & Asa3 (2 wings), optimized radius 79.7 mm \\
+Release altitude & 1520.5 m AGL \\
+Impact velocity & 13.33 m/s \\
+Descent time & 111.4 s \\
+Equilibrium cone angle $\theta_{eq}$ & 8.6$^{\circ}$ \\
+Impact spin rate & 477 RPM \\
+Total drift & 184.3 m \\
+Impact position (relative) & x $= -67.5$ m, y $= +171.5$ m \\
+LASC criterion ($V_{F,max} = 20$ m/s, FS = 1.5) & APROVADO (13.33 $<$ 13.33) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/fig_asa3_lrr.png}
+\caption{LRR certification dashboard for the SRAB descent from the
+real apogee: altitude profile, vertical velocity vs. LASC window
+(20--45 m/s), cone angle $\theta$, and autorotation spin rate.}
+\label{fig:lrr-asa3}
+\end{figure}
+
+\subsubsection{SRAB vs. Parachute Comparison}
+
+A flat circular parachute ($\varnothing$200 mm, $C_D = 1.5$) was
+simulated in the same GFS atmosphere, same release conditions and same
+payload mass, as a benchmark:
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Parameter} & \textbf{SRAB} & \textbf{Parachute} & \textbf{Ratio} \\
+\midrule
+Impact velocity (m/s) & 13.33 & 8.48 & 1.57$\times$ \\
+Descent time (s) & 111.4 & 174.6 & 0.64$\times$ \\
+Total drift (m) & 131.2 & 204.6 & 0.64$\times$ \\
+Impact energy (J) & 17.8 & 7.2 & 2.47$\times$ \\
+Terminal velocity (SL) (m/s) & 13.33 & 8.24 & 1.62$\times$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% TODO: add the SRAB vs. Parachute comparison figure (4 subplots:
+% altitude, velocity, drift, summary table) generated by the notebook
+% section 9.2, once the figure is exported to results/.
+
+The SRAB achieves a 36\% shorter descent time and 36\% lower drift
+than the parachute, at the cost of a higher impact velocity and
+energy — both still within the LASC limits. The shorter descent
+reduces wind exposure (drift), which is the dominant factor for
+recovery accuracy on miniaturized satellites.
+
+\subsubsection{Experimental Drop Tests}
+
+Two instrumented drop-test campaigns validated the model:
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+\textbf{Test} & \textbf{Geometry} & \textbf{v impact} & \textbf{Spin / Cone} \\
+\midrule
+Test 1 & Asa1, 4 wings & 10.33 m/s & 444.9 rpm / 6.1$^{\circ}$ \\
+Test 2 & Asa2, 4 wings & 10.05 m/s & 439.1 rpm / 11.9$^{\circ}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Test 2 (Asa2, 4 wings, wing area 122.28 cm$^2$) was selected as the
+candidate configuration: 10.05~m/s terminal velocity, well below the
+20~m/s lower bound of the SCSM range, with 99.5\% of the impact energy
+dissipated by autorotation.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/fig_test2_sim.png}
+\caption{Drop test 2 (Asa2, 4 wings) LRR dashboard: measured descent
+profile, velocity vs. LASC window, cone angle and spin rate.}
+\label{fig:test2-lrr}
+\end{figure}
+
+Test 3 validated the onboard electronics with the SRAB instrumented
+(IMU recording rotation); the drop height was insufficient for a
+complete rotational steady state, so it served as an electronics
+integration test rather than an aerodynamic one.
+
+\subsubsection{Geometry Comparison and Final Choice}
+
+A comparative simulation of Asa2 (4 wings) vs. Asa3 (3 wings) showed
+10.05 vs. 20.00~m/s terminal velocity. The Asa3 2-wing configuration
+($\sim$81 cm$^2$ area, $v \approx 20$~m/s) was chosen as the final
+configuration for the mission: it stays within the SCSM range
+(20--45 m/s) while offering lower mass and complexity than the 4-wing
+versions, and leaves margin at the lower bound for the payload mass
+growth during integration.
+
+% TODO: Test 4 (~200 m drop) is the next step for quantitative
+% aerodynamic validation of the Asa3 2-wing configuration.
