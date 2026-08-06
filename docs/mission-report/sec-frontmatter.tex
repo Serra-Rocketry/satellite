@@ -1,37 +1,58 @@
 \textbf{Abstract}
 
 This report presents the development of the Helike \#213 1P PocketQube
-satellite, designed by team Serra Rocketry (IPRJ-UERJ) for the 7th
-Latin American Space Challenge (LASC) 2026, Satellite Challenge
-category.
-
-The central focus of this mission is the validation of the SRAB
-(Bioinspired Autorotative Recovery System, from the Portuguese
-\textit{Sistema de Recuperação Autorrotativo Bioinspirado}) — a passive,
-parachute-free recovery mechanism based on the autorotation principles
-of samara (maple) seeds. The SRAB eliminates the single points of
-failure inherent to conventional parachutes (electromechanical
-sequencers, pyrotechnics, tangled lines) and offers predictable,
-modelable aerodynamic behavior.
-
-The satellite also carries a LoRa communication system with RSSI
-triangulation from 3 ground beacons, whose primary function is to
-assist in locating the satellite after landing — a recovery support
-system, not the mission's main objective.
-
-The report details the system architecture, concept of operations, the
-theoretical foundation of the SRAB, the experimental results of two
-drop-test cycles, the mathematical modeling and computational
-simulation of the descent, the risk analysis (FMECA), and the
-pre-flight validation plan.
+satellite, designed by team Serra Rocketry (IPRJ-UERJ) for the
+Satellite Challenge category of the 7th Latin American Space Challenge
+(LASC 2026). The mission's central element is the SRAB (Bioinspired
+Autorotative Recovery System, from the Portuguese \textit{Sistema de Recuperação
+Autorrotativo Bioinspirado}) --- a passive, parachute-free recovery
+mechanism based on the autorotation of samara (maple) seeds, which
+offers predictable, modelable aerodynamic behavior without the
+electromechanical sequencers, pyrotechnics and tangled lines that make
+conventional parachutes fail. The satellite also carries a LoRa
+communication system with RSSI trilateration from three ground
+beacons, which helps locate the satellite after landing and supports
+recovery rather than being the mission's main objective. The report
+walks through the system architecture and concept of operations, the
+physics of samara autorotation, three drop-test campaigns, and the
+mathematical modeling and computational simulation of the descent from
+the apogee of the team's Dédalo launch vehicle, validated with
+RocketPy --- closing with the risk analysis (P $\times$ S matrix) and the pre-flight
+validation plan.
 
 \textbf{Authors}
 
-Vinicius Monnerat. \emph{Serra Rocketry, Instituto Politécnico da UERJ
-(IPRJ-UERJ), Nova Friburgo, Rio de Janeiro, Brazil.}
+Diego dos Santos Alves. \emph{Serra Rocketry, Instituto Politécnico da UERJ
+(IPRJ-UERJ), Nova Friburgo, Rio de Janeiro, 28625-570, Brazil.}
 
-Team Serra Rocketry. \emph{Serra Rocketry, Instituto Politécnico da UERJ
-(IPRJ-UERJ), Nova Friburgo, Rio de Janeiro, Brazil.}
+Pedro Henrique Couto Silva. \emph{Serra Rocketry, Instituto Politécnico da
+UERJ (IPRJ-UERJ), Nova Friburgo, Rio de Janeiro, 28625-570, Brazil.}
+
+Vinicius Carvalho Monnerat Bandeira. \emph{Serra Rocketry, Instituto
+Politécnico da UERJ (IPRJ-UERJ), Nova Friburgo, Rio de Janeiro, 28625-570,
+Brazil.}
+
+Caio Phelipe Souza De Lima. \emph{Serra Rocketry, Instituto Politécnico da
+UERJ (IPRJ-UERJ), Nova Friburgo, Rio de Janeiro, 28625-570, Brazil.}
+
+João Victor Domingues Barizon de Mello. \emph{Serra Rocketry, Instituto
+Politécnico da UERJ (IPRJ-UERJ), Nova Friburgo, Rio de Janeiro, 28625-570,
+Brazil.}
+
+Pablo Alves Mattos Borges. \emph{Serra Rocketry, Instituto Politécnico da
+UERJ (IPRJ-UERJ), Nova Friburgo, Rio de Janeiro, 28625-570, Brazil.}
+
+Angelo Mondaini Calvão. \emph{Instituto Politécnico da UERJ (IPRJ-UERJ),
+Nova Friburgo, Rio de Janeiro, 28625-570, Brazil.}
+
+Eustáquio de Souza Baêta Júnior. \emph{Universidade do Estado do Rio de
+Janeiro (UERJ), Faculdade de Engenharia, Programa de Pós-Graduação em
+Engenharia Mecânica, Rio de Janeiro, 20550-013, Brazil.}
+
+Letícia dos Santos Aguilera. \emph{Universidade do Estado do Rio de Janeiro
+(UERJ), Instituto Politécnico (IPRJ), Programa de Pós-Graduação em Ciência
+e Tecnologia de Materiais, Nova Friburgo, Rio de Janeiro, 28625-570,
+Brazil.}
 
 \textbf{Nomenclature}
 
@@ -44,8 +65,6 @@ Team Serra Rocketry. \emph{Serra Rocketry, Instituto Politécnico da UERJ
 \emph{EPS} = Electrical Power System
 
 \emph{FMECA} = Failure Mode, Effects, and Criticality Analysis
-
-\emph{FSM} = Finite State Machine
 
 \emph{GPS} = Global Positioning System
 
@@ -73,3 +92,29 @@ Team Serra Rocketry. \emph{Serra Rocketry, Instituto Politécnico da UERJ
 \emph{$\theta$} = conicity angle
 
 \emph{$\dot{\phi}$} = rotor spin rate
+
+\emph{$C_L$} = lift coefficient
+
+\emph{$C_D$} = drag coefficient
+
+\emph{$C_{D0}$} = parasitic (flat-plate) drag coefficient
+
+\emph{$\alpha$} = local angle of attack
+
+\emph{$\rho$} = air density
+
+\emph{$v_0$} = vertical descent velocity
+
+\emph{$r$} = radial position along the wing
+
+\emph{$U$} = local resultant airspeed
+
+\emph{$V_F$} = impact (terminal) velocity
+
+\emph{$FS$} = safety factor
+
+\emph{$R$} = risk score ($R = P \times S$)
+
+\emph{$P$} = failure probability
+
+\emph{$S$} = failure severity
