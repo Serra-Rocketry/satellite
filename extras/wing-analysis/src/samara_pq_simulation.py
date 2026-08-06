@@ -565,7 +565,7 @@ class PocketQubeLRRVisualizer:
         # ── [0,0] Altitude vs tempo ─────────────────────────
         ax = axs[0, 0]
         ax.plot(
-            self.t, self.z_alt, color="#1a6ea8", linewidth=2, label="Altitude simulada"
+            self.t, self.z_alt, color="#1a6ea8", linewidth=2, label="Simulated altitude"
         )
         alt0 = self.z_alt[0]
         ax.axhline(
@@ -574,32 +574,32 @@ class PocketQubeLRRVisualizer:
             linestyle=":",
             linewidth=1,
             alpha=0.6,
-            label=f"Altitude inicial ({alt0:.0f} m)",
+            label=f"Initial altitude ({alt0:.0f} m)",
         )
-        ax.set_title("Perfil de Descida — Altitude AGL")
+        ax.set_title("Descent Profile — Altitude AGL")
         ax.set_ylabel("Altitude (m)")
-        ax.set_xlabel("Tempo (s)")
+        ax.set_xlabel("Time (s)")
         ax.grid(True, alpha=0.3)
         ax.legend(fontsize=9)
 
-        # ── [0,1] Velocidade vertical ────────────────────────
+        # ── [0,1] Vertical velocity ────────────────────────
         ax = axs[0, 1]
         v_abs = np.abs(self.v0)
-        ax.plot(self.t, v_abs, color="#333", linewidth=2, label="|v₀| simulado")
-        ax.axhspan(20, 45, color="green", alpha=0.15, label="Janela LASC (20–45 m/s)")
+        ax.plot(self.t, v_abs, color="#333", linewidth=2, label="Simulated |v₀|")
+        ax.axhspan(20, 45, color="green", alpha=0.15, label="LASC Window (20–45 m/s)")
         ax.axhline(
             45,
             color="red",
             linestyle="--",
             linewidth=1.2,
-            label="Limite máx. LASC (45 m/s)",
+            label="Max LASC limit (45 m/s)",
         )
         ax.axhline(
             20,
             color="orange",
             linestyle="--",
             linewidth=1.2,
-            label="Limite mín. LASC (20 m/s)",
+            label="Min LASC limit (20 m/s)",
         )
         # velocidade terminal mediana (regime estacionário — última 20% da trajetória)
         n_steady = max(1, len(self.v0) // 5)
@@ -611,17 +611,17 @@ class PocketQubeLRRVisualizer:
             linewidth=2,
             label=f"v_terminal ≈ {v_term:.1f} m/s",
         )
-        ax.set_title("Velocidade Vertical vs Janela LASC")
+        ax.set_title("Vertical Velocity vs LASC Window")
         ax.set_ylabel("|v₀| (m/s)")
-        ax.set_xlabel("Tempo (s)")
+        ax.set_xlabel("Time (s)")
         ax.set_ylim(bottom=0)
         ax.grid(True, alpha=0.3)
         ax.legend(fontsize=9)
 
-        # ── [1,0] Ângulo de conicidade θ (δ dinâmico) ───────
+        # ── [1,0] Cone angie θ (dynamic dihedral) ───────
         ax = axs[1, 0]
         ax.plot(
-            self.t, self.theta, color="#8e44ad", linewidth=2, label="θ (conicidade)"
+            self.t, self.theta, color="#8e44ad", linewidth=2, label="θ (conicity)"
         )
         theta_eq = float(np.median(self.theta[-n_steady:]))
         ax.axhline(
@@ -629,15 +629,15 @@ class PocketQubeLRRVisualizer:
             color="#8e44ad",
             linestyle=":",
             linewidth=1.5,
-            label=f"θ_eq ≈ {theta_eq:.1f}° (equilíbrio)",
+            label=f"θ_eq ≈ {theta_eq:.1f}° (equilibrium)",
         )
-        ax.set_title("Ângulo de Conicidade θ — Diedro Dinâmico (δ)")
-        ax.set_ylabel("θ (graus)")
-        ax.set_xlabel("Tempo (s)")
+        ax.set_title("Conicity Angle θ — Dynamic Dihedral (δ)")
+        ax.set_ylabel("θ (degrees)")
+        ax.set_xlabel("Time (s)")
         ax.grid(True, alpha=0.3)
         ax.legend(fontsize=9)
 
-        # ── [1,1] Spin φ̇ em RPM ─────────────────────────────
+        # ── [1,1] Autorotation spin φ̇ RPM ─────────────────────────────
         ax = axs[1, 1]
         spin_rpm = (
             self.phi_dot * 60.0
@@ -651,9 +651,9 @@ class PocketQubeLRRVisualizer:
             linewidth=1.5,
             label=f"Spin_eq ≈ {spin_eq:.0f} RPM",
         )
-        ax.set_title("Spin de Autorrotação φ̇")
+        ax.set_title("Autorotation Spin φ̇")
         ax.set_ylabel("RPM")
-        ax.set_xlabel("Tempo (s)")
+        ax.set_xlabel("Time (s)")
         ax.grid(True, alpha=0.3)
         ax.legend(fontsize=9)
 
@@ -763,15 +763,15 @@ def plot_wing_geometry_views(
     body_a = body_s**2 * 1e4
     wing_a = n * wing.wing_area_one_m2 * 1e4
     ax.set_title(
-        f"Vista Superior (XY) — Varredura Λ\nÁrea corpo: {body_a:.1f} cm²  |  Asas: {wing_a:.1f} cm²  |  Total: {body_a + wing_a:.1f} cm²"
+        f"Top View (XY) — Sweep Λ\nBody area: {body_a:.1f} cm²  |  Wings: {wing_a:.1f} cm²  |  Total: {body_a + wing_a:.1f} cm²"
     )
 
-    # ── VISTA FRONTAL (XZ) ──────────────────────────────────
-    # Olhando ao longo de Y → plano XZ.
-    # A asa se estende radialmente em X e sobe em Z pelo diedro dinâmico θ_eq.
-    # Projeção da asa: x_proj = r·cos(θ_eq), z_proj = r·sin(θ_eq)
+    # ── FRONT VIEW (XZ) ──────────────────────────────────
+    # Looking along Y → plane XZ.
+    # The wing extends radially in X and rises in Z by dynamic dihedral θ_eq.
+    # Wing projection: x_proj = r·cos(θ_eq), z_proj = r·sin(θ_eq)
     ax = axes[1]
-    # Corpo (quadrado XZ)
+    # Body (XZ square)
     bxz = np.array(
         [[-body_h, -body_h], [body_h, -body_h], [body_h, body_h], [-body_h, body_h]]
     )
@@ -834,14 +834,14 @@ def plot_wing_geometry_views(
     ax.set_xlabel("X (mm)")
     ax.set_ylabel("Z (mm)")
     ax.set_title(
-        f"Vista Frontal (XZ) — Diedro δ / conicidade θ\nθ_eq ≈ {np.degrees(theta_eq):.1f}°  (dinâmico, flexão do material)"
+        f"Front View (XZ) — Dihedral δ / Conicity θ\nθ_eq ≈ {np.degrees(theta_eq):.1f}°  (dynamic, material bending)"
     )
 
-    # ── VISTA LATERAL (YZ) ──────────────────────────────────
-    # Olhando ao longo de X (da ponta para a raiz) → plano YZ.
-    # Mostra a seção transversal da asa inclinada em β.
+    # ── SIDE VIEW (YZ) ──────────────────────────────────
+    # Looking along X (tip to root) → plane YZ.
+    # Shows the wing cross-section inclined by β.
     ax = axes[2]
-    # Corpo
+    # Body
     byz = np.array(
         [[-body_h, -body_h], [body_h, -body_h], [body_h, body_h], [-body_h, body_h]]
     )
@@ -896,16 +896,16 @@ def plot_wing_geometry_views(
         color="orange",
         linewidth=1.5,
         linestyle="--",
-        label="linha de corda",
+        label="chord line",
     )
-    # Linha horizontal de referência (β=0)
+    # Horizontal reference line (β=0)
     ax.axhline(
         0,
         color="gray",
         linewidth=0.8,
         linestyle="--",
         alpha=0.5,
-        label="β = 0° (referência)",
+        label="β = 0° (reference)",
     )
     # Arco de β
     ang_arr = np.linspace(0, beta, 30)
@@ -948,7 +948,7 @@ def plot_wing_geometry_views(
     ax.set_ylabel("Z (mm)")
     ax.legend(fontsize=8, loc="upper right")
     ax.set_title(
-        f"Vista Lateral (YZ) — Passo β\nβ = {np.degrees(beta):.1f}°  (encaixe circular)  |  corda em r_mid = {chord_m * 1e3:.1f} mm"
+        f"Side View (YZ) — Pitch β\nβ = {np.degrees(beta):.1f}°  (circular mount)  |  chord at r_mid = {chord_m * 1e3:.1f} mm"
     )
 
     plt.tight_layout()
