@@ -17,6 +17,7 @@
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
 \usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
 \ifPDFTeX\else
   % xetex/luatex font selection
 \fi
@@ -67,6 +68,19 @@
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
+
+% --- Heading hierarchy (LASC template: H1/H2 bold, H3 italic, same size) ---
+% The report renders numbered sections and frontmatter/appendices with
+% manual \textbf{...} at \normalsize. Without this fix, native
+% \subsection (default \large) rendered LARGER than its own section.
+\usepackage{sectsty}
+\subsectionfont{\normalsize\bfseries}
+% NOTE: sectsty's article-class \subsection/\subsubsection hard-code
+% \large / \bfseries before the user font, so \normalsize (size) and
+% \mdseries (series) are REQUIRED here to override them — \normalfont
+% does NOT reset the size in this context.
+\subsubsectionfont{\normalsize\mdseries\itshape}
+
 \hypersetup{
   pdftitle={Team Serra Rocketry - Mission Helike \#213},
   hidelinks,
