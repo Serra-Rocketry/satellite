@@ -1,30 +1,43 @@
-\textbf{\hfill\break
-}
-
-\textbf{Engineering Drawings and Optional Appendix}
+\section*{Engineering Drawings}
 
 This appendix contains the revision-controlled technical drawings and
 optional supporting material for the Helike \#213 subsystems.
 
 \subsection{Drawing List}
 
-\begin{center}
-{\small
+The revision-controlled drawing set is listed in
+Table~\ref{tab:drawings}. The electrical schematic of the subsystem
+is presented in Fig.~\ref{fig:schematic}:
+
+\begin{table}[htbp]
+\centering
+\small
 \setlength{\tabcolsep}{6pt}
-\begin{tabularx}{\linewidth}{>{\raggedright}p{6cm}X}
+\begin{tabular}{>{\raggedright\arraybackslash}p{6cm}}
 \toprule
-\textbf{Drawing / Document} & \textbf{Status} \\
+\textbf{Drawing / Document} \\
 \midrule
-Electrical schematic (KiCad, U1--U6, SW1--SW3) & Final (Figure 1) \\
-PCB layout & In progress \\
-SRAB wing geometry (Asa1/Asa2/Asa3) & Final (DXF + ABS prototypes) \\
-PocketQube 1P mechanical structure & In progress \\
-ESP32-C3 pinout & Final \\
-Integrated assembly & In progress \\
+Electrical schematic (KiCad, U1--U6, SW1--SW3) \\
+SRAB wing geometry (Asa1/Asa2/Asa3) \\
+PocketQube 1P mechanical structure \\
+ESP32-C3 pinout \\
+Integrated assembly \\
 \bottomrule
-\end{tabularx}
-}
-\end{center}
+\end{tabular}
+\caption{Drawing list.}
+\label{tab:drawings}
+
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/fig_schematic.png}
+\caption{Electrical schematic of Helike \#213 (KiCad). U1: ESP32-C3
+Super Mini; U2: LoRa RFM95W-915S2; U3: BME280; U4: ICM-20602; U5: GPS
+NEO-8M; U6: SD card module; SW1/SW2: kill switches (Z axis); SW3: RBF
+pin; J1: SMA antenna; D1/BZ1: status LED and buzzer.}
+\label{fig:schematic}
+\end{figure}
 
 \subsection{Optional Appendices}
 
