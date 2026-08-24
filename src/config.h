@@ -50,7 +50,6 @@
 // Actuators
 #define LED_PIN             3
 #define BUZZER_PIN          0
-#define BUTTON_PIN          2
 
 //==============================================================================
 // TIMING

@@ -98,7 +98,7 @@ void setup() {
 
     // --- Storage (SD primary, LittleFS fallback) ---
     if (g_fs.begin()) {
-        String csv_header = "TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,alt,lat,lon,sat,rssi";
+        String csv_header = "TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi";
         g_fs.createFile("/telemetry.csv", csv_header);
         Serial.print(F("[FS] Storage: "));
         Serial.println(g_fs.getTypeString());
