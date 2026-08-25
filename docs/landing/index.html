@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Missao Helike #213 — LASC 2026</title>
+<meta name="description" content="Landing page da Missao Helike #213 (LASC 2026) com countdown, trajetoria 3D e vista superior da queda simulada.">
+
+<!-- Plotly (3D trajectory) -->
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<!-- Leaflet (top-down map) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+  :root {
+    --bg-0: #0b0f1a;
+    --bg-1: #131a2c;
+    --bg-2: #1d2540;
+    --fg-0: #e8ecf5;
+    --fg-1: #aab3cc;
+    --accent-1: #ff6b35;  /* ascent */
+    --accent-2: #3498db;  /* parachute */
+    --accent-3: #9b59b6;  /* srab */
+    --accent-impact: #e74c3c;
+    --ok: #27ae60;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, sans-serif;
+    background: linear-gradient(180deg, var(--bg-0) 0%, #060912 100%);
+    color: var(--fg-0);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 24px; }
+
+  /* ── Header ──────────────────────────────────────────────── */
+  header {
+    text-align: center;
+    padding: 32px 0 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 32px;
+  }
+  h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    margin: 0 0 8px;
+    background: linear-gradient(90deg, #ff6b35 0%, #e74c3c 50%, #9b59b6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle {
+    color: var(--fg-1);
+    font-size: 16px;
+    margin: 0;
+  }
+  .badge {
+    display: inline-block;
+    background: var(--bg-2);
+    color: var(--fg-0);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    margin-top: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ── Countdown ───────────────────────────────────────────── */
+  .countdown {
+    background: var(--bg-1);
+    border-radius: 16px;
+    padding: 32px 24px;
+    margin-bottom: 32px;
+    border: 1px solid rgba(255,107,53,0.2);
+    box-shadow: 0 0 40px rgba(255,107,53,0.05);
+  }
+  .countdown-title {
+    text-align: center;
+    color: var(--fg-1);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin: 0 0 16px;
+  }
+  .countdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .countdown-cell {
+    text-align: center;
+    background: var(--bg-2);
+    border-radius: 12px;
+    padding: 20px 8px;
+  }
+  .countdown-num {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 700;
+    color: var(--accent-1);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .countdown-label {
+    font-size: 11px;
+    color: var(--fg-1);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 6px;
+  }
+  .countdown-target {
+    text-align: center;
+    color: var(--fg-1);
+    font-size: 14px;
+    margin-top: 16px;
+  }
+  .countdown-status {
+    text-align: center;
+    font-size: 18px;
+    color: var(--ok);
+    margin-top: 16px;
+    font-weight: 600;
+  }
+
+  /* ── KPI cards ───────────────────────────────────────────── */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .kpi {
+    background: var(--bg-1);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-top: 3px solid var(--accent-1);
+  }
+  .kpi.parachute { border-top-color: var(--accent-2); }
+  .kpi.srab { border-top-color: var(--accent-3); }
+  .kpi.impact { border-top-color: var(--accent-impact); }
+  .kpi-label {
+    font-size: 11px;
+    color: var(--fg-1);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 8px;
+  }
+  .kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--fg-0);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .kpi-unit {
+    font-size: 14px;
+    color: var(--fg-1);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--fg-1);
+    margin-top: 4px;
+  }
+
+  /* ── Stage legend ────────────────────────────────────────── */
+  .stages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .stage {
+    background: var(--bg-1);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-left: 4px solid var(--accent-1);
+  }
+  .stage.parachute { border-left-color: var(--accent-2); }
+  .stage.srab { border-left-color: var(--accent-3); }
+  .stage-num {
+    background: var(--bg-2);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--fg-0);
+    flex-shrink: 0;
+  }
+  .stage-info { font-size: 13px; }
+  .stage-name { font-weight: 600; }
+  .stage-desc { color: var(--fg-1); font-size: 12px; }
+
+  /* ── Charts ──────────────────────────────────────────────── */
+  .chart {
+    background: var(--bg-1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .chart-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .chart-sub {
+    color: var(--fg-1);
+    font-size: 13px;
+    margin: 0 0 16px;
+  }
+  #plot-3d, #map {
+    width: 100%;
+    border-radius: 8px;
+    background: var(--bg-2);
+  }
+  #plot-3d { height: 520px; }
+  #map { height: 480px; }
+
+  /* ── Footer ──────────────────────────────────────────────── */
+  footer {
+    text-align: center;
+    padding: 32px 0;
+    color: var(--fg-1);
+    font-size: 13px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    margin-top: 32px;
+  }
+  footer a { color: var(--accent-2); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  .err-banner {
+    background: rgba(231, 76, 60, 0.15);
+    border: 1px solid var(--accent-impact);
+    color: var(--fg-0);
+    padding: 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+    .countdown-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .countdown-cell { padding: 12px 4px; }
+    .countdown-num { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Missao Helike #213</h1>
+    <p class="subtitle">Latin American Space Challenge 2026 — Foguete Dédalo + PocketQube 1P</p>
+    <span class="badge">Serra Rocketry · UERJ</span>
+  </header>
+
+  <!-- Countdown -->
+  <section class="countdown">
+    <p class="countdown-title">Lancamento em</p>
+    <div class="countdown-grid">
+      <div class="countdown-cell">
+        <div class="countdown-num" id="cd-d">--</div>
+        <div class="countdown-label">Dias</div>
+      </div>
+      <div class="countdown-cell">
+        <div class="countdown-num" id="cd-h">--</div>
+        <div class="countdown-label">Horas</div>
+      </div>
+      <div class="countdown-cell">
+        <div class="countdown-num" id="cd-m">--</div>
+        <div class="countdown-label">Min</div>
+      </div>
+      <div class="countdown-cell">
+        <div class="countdown-num" id="cd-s">--</div>
+        <div class="countdown-label">Seg</div>
+      </div>
+    </div>
+    <p class="countdown-target" id="cd-target">Alvo: 03/09/2026 09:00 BRT</p>
+    <p class="countdown-status" id="cd-status"></p>
+  </section>
+
+  <div id="err-banner" class="err-banner">
+    <strong>Aviso:</strong> <span id="err-msg"></span>
+  </div>
+
+  <!-- Stage legend -->
+  <section class="stages">
+    <div class="stage">
+      <div class="stage-num">1</div>
+      <div class="stage-info">
+        <div class="stage-name">Subida (motor)</div>
+        <div class="stage-desc">Dédalo + PocketQube, foguete completo ate o apogeu</div>
+      </div>
+    </div>
+    <div class="stage parachute">
+      <div class="stage-num">2</div>
+      <div class="stage-info">
+        <div class="stage-name">Descida paraquedas</div>
+        <div class="stage-desc">Foguete vazio, paraquedas principal em apogeu</div>
+      </div>
+    </div>
+    <div class="stage srab">
+      <div class="stage-num">3</div>
+      <div class="stage-info">
+        <div class="stage-name">Descida SRAB (PocketQube)</div>
+        <div class="stage-desc">Autorotacao Samara 2-asas, Asa2.DXF, 0.2 kg</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPIs -->
+  <section class="kpis" id="kpis">
+    <div class="kpi">
+      <p class="kpi-label">Apogeu (subida)</p>
+      <p class="kpi-value" id="kpi-apogee">--<span class="kpi-unit">m AGL</span></p>
+      <p class="kpi-sub" id="kpi-apogee-sub">--</p>
+    </div>
+    <div class="kpi">
+      <p class="kpi-label">Vel. maxima</p>
+      <p class="kpi-value" id="kpi-vmax">--<span class="kpi-unit">m/s</span></p>
+      <p class="kpi-sub" id="kpi-vmax-sub">--</p>
+    </div>
+    <div class="kpi parachute">
+      <p class="kpi-label">Drift paraquedas</p>
+      <p class="kpi-value" id="kpi-parad">--<span class="kpi-unit">m</span></p>
+      <p class="kpi-sub" id="kpi-parad-sub">--</p>
+    </div>
+    <div class="kpi srab">
+      <p class="kpi-label">Drift SRAB</p>
+      <p class="kpi-value" id="kpi-srab">--<span class="kpi-unit">m</span></p>
+      <p class="kpi-sub" id="kpi-srab-sub">--</p>
+    </div>
+    <div class="kpi srab">
+      <p class="kpi-label">v_impacto SRAB</p>
+      <p class="kpi-value" id="kpi-vimp">--<span class="kpi-unit">m/s</span></p>
+      <p class="kpi-sub" id="kpi-vimp-sub">--</p>
+    </div>
+    <div class="kpi impact">
+      <p class="kpi-label">Area estimada</p>
+      <p class="kpi-value" id="kpi-area">--<span class="kpi-unit">km²</span></p>
+      <p class="kpi-sub" id="kpi-area-sub">--</p>
+    </div>
+  </section>
+
+  <!-- Charts -->
+  <section class="chart">
+    <h2 class="chart-title">Trajetoria 3D (North / East / Up)</h2>
+    <p class="chart-sub">Tres estagios concatenados — subida, descida com paraquedas, descida SRAB</p>
+    <div id="plot-3d"></div>
+  </section>
+
+  <section class="chart">
+    <h2 class="chart-title">Vista superior — localizacao da queda</h2>
+    <p class="chart-sub">Linha de voo, zona estimada de impacto (elipse) e launch pad</p>
+    <div id="map"></div>
+  </section>
+
+  <footer>
+    <p>Dados atualizados a cada 6h via GFS forecast (<span id="gfs-stamp">--</span>)</p>
+    <p><a href="https://github.com/ViniciusCMB/satellite">github.com/ViniciusCMB/satellite</a> · Serra Rocketry · UERJ</p>
+  </footer>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   Countdown
+   ════════════════════════════════════════════════════════════════ */
+const LAUNCH_TS = Date.parse("2026-09-03T09:00:00-03:00");
+
+function updateCountdown() {
+  const now = Date.now();
+  let diff = LAUNCH_TS - now;
+  const statusEl = document.getElementById('cd-status');
+
+  if (diff <= 0) {
+    document.getElementById('cd-d').textContent = '00';
+    document.getElementById('cd-h').textContent = '00';
+    document.getElementById('cd-m').textContent = '00';
+    document.getElementById('cd-s').textContent = '00';
+    statusEl.textContent = '🚀 Lancamento realizado!';
+    statusEl.style.color = '#27ae60';
+    return;
+  }
+
+  const days = Math.floor(diff / 86400000); diff -= days * 86400000;
+  const hrs  = Math.floor(diff / 3600000);  diff -= hrs * 3600000;
+  const mins = Math.floor(diff / 60000);    diff -= mins * 60000;
+  const secs = Math.floor(diff / 1000);
+
+  document.getElementById('cd-d').textContent = String(days).padStart(2, '0');
+  document.getElementById('cd-h').textContent = String(hrs).padStart(2, '0');
+  document.getElementById('cd-m').textContent = String(mins).padStart(2, '0');
+  document.getElementById('cd-s').textContent = String(secs).padStart(2, '0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+/* ════════════════════════════════════════════════════════════════
+   Fetch landing.json and render KPIs
+   ════════════════════════════════════════════════════════════════ */
+const fmt = (n, p = 0) => Number(n).toLocaleString('pt-BR', {
+  minimumFractionDigits: p, maximumFractionDigits: p
+});
+
+async function loadLanding() {
+  const errBanner = document.getElementById('err-banner');
+  const errMsg = document.getElementById('err-msg');
+  try {
+    const res = await fetch('./data/landing.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+
+    // KPIs
+    document.getElementById('kpi-apogee').innerHTML =
+      `${fmt(d.ascent.apogee_m_agl, 0)}<span class="kpi-unit">m AGL</span>`;
+    document.getElementById('kpi-apogee-sub').textContent =
+      `${fmt(d.ascent.apogee_m_asl, 0)} m ASL · t=${d.ascent.apogee_time_s.toFixed(1)}s`;
+
+    document.getElementById('kpi-vmax').innerHTML =
+      `${fmt(d.ascent.max_speed_m_s, 0)}<span class="kpi-unit">m/s</span>`;
+    document.getElementById('kpi-vmax-sub').textContent =
+      `Mach ${d.ascent.max_mach.toFixed(2)} · ${fmt(d.ascent.max_acceleration_g, 1)} g max`;
+
+    document.getElementById('kpi-parad').innerHTML =
+      `${fmt(d.parachute_descent.drift_m, 0)}<span class="kpi-unit">m</span>`;
+    document.getElementById('kpi-parad-sub').textContent =
+      `Descida: ${fmt(d.parachute_descent.descent_time_s, 0)}s`;
+
+    document.getElementById('kpi-srab').innerHTML =
+      `${fmt(d.srab_descent.drift_m, 0)}<span class="kpi-unit">m</span>`;
+    document.getElementById('kpi-srab-sub').textContent =
+      `Spin: ${fmt(d.srab_descent.impact_spin_rpm, 0)} RPM · t=${fmt(d.srab_descent.descent_time_s, 0)}s`;
+
+    document.getElementById('kpi-vimp').innerHTML =
+      `${fmt(d.srab_descent.impact_velocity_m_s, 2)}<span class="kpi-unit">m/s</span>`;
+    const ok = d.srab_descent.impact_velocity_m_s < d.srab_descent.target_velocity_m_s;
+    document.getElementById('kpi-vimp-sub').textContent =
+      `Alvo <${fmt(d.srab_descent.target_velocity_m_s, 1)} · LASC ${d.srab_descent.lasc_limit_m_s} · ${ok ? '✓ OK' : '✗ EXCEDEU'}`;
+
+    document.getElementById('kpi-area').innerHTML =
+      `${fmt(d.impact_zone.area_km2, 3)}<span class="kpi-unit">km²</span>`;
+    document.getElementById('kpi-area-sub').textContent =
+      `Elipse ${fmt(d.impact_zone.semi_axis_a_m, 0)}×${fmt(d.impact_zone.semi_axis_b_m, 0)} m`;
+
+    // GFS stamp
+    const dt = new Date(d.generated_at_utc);
+    document.getElementById('gfs-stamp').textContent =
+      dt.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+    // Save globally for chart use
+    window.__landing = d;
+    return d;
+  } catch (e) {
+    errMsg.textContent = `Falha ao carregar data/landing.json — ${e.message}. Rode o workflow GitHub Actions.`;
+    errBanner.style.display = 'block';
+    throw e;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   3D Trajectory (Plotly)
+   ════════════════════════════════════════════════════════════════ */
+async function render3D() {
+  const traj = await fetch('./data/trajectory_3d.json', { cache: 'no-store' }).then(r => r.json());
+  const d = window.__landing;
+
+  const traces = [
+    {
+      x: traj.ascent.x, y: traj.ascent.y, z: traj.ascent.z,
+      mode: 'lines', type: 'scatter3d', name: '1. Subida (motor)',
+      line: { color: '#ff6b35', width: 6 },
+      hovertemplate: 't=%{text:.1f}s<br>x=%{x:.0f}m y=%{y:.0f}m z=%{z:.0f}m<extra>Subida</extra>',
+      text: traj.ascent.t,
+    },
+    {
+      x: traj.parachute.x, y: traj.parachute.y, z: traj.parachute.z,
+      mode: 'lines', type: 'scatter3d', name: '2. Descida paraquedas',
+      line: { color: '#3498db', width: 6 },
+      hovertemplate: 't=%{text:.1f}s<br>x=%{x:.0f}m y=%{y:.0f}m z=%{z:.0f}m<extra>Paraquedas</extra>',
+      text: traj.parachute.t,
+    },
+    {
+      x: traj.srab.x, y: traj.srab.y, z: traj.srab.z,
+      mode: 'lines', type: 'scatter3d', name: '3. Descida SRAB',
+      line: { color: '#9b59b6', width: 6 },
+      hovertemplate: 't=%{text:.1f}s<br>x=%{x:.0f}m y=%{y:.0f}m z=%{z:.0f}m<extra>SRAB</extra>',
+      text: traj.srab.t,
+    },
+    {
+      x: [traj.apogee_point.x], y: [traj.apogee_point.y], z: [traj.apogee_point.z],
+      mode: 'markers+text', type: 'scatter3d', name: 'Apogeu',
+      marker: { color: '#f1c40f', size: 8, symbol: 'diamond' },
+      text: ['Apogeu'], textposition: 'top center',
+      textfont: { color: '#f1c40f', size: 12 },
+    },
+    {
+      x: [d.parachute_descent.impact_x_m],
+      y: [d.parachute_descent.impact_y_m],
+      z: [0],
+      mode: 'markers+text', type: 'scatter3d', name: 'Impacto paraquedas',
+      marker: { color: '#3498db', size: 7, symbol: 'x' },
+      text: ['Paraquedas'], textposition: 'top center',
+      textfont: { color: '#3498db', size: 10 },
+    },
+    {
+      x: [d.srab_descent.impact_x_m],
+      y: [d.srab_descent.impact_y_m],
+      z: [0],
+      mode: 'markers+text', type: 'scatter3d', name: 'Impacto SRAB',
+      marker: { color: '#9b59b6', size: 7, symbol: 'x' },
+      text: ['SRAB'], textposition: 'top center',
+      textfont: { color: '#9b59b6', size: 10 },
+    },
+  ];
+
+  const layout = {
+    paper_bgcolor: '#1d2540',
+    plot_bgcolor: '#1d2540',
+    font: { color: '#e8ecf5' },
+    scene: {
+      xaxis: { title: 'East (m)', gridcolor: '#3a4360', zerolinecolor: '#5a6280' },
+      yaxis: { title: 'North (m)', gridcolor: '#3a4360', zerolinecolor: '#5a6280' },
+      zaxis: { title: 'Altitude AGL (m)', gridcolor: '#3a4360', zerolinecolor: '#5a6280' },
+      bgcolor: '#131a2c',
+      camera: { eye: { x: 1.4, y: 1.4, z: 0.8 } },
+      aspectmode: 'manual',
+      aspectratio: { x: 1, y: 1, z: 0.6 },
+    },
+    margin: { l: 0, r: 0, b: 0, t: 30 },
+    legend: { x: 0, y: 1, bgcolor: 'rgba(0,0,0,0.3)' },
+  };
+
+  Plotly.newPlot('plot-3d', traces, layout, { responsive: true, displaylogo: false });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Top-down Map (Leaflet)
+   ════════════════════════════════════════════════════════════════ */
+async function renderMap() {
+  const geo = await fetch('./data/trajectory_topdown.geojson', { cache: 'no-store' }).then(r => r.json());
+  const d = window.__landing;
+
+  const map = L.map('map', { scrollWheelZoom: false });
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri',
+    maxZoom: 19,
+  }).addTo(map);
+
+  // Impact ellipse (aproximacao visual a partir de semi-eixos em metros → precisao Leaflet)
+  const center = [d.impact_zone.impact_lat, d.impact_zone.impact_lon];
+  const ellipse = L.ellipse(center, [d.impact_zone.semi_axis_a_m * 2, d.impact_zone.semi_axis_b_m * 2], {
+    color: '#e74c3c',
+    weight: 2,
+    fillColor: '#e74c3c',
+    fillOpacity: 0.15,
+  }).addTo(map);
+  ellipse.bindPopup(`<b>Zona estimada de impacto</b><br>Area: ${d.impact_zone.area_km2.toFixed(3)} km²`);
+
+  // Trajectory polylines
+  const styleByColor = { '#ff6b35': 4, '#3498db': 4, '#9b59b6': 4 };
+  L.geoJSON(geo, {
+    pointToLayer: (feat, latlng) => {
+      const color = feat.properties.color || '#fff';
+      if (feat.properties.name === 'Zona estimada de impacto') {
+        return L.marker(latlng, {
+          icon: L.divIcon({
+            className: 'impact-pin',
+            html: `<div style="background:#e74c3c;width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 6px rgba(0,0,0,0.6);"></div>`,
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+          })
+        }).bindPopup('<b>Ponto medio de impacto</b>');
+      }
+      if (feat.properties.name === 'Launch pad') {
+        return L.marker(latlng, {
+          icon: L.divIcon({
+            className: 'launch-pin',
+            html: `<div style="background:#27ae60;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 6px rgba(0,0,0,0.6);"></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7],
+          })
+        }).bindPopup('<b>Launch pad</b>');
+      }
+      return null;
+    },
+    style: (feat) => ({
+      color: feat.properties.color || '#fff',
+      weight: styleByColor[feat.properties.color] || 3,
+      opacity: 0.9,
+    }),
+    onEachFeature: (feat, layer) => {
+      if (feat.geometry.type === 'LineString') {
+        layer.bindPopup(`<b>${feat.properties.name}</b>`);
+      }
+    },
+  }).addTo(map);
+
+  // Fit bounds
+  const launch = [d.launch.latitude, d.launch.longitude];
+  const bounds = L.latLngBounds([center, launch]);
+  geo.features.filter(f => f.geometry.type === 'LineString').forEach(f => {
+    f.geometry.coordinates.forEach(c => bounds.extend([c[1], c[0]]));
+  });
+  map.fitBounds(bounds, { padding: [30, 30] });
+
+  // Add legend
+  const legend = L.control({ position: 'topright' });
+  legend.onAdd = () => {
+    const div = L.DomUtil.create('div', 'map-legend');
+    div.style.cssText = 'background:rgba(19,26,44,0.92);color:#e8ecf5;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.7;';
+    div.innerHTML = `
+      <div><span style="display:inline-block;width:14px;height:3px;background:#ff6b35;vertical-align:middle;margin-right:6px;"></span>Subida</div>
+      <div><span style="display:inline-block;width:14px;height:3px;background:#3498db;vertical-align:middle;margin-right:6px;"></span>Paraquedas</div>
+      <div><span style="display:inline-block;width:14px;height:3px;background:#9b59b6;vertical-align:middle;margin-right:6px;"></span>SRAB (PocketQube)</div>
+      <div><span style="display:inline-block;width:10px;height:10px;background:#e74c3c;border-radius:50%;border:2px solid #fff;vertical-align:middle;margin-right:6px;"></span>Zona impacto</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#27ae60;border-radius:50%;border:2px solid #fff;vertical-align:middle;margin-right:6px;"></span>Launch pad</div>
+    `;
+    return div;
+  };
+  legend.addTo(map);
+}
+
+// Leaflet.ellipse plugin (simple inline implementation since not on CDN)
+if (typeof L !== 'undefined' && !L.ellipse) {
+  L.ellipse = function(center, radii, options) {
+    options = options || {};
+    const [a, b] = radii;
+    const latlngs = [];
+    const steps = 64;
+    const latRad = center[0] * Math.PI / 180;
+    for (let i = 0; i <= steps; i++) {
+      const theta = (i / steps) * 2 * Math.PI;
+      const dx = a * Math.cos(theta);
+      const dy = b * Math.sin(theta);
+      // Convert local meters to lat/lon
+      const dLat = dy / 111320;
+      const dLon = dx / (111320 * Math.cos(latRad));
+      latlngs.push([center[0] + dLat, center[1] + dLon]);
+    }
+    return L.polygon(latlngs, options);
+  };
+}
+
+(async () => {
+  try {
+    await loadLanding();
+    await Promise.all([render3D(), renderMap()]);
+  } catch (e) {
+    console.error('Init failed:', e);
+  }
+})();
+</script>
+</body>
+</html>
