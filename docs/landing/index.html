@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Missao Helike #213 — LASC 2026</title>
+<title>Helike Mission #213 - LASC 2026</title>
 <meta name="description" content="Landing page da Missao Helike #213 (LASC 2026) com countdown, trajetoria 3D e vista superior da queda simulada.">
 
 <!-- Plotly (3D trajectory) -->
@@ -261,22 +261,22 @@
 <div class="wrap">
 
   <header>
-    <h1>Missao Helike #213</h1>
-    <p class="subtitle">Latin American Space Challenge 2026 — Foguete Dédalo + PocketQube 1P</p>
-    <span class="badge">Serra Rocketry · UERJ</span>
+    <h1>Helike Mission #213</h1>
+    <p class="subtitle">Latin American Space Challenge 2026 — Dédalo Rocket + Helike PocketQube</p>
+    <span class="badge">Serra Rocketry · IPRJ-UERJ</span>
   </header>
 
   <!-- Countdown -->
   <section class="countdown">
-    <p class="countdown-title">Lancamento em</p>
+    <p class="countdown-title">Launch in</p>
     <div class="countdown-grid">
       <div class="countdown-cell">
         <div class="countdown-num" id="cd-d">--</div>
-        <div class="countdown-label">Dias</div>
+        <div class="countdown-label">Days</div>
       </div>
       <div class="countdown-cell">
         <div class="countdown-num" id="cd-h">--</div>
-        <div class="countdown-label">Horas</div>
+        <div class="countdown-label">Hours</div>
       </div>
       <div class="countdown-cell">
         <div class="countdown-num" id="cd-m">--</div>
@@ -284,15 +284,15 @@
       </div>
       <div class="countdown-cell">
         <div class="countdown-num" id="cd-s">--</div>
-        <div class="countdown-label">Seg</div>
+        <div class="countdown-label">Sec</div>
       </div>
     </div>
-    <p class="countdown-target" id="cd-target">Alvo: 03/09/2026 09:00 BRT</p>
+    <p class="countdown-target" id="cd-target">Target: Sep 3, 2026 09:00 BRT</p>
     <p class="countdown-status" id="cd-status"></p>
   </section>
 
   <div id="err-banner" class="err-banner">
-    <strong>Aviso:</strong> <span id="err-msg"></span>
+    <strong>Warning:</strong> <span id="err-msg"></span>
   </div>
 
   <!-- Stage legend -->
@@ -300,22 +300,22 @@
     <div class="stage">
       <div class="stage-num">1</div>
       <div class="stage-info">
-        <div class="stage-name">Subida (motor)</div>
-        <div class="stage-desc">Dédalo + PocketQube, foguete completo ate o apogeu</div>
+        <div class="stage-name">Ascent</div>
+        <div class="stage-desc">Full Dédalo Rocket + Helike PocketQube, up to apogee</div>
       </div>
     </div>
     <div class="stage parachute">
       <div class="stage-num">2</div>
       <div class="stage-info">
-        <div class="stage-name">Descida paraquedas</div>
-        <div class="stage-desc">Foguete vazio, paraquedas principal em apogeu</div>
+        <div class="stage-name">Dédalo descent</div>
+        <div class="stage-desc">Empty rocket, main parachute at apogee</div>
       </div>
     </div>
     <div class="stage srab">
       <div class="stage-num">3</div>
       <div class="stage-info">
-        <div class="stage-name">Descida SRAB (PocketQube)</div>
-        <div class="stage-desc">Autorotacao Samara 2-asas, Asa2.DXF, 0.2 kg</div>
+        <div class="stage-name">SRAB descent</div>
+        <div class="stage-desc">Samara auto-rotation, 2 wings, Asa3.DXF, 0.2 kg</div>
       </div>
     </div>
   </section>
@@ -323,32 +323,32 @@
   <!-- KPIs -->
   <section class="kpis" id="kpis">
     <div class="kpi">
-      <p class="kpi-label">Apogeu (subida)</p>
+      <p class="kpi-label">Apogee</p>
       <p class="kpi-value" id="kpi-apogee">--<span class="kpi-unit">m AGL</span></p>
       <p class="kpi-sub" id="kpi-apogee-sub">--</p>
     </div>
     <div class="kpi">
-      <p class="kpi-label">Vel. maxima</p>
+      <p class="kpi-label">Max speed</p>
       <p class="kpi-value" id="kpi-vmax">--<span class="kpi-unit">m/s</span></p>
       <p class="kpi-sub" id="kpi-vmax-sub">--</p>
     </div>
     <div class="kpi parachute">
-      <p class="kpi-label">Drift paraquedas</p>
+      <p class="kpi-label">Dédalo drift</p>
       <p class="kpi-value" id="kpi-parad">--<span class="kpi-unit">m</span></p>
       <p class="kpi-sub" id="kpi-parad-sub">--</p>
     </div>
     <div class="kpi srab">
-      <p class="kpi-label">Drift SRAB</p>
+      <p class="kpi-label">SRAB drift</p>
       <p class="kpi-value" id="kpi-srab">--<span class="kpi-unit">m</span></p>
       <p class="kpi-sub" id="kpi-srab-sub">--</p>
     </div>
     <div class="kpi srab">
-      <p class="kpi-label">v_impacto SRAB</p>
+      <p class="kpi-label">SRAB impact velocity</p>
       <p class="kpi-value" id="kpi-vimp">--<span class="kpi-unit">m/s</span></p>
       <p class="kpi-sub" id="kpi-vimp-sub">--</p>
     </div>
     <div class="kpi impact">
-      <p class="kpi-label">Area estimada</p>
+      <p class="kpi-label">Estimated area</p>
       <p class="kpi-value" id="kpi-area">--<span class="kpi-unit">km²</span></p>
       <p class="kpi-sub" id="kpi-area-sub">--</p>
     </div>
@@ -356,20 +356,20 @@
 
   <!-- Charts -->
   <section class="chart">
-    <h2 class="chart-title">Trajetoria 3D (North / East / Up)</h2>
-    <p class="chart-sub">Tres estagios concatenados — subida, descida com paraquedas, descida SRAB</p>
+    <h2 class="chart-title">3D Trajectory (North / East / Up)</h2>
+    <p class="chart-sub">Three concatenated stages — ascent, parachute descent, SRAB descent</p>
     <div id="plot-3d"></div>
   </section>
 
   <section class="chart">
-    <h2 class="chart-title">Vista superior — localizacao da queda</h2>
-    <p class="chart-sub">Linha de voo, zona estimada de impacto (elipse) e launch pad</p>
+    <h2 class="chart-title">Top-down view — landing location</h2>
+    <p class="chart-sub">Flight line, estimated impact zone (ellipse) and launch pad</p>
     <div id="map"></div>
   </section>
 
   <footer>
-    <p>Dados atualizados a cada 6h via GFS forecast (<span id="gfs-stamp">--</span>)</p>
-    <p><a href="https://github.com/ViniciusCMB/satellite">github.com/ViniciusCMB/satellite</a> · Serra Rocketry · UERJ</p>
+    <p>Data updated every 6h via GFS forecast (<span id="gfs-stamp">--</span>)</p>
+    <p><a href="https://github.com/Serra-Rocketry/satellite/tree/dev-2026">Serra-Rocketry/satellite</a> · Serra Rocketry · IPRJ-UERJ</p>
   </footer>
 </div>
 
@@ -389,7 +389,7 @@ function updateCountdown() {
     document.getElementById('cd-h').textContent = '00';
     document.getElementById('cd-m').textContent = '00';
     document.getElementById('cd-s').textContent = '00';
-    statusEl.textContent = '🚀 Lancamento realizado!';
+    statusEl.textContent = '🚀 Launched!';
     statusEl.style.color = '#27ae60';
     return;
   }
@@ -410,7 +410,7 @@ setInterval(updateCountdown, 1000);
 /* ════════════════════════════════════════════════════════════════
    Fetch landing.json and render KPIs
    ════════════════════════════════════════════════════════════════ */
-const fmt = (n, p = 0) => Number(n).toLocaleString('pt-BR', {
+const fmt = (n, p = 0) => Number(n).toLocaleString('en-US', {
   minimumFractionDigits: p, maximumFractionDigits: p
 });
 
@@ -436,7 +436,7 @@ async function loadLanding() {
     document.getElementById('kpi-parad').innerHTML =
       `${fmt(d.parachute_descent.drift_m, 0)}<span class="kpi-unit">m</span>`;
     document.getElementById('kpi-parad-sub').textContent =
-      `Descida: ${fmt(d.parachute_descent.descent_time_s, 0)}s`;
+      `Descent: ${fmt(d.parachute_descent.descent_time_s, 0)}s`;
 
     document.getElementById('kpi-srab').innerHTML =
       `${fmt(d.srab_descent.drift_m, 0)}<span class="kpi-unit">m</span>`;
@@ -447,7 +447,7 @@ async function loadLanding() {
       `${fmt(d.srab_descent.impact_velocity_m_s, 2)}<span class="kpi-unit">m/s</span>`;
     const ok = d.srab_descent.impact_velocity_m_s < d.srab_descent.target_velocity_m_s;
     document.getElementById('kpi-vimp-sub').textContent =
-      `Alvo <${fmt(d.srab_descent.target_velocity_m_s, 1)} · LASC ${d.srab_descent.lasc_limit_m_s} · ${ok ? '✓ OK' : '✗ EXCEDEU'}`;
+      `Target <${fmt(d.srab_descent.target_velocity_m_s, 1)} · LASC ${d.srab_descent.lasc_limit_m_s} · ${ok ? '✓ OK' : '✗ EXCEEDED'}`;
 
     document.getElementById('kpi-area').innerHTML =
       `${fmt(d.impact_zone.area_km2, 3)}<span class="kpi-unit">km²</span>`;
@@ -457,13 +457,13 @@ async function loadLanding() {
     // GFS stamp
     const dt = new Date(d.generated_at_utc);
     document.getElementById('gfs-stamp').textContent =
-      dt.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+      dt.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' });
 
     // Save globally for chart use
     window.__landing = d;
     return d;
   } catch (e) {
-    errMsg.textContent = `Falha ao carregar data/landing.json — ${e.message}. Rode o workflow GitHub Actions.`;
+    errMsg.textContent = `Failed to load data/landing.json — ${e.message}. Run the GitHub Actions workflow.`;
     errBanner.style.display = 'block';
     throw e;
   }
@@ -479,46 +479,46 @@ async function render3D() {
   const traces = [
     {
       x: traj.ascent.x, y: traj.ascent.y, z: traj.ascent.z,
-      mode: 'lines', type: 'scatter3d', name: '1. Subida (motor)',
+      mode: 'lines', type: 'scatter3d', name: '1. Ascent',
       line: { color: '#ff6b35', width: 6 },
-      hovertemplate: 't=%{text:.1f}s<br>x=%{x:.0f}m y=%{y:.0f}m z=%{z:.0f}m<extra>Subida</extra>',
+      hovertemplate: 't=%{text:.1f}s<br>x=%{x:.0f}m y=%{y:.0f}m z=%{z:.0f}m<extra>Ascent</extra>',
       text: traj.ascent.t,
     },
     {
       x: traj.parachute.x, y: traj.parachute.y, z: traj.parachute.z,
-      mode: 'lines', type: 'scatter3d', name: '2. Descida paraquedas',
+      mode: 'lines', type: 'scatter3d', name: '2. Dédalo descent',
       line: { color: '#3498db', width: 6 },
-      hovertemplate: 't=%{text:.1f}s<br>x=%{x:.0f}m y=%{y:.0f}m z=%{z:.0f}m<extra>Paraquedas</extra>',
+      hovertemplate: 't=%{text:.1f}s<br>x=%{x:.0f}m y=%{y:.0f}m z=%{z:.0f}m<extra>Dédalo</extra>',
       text: traj.parachute.t,
     },
     {
       x: traj.srab.x, y: traj.srab.y, z: traj.srab.z,
-      mode: 'lines', type: 'scatter3d', name: '3. Descida SRAB',
+      mode: 'lines', type: 'scatter3d', name: '3. SRAB descent',
       line: { color: '#9b59b6', width: 6 },
       hovertemplate: 't=%{text:.1f}s<br>x=%{x:.0f}m y=%{y:.0f}m z=%{z:.0f}m<extra>SRAB</extra>',
       text: traj.srab.t,
     },
     {
       x: [traj.apogee_point.x], y: [traj.apogee_point.y], z: [traj.apogee_point.z],
-      mode: 'markers+text', type: 'scatter3d', name: 'Apogeu',
+      mode: 'markers+text', type: 'scatter3d', name: 'Apogee',
       marker: { color: '#f1c40f', size: 8, symbol: 'diamond' },
-      text: ['Apogeu'], textposition: 'top center',
+      text: ['Apogee'], textposition: 'top center',
       textfont: { color: '#f1c40f', size: 12 },
     },
     {
       x: [d.parachute_descent.impact_x_m],
       y: [d.parachute_descent.impact_y_m],
       z: [0],
-      mode: 'markers+text', type: 'scatter3d', name: 'Impacto paraquedas',
+      mode: 'markers+text', type: 'scatter3d', name: 'Dédalo impact',
       marker: { color: '#3498db', size: 7, symbol: 'x' },
-      text: ['Paraquedas'], textposition: 'top center',
+      text: ['Dédalo'], textposition: 'top center',
       textfont: { color: '#3498db', size: 10 },
     },
     {
       x: [d.srab_descent.impact_x_m],
       y: [d.srab_descent.impact_y_m],
       z: [0],
-      mode: 'markers+text', type: 'scatter3d', name: 'Impacto SRAB',
+      mode: 'markers+text', type: 'scatter3d', name: 'SRAB impact',
       marker: { color: '#9b59b6', size: 7, symbol: 'x' },
       text: ['SRAB'], textposition: 'top center',
       textfont: { color: '#9b59b6', size: 10 },
@@ -558,7 +558,7 @@ async function renderMap() {
     maxZoom: 19,
   }).addTo(map);
 
-  // Impact ellipse (aproximacao visual a partir de semi-eixos em metros → precisao Leaflet)
+  // Impact ellipse (visual approximation from semi-axes in meters -> Leaflet precision)
   const center = [d.impact_zone.impact_lat, d.impact_zone.impact_lon];
   const ellipse = L.ellipse(center, [d.impact_zone.semi_axis_a_m * 2, d.impact_zone.semi_axis_b_m * 2], {
     color: '#e74c3c',
@@ -566,14 +566,14 @@ async function renderMap() {
     fillColor: '#e74c3c',
     fillOpacity: 0.15,
   }).addTo(map);
-  ellipse.bindPopup(`<b>Zona estimada de impacto</b><br>Area: ${d.impact_zone.area_km2.toFixed(3)} km²`);
+  ellipse.bindPopup(`<b>Estimated impact zone</b><br>Area: ${d.impact_zone.area_km2.toFixed(3)} km²`);
 
   // Trajectory polylines
   const styleByColor = { '#ff6b35': 4, '#3498db': 4, '#9b59b6': 4 };
   L.geoJSON(geo, {
     pointToLayer: (feat, latlng) => {
       const color = feat.properties.color || '#fff';
-      if (feat.properties.name === 'Zona estimada de impacto') {
+      if (feat.properties.name === 'Estimated impact zone') {
         return L.marker(latlng, {
           icon: L.divIcon({
             className: 'impact-pin',
@@ -581,7 +581,7 @@ async function renderMap() {
             iconSize: [18, 18],
             iconAnchor: [9, 9],
           })
-        }).bindPopup('<b>Ponto medio de impacto</b>');
+        }).bindPopup('<b>Mean impact point</b>');
       }
       if (feat.properties.name === 'Launch pad') {
         return L.marker(latlng, {
@@ -621,10 +621,10 @@ async function renderMap() {
     const div = L.DomUtil.create('div', 'map-legend');
     div.style.cssText = 'background:rgba(19,26,44,0.92);color:#e8ecf5;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.7;';
     div.innerHTML = `
-      <div><span style="display:inline-block;width:14px;height:3px;background:#ff6b35;vertical-align:middle;margin-right:6px;"></span>Subida</div>
-      <div><span style="display:inline-block;width:14px;height:3px;background:#3498db;vertical-align:middle;margin-right:6px;"></span>Paraquedas</div>
-      <div><span style="display:inline-block;width:14px;height:3px;background:#9b59b6;vertical-align:middle;margin-right:6px;"></span>SRAB (PocketQube)</div>
-      <div><span style="display:inline-block;width:10px;height:10px;background:#e74c3c;border-radius:50%;border:2px solid #fff;vertical-align:middle;margin-right:6px;"></span>Zona impacto</div>
+      <div><span style="display:inline-block;width:14px;height:3px;background:#ff6b35;vertical-align:middle;margin-right:6px;"></span>Ascent</div>
+      <div><span style="display:inline-block;width:14px;height:3px;background:#3498db;vertical-align:middle;margin-right:6px;"></span>Dédalo</div>
+      <div><span style="display:inline-block;width:14px;height:3px;background:#9b59b6;vertical-align:middle;margin-right:6px;"></span>Helike</div>
+      <div><span style="display:inline-block;width:10px;height:10px;background:#e74c3c;border-radius:50%;border:2px solid #fff;vertical-align:middle;margin-right:6px;"></span>Impact zone</div>
       <div><span style="display:inline-block;width:8px;height:8px;background:#27ae60;border-radius:50%;border:2px solid #fff;vertical-align:middle;margin-right:6px;"></span>Launch pad</div>
     `;
     return div;

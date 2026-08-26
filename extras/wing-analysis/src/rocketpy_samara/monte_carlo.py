@@ -226,26 +226,28 @@ class SRABMonteCarlo:
         print("\n" + "=" * 65)
         print("  MONTE CARLO — Summary")
         print("=" * 65)
-        print(f"  Iterações:                {self.n}")
-        print(f"  Parâmetros variados:      {', '.join(p.name for p in self._params)}")
+        print(f"  Iterations:               {self.n}")
+        print(
+            f"  Parameters varied:        {', '.join(p.name for p in self._params)}"
+        )
         print("─" * 65)
         print(
-            f"  v_impacto médio:          "
+            f"  Mean impact velocity:     "
             f"{stats['v_impact_mean']:.2f} ± {stats['v_impact_std']:.2f} m/s"
         )
         print(
-            f"  v_impacto [P5, P95]:      "
+            f"  Impact velocity [P5, P95]: "
             f"[{stats['v_impact_p5']:.2f}, {stats['v_impact_p95']:.2f}] m/s"
         )
         print(
-            f"  t_descida médio:          "
+            f"  Mean descent time:        "
             f"{stats['t_impact_mean']:.1f} ± {stats['t_impact_std']:.1f} s"
         )
         print(
-            f"  Spin médio:               "
+            f"  Mean spin:                "
             f"{stats['spin_rpm_mean']:.0f} ± {stats['spin_rpm_std']:.0f} RPM"
         )
-        print(f"  θ_eq médio:               {stats['theta_eq_deg_mean']:.1f}°")
+        print(f"  Mean theta_eq:            {stats['theta_eq_deg_mean']:.1f}°")
         print(f"  CEP radius:               {stats['cep_radius']:.2f} m")
         print(
             f"  LASC window pass rate:    {stats['lasc_window_pass_rate'] * 100:.1f}%"
