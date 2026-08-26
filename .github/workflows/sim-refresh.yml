@@ -120,6 +120,9 @@ jobs:
           - 3D trajectory + top-down GeoJSON
           - triggered by: ${GITHUB_EVENT_NAME}
           - previous: @ ${SHORT_SHA}"
+          # Outros runs podem ter commitado na branch entre o checkout e aqui
+          # (runs de ~6h em ciclos GFS + pushes). Rebase antes de pushar.
+          git pull --rebase origin dev-2026
           git push
           echo "Commit pushed."
 
