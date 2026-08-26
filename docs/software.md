@@ -89,14 +89,14 @@ All sensors implement the `ISensor` abstract interface:
 | LoRaModule | `LoRaModule.h/.cpp` | RFM95W SPI driver (915MHz, SF7, 125kHz) |
 | TelemetryModule | `TelemetryModule.h/.cpp` | Data collection, CSV formatting, transmission |
 | FilesystemModule | `FilesystemModule.h/.cpp` | SD primary + LittleFS fallback |
-| LEDModule | `LEDModule.h/.cpp` | Heartbeat and status LED (GPIO1) |
+| LEDModule | `LEDModule.h/.cpp` | Heartbeat and status LED (GPIO3) |
 | BuzzerModule | `BuzzerModule.h/.cpp` | Startup/error beeps via digitalWrite (GPIO0, active buzzer) |
 
 ### `lib/calc/` — Calculation Library (Header-only, No Hardware Deps)
 
 | Module | Description |
 |--------|-------------|
-| `SensorData.h` | Unified telemetry struct (18 fields) |
+| `SensorData.h` | Unified telemetry struct (17 fields) |
 | `VerticalVelocity.h` | EMA-filtered Vz from altitude differential |
 | `ApogeeDetection.h` | Apogee detection by Vz threshold crossing |
 | `DataValidation.h` | NaN and range validation against physical limits |

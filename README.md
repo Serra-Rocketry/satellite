@@ -49,6 +49,7 @@ Dependencies managed automatically by PlatformIO:
 |---------|---------|
 | sandeepmistry/LoRa | ^0.8.0 |
 | Adafruit BME280 Library | ^2.2.4 |
+| Adafruit BMP280 Library | ^2.6.8 |
 | TinyGPSPlus | ^1.0.3 |
 
 ## Quick Start
