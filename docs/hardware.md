@@ -141,3 +141,37 @@ Without these flags, Serial uses UART0 (pins GPIO20/21) instead of USB CDC.
 ### 3. I2C Bus Recovery
 `resetI2C()` (toggling SCL via pinMode/digitalWrite) breaks the I2C peripheral
 configuration on ESP32-C3. **Do not use GPIO-level recovery with TwoWire.**
+
+### 4. Shared SPI Bus: SD + LoRa (bench session 2026-08-24)
+
+The SD card and RFM95W share SCK/MISO/MOSI. Three rules discovered during
+first power-on testing (full rationale in ADR-005):
+
+- **Initialize SPI exactly once** in `main.cpp`, with CS pins HIGH, before
+  any library touches the bus. Libraries (`SD`, LoRa sandeepmistry) call
+  `SPI.begin()` internally on their own `begin()`; a second init corrupts
+  the peripheral state.
+- **Boot order: LoRa first, storage after.** An SD mount attempt before
+  radio configuration makes every subsequent `endPacket()` fail. The
+  reverse order is safe: after a failed `SD.begin()`, TX still works.
+- **Never call `SD.end()` or re-`begin()` SPI at runtime.** Both tear down
+  the peripheral shared with the radio.
+
+Additional SD notes:
+- SD mount needs ≥74 wake-up clocks with CS high before CMD0;
+  `FilesystemModule::setupSD()` sends them manually.
+- If `appendLine()` fails 5× consecutively in flight, the module degrades
+  to LittleFS automatically (no code path requires SD).
+- Cards must be FAT32; exFAT mounts fail with `f_mount failed (13)`.
+- **Wiring**: long untwisted dupont jumpers between ESP and RFM95W cause
+  intermittent SPI corruption (worked/failed depending on cable position).
+  Keep SPI leads short (<10 cm); if twisted pairs are used, twist each
+  signal with GND, never signal-with-signal.
+
+### 5. LoRa sandeepmistry Library API Notes
+
+- `LoRa.endPacket()` returns **1 on success**, 0 on failure. Check
+  `== 1`. (A pre-existing inverted check reported every successful TX as
+  an error for the module's whole early life.)
+- Use `LoRa.setSPI(SPI)` before `LoRa.setPins()` so the library shares
+  the bus instance initialized by `main.cpp`.
