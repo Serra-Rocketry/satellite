@@ -45,7 +45,10 @@ flowchart LR
 
 ### `src/main.cpp` — Entry Point
 
-- `setup()`: Initializes Serial, I2C, sensors, LoRa, storage, watchdog
+- `setup()`: Initializes Serial, I2C, sensors, then **single SPI bus init
+  → LoRa → storage (SD→LittleFS)**, watchdog. Boot order is load-bearing:
+  the radio must be configured before any SD mount attempt, and SPI must
+  be initialized exactly once (see ADR-005 and hardware.md Known Issues).
 - `loop()`: Runs at 5Hz (SAMPLE_INTERVAL_MS = 200ms):
   1. Read GPS (continuous)
   2. Update IMU
@@ -63,7 +66,7 @@ flowchart LR
 | Section | Key Defines |
 |---------|-------------|
 | Identification | `TEAM_ID`, `MISSION_NAME` |
-| Pinout | `I2C_SDA/SCL`, `LORA_*`, `GPS_*`, `LED/BUZZER/BUTTON_PIN` |
+| Pinout | `I2C_SDA/SCL`, `LORA_*`, `SD_CS_PIN`, `GPS_*`, `LED/BUZZER_PIN` |
 | Timing | `SAMPLE_INTERVAL_MS=200`, `LORA_INTERVAL_MS=200`, `GPS_READ_INTERVAL_MS=1000` |
 | LoRa | `LORA_FREQ=915E6`, `SYNC_WORD=0xF3`, `SF=7`, `BW=125E3` |
 | Sensors | `BME280_ADDR`, `ICM20602_ADDR`, validation thresholds |
@@ -86,14 +89,14 @@ All sensors implement the `ISensor` abstract interface:
 | LoRaModule | `LoRaModule.h/.cpp` | RFM95W SPI driver (915MHz, SF7, 125kHz) |
 | TelemetryModule | `TelemetryModule.h/.cpp` | Data collection, CSV formatting, transmission |
 | FilesystemModule | `FilesystemModule.h/.cpp` | SD primary + LittleFS fallback |
-| LEDModule | `LEDModule.h/.cpp` | Heartbeat and status LED (GPIO1) |
+| LEDModule | `LEDModule.h/.cpp` | Heartbeat and status LED (GPIO3) |
 | BuzzerModule | `BuzzerModule.h/.cpp` | Startup/error beeps via digitalWrite (GPIO0, active buzzer) |
 
 ### `lib/calc/` — Calculation Library (Header-only, No Hardware Deps)
 
 | Module | Description |
 |--------|-------------|
-| `SensorData.h` | Unified telemetry struct (18 fields) |
+| `SensorData.h` | Unified telemetry struct (17 fields) |
 | `VerticalVelocity.h` | EMA-filtered Vz from altitude differential |
 | `ApogeeDetection.h` | Apogee detection by Vz threshold crossing |
 | `DataValidation.h` | NaN and range validation against physical limits |

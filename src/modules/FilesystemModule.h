@@ -81,9 +81,12 @@ public:
 private:
     StorageType _storage_type = STORAGE_NONE;  // SD primary, LittleFS secondary
     bool        _initialized = false;
+    uint8_t     _sd_fail_count = 0;            // falhas consecutivas de escrita no SD
 
-    // SD card Chip Select (GPIO10 per schematic)
-    static const uint8_t SD_CS_PIN = 10;
+    // Numero de falhas seguidas de appendLine() antes de degradar p/ LittleFS
+    static const uint8_t SD_MAX_FAILS = 5;
+
+    // SD card Chip Select (GPIO10 per schematic, definido em config.h)
     bool setupSD();
 
     // LittleFS-related

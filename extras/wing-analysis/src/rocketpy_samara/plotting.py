@@ -51,8 +51,8 @@ def plot_ascent_descent_3d(flight, srab_sol, n=500, filename=None):
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection="3d")
 
-    ax.plot(x_asc, y_asc, z_asc, "b-", lw=1.5, label="Subida (RocketPy)")
-    ax.plot(x_desc, y_desc, z_desc, "r-", lw=1.5, label="Descida (SRAB)")
+    ax.plot(x_asc, y_asc, z_asc, "b-", lw=1.5, label="Ascent (RocketPy)")
+    ax.plot(x_desc, y_desc, z_desc, "r-", lw=1.5, label="Descent (SRAB)")
 
     ax.scatter(
         flight.x(t_apo),
@@ -61,7 +61,7 @@ def plot_ascent_descent_3d(flight, srab_sol, n=500, filename=None):
         c="g",
         s=60,
         marker="^",
-        label="Apogeu",
+        label="Apogee",
         zorder=5,
     )
     ax.scatter(
@@ -71,14 +71,14 @@ def plot_ascent_descent_3d(flight, srab_sol, n=500, filename=None):
         c="k",
         s=60,
         marker="v",
-        label="Impacto",
+        label="Impact",
         zorder=5,
     )
 
     ax.set_xlabel("X (m)")
     ax.set_ylabel("Y (m)")
     ax.set_zlabel("Altitude (m)")
-    ax.set_title("Trajetória Completa — Subida (RocketPy) + Descida (SRAB)")
+    ax.set_title("Full Trajectory — Ascent (RocketPy) + Descent (SRAB)")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
@@ -94,9 +94,9 @@ def _plot_srab_only(srab_sol, filename=None):
     ax = fig.add_subplot(111, projection="3d")
 
     z = srab_sol.altitude
-    ax.plot(srab_sol.x, srab_sol.y, z, "r-", lw=1.5, label="Descida (SRAB)")
+    ax.plot(srab_sol.x, srab_sol.y, z, "r-", lw=1.5, label="Descent (SRAB)")
 
-    ax.scatter(0, 0, z[0], c="g", s=60, marker="^", label="Liberação", zorder=5)
+    ax.scatter(0, 0, z[0], c="g", s=60, marker="^", label="Release", zorder=5)
     ax.scatter(
         srab_sol.x_impact,
         srab_sol.y_impact,
@@ -104,14 +104,14 @@ def _plot_srab_only(srab_sol, filename=None):
         c="k",
         s=60,
         marker="v",
-        label="Impacto",
+        label="Impact",
         zorder=5,
     )
 
     ax.set_xlabel("X (m)")
     ax.set_ylabel("Y (m)")
     ax.set_zlabel("Altitude (m)")
-    ax.set_title("Descida SRAB — Trajetória 3D")
+    ax.set_title("SRAB Descent — 3D Trajectory")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
@@ -135,17 +135,17 @@ def plot_dispersion(mc, filename=None):
     y = np.array(mc.results.get("y_impact", []))
 
     if len(x) == 0:
-        print("  [AVISO] Nenhum resultado MC para plotar dispersão.")
+        print("  [WARNING] No MC results to plot dispersion.")
         return
 
     fig, ax = plt.subplots(1, 1, figsize=(8, 8))
 
     # Scatter
-    ax.scatter(x, y, alpha=0.5, s=20, c="crimson", label="Impactos MC")
+    ax.scatter(x, y, alpha=0.5, s=20, c="crimson", label="MC Impacts")
 
-    # Centro médio
+    # Mean center
     xm, ym = np.mean(x), np.mean(y)
-    ax.scatter(xm, ym, c="k", s=80, marker="x", label="Centro médio")
+    ax.scatter(xm, ym, c="k", s=80, marker="x", label="Mean center")
 
     # Elipse CEP (1 sigma)
     if len(x) > 2:
@@ -170,9 +170,9 @@ def plot_dispersion(mc, filename=None):
         ax.add_patch(ellipse)
 
     # Formatação
-    ax.set_xlabel("X impacto (m)")
-    ax.set_ylabel("Y impacto (m)")
-    ax.set_title("Dispersão de Impacto — Monte Carlo")
+    ax.set_xlabel("X impact (m)")
+    ax.set_ylabel("Y impact (m)")
+    ax.set_title("Impact Dispersion — Monte Carlo")
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.set_aspect("equal")
@@ -206,23 +206,23 @@ def plot_lrr_dashboard(srab_sol, filename=None):
 
     # [0,0] Altitude
     axs[0, 0].plot(t, alt, color="#1a6ea8", lw=2)
-    axs[0, 0].set_title("Perfil de Descida — Altitude AGL")
+    axs[0, 0].set_title("Descent Profile — Altitude AGL")
     axs[0, 0].set_ylabel("Altitude (m)")
-    axs[0, 0].set_xlabel("Tempo (s)")
+    axs[0, 0].set_xlabel("Time (s)")
     axs[0, 0].grid(True, alpha=0.3)
 
-    # [0,1] Velocidade vertical
+    # [0,1] Vertical velocity
     axs[0, 1].plot(t, v, color="#333", lw=2, label="|v₀|")
-    axs[0, 1].axhspan(20, 45, color="green", alpha=0.15, label="Janela LASC")
-    axs[0, 1].axhline(45, color="red", ls="--", lw=1.2, label="Máx LASC (45)")
-    axs[0, 1].axhline(20, color="orange", ls="--", lw=1.2, label="Mín LASC (20)")
+    axs[0, 1].axhspan(20, 45, color="green", alpha=0.15, label="LASC Window")
+    axs[0, 1].axhline(45, color="red", ls="--", lw=1.2, label="Max LASC (45)")
+    axs[0, 1].axhline(20, color="orange", ls="--", lw=1.2, label="Min LASC (20)")
     v_term = float(np.median(v[-len(v) // 5 :]))
     axs[0, 1].axhline(
         v_term, color="#1a6ea8", ls=":", lw=2, label=f"v_term ≈ {v_term:.1f} m/s"
     )
-    axs[0, 1].set_title("Velocidade Vertical vs Janela LASC")
+    axs[0, 1].set_title("Vertical Velocity vs LASC Window")
     axs[0, 1].set_ylabel("|v₀| (m/s)")
-    axs[0, 1].set_xlabel("Tempo (s)")
+    axs[0, 1].set_xlabel("Time (s)")
     axs[0, 1].legend(fontsize=9)
     axs[0, 1].grid(True, alpha=0.3)
 
@@ -232,9 +232,9 @@ def plot_lrr_dashboard(srab_sol, filename=None):
     axs[1, 0].axhline(
         th_eq, color="#8e44ad", ls=":", lw=1.5, label=f"θ_eq ≈ {th_eq:.1f}°"
     )
-    axs[1, 0].set_title("Ângulo de Conicidade θ")
-    axs[1, 0].set_ylabel("θ (graus)")
-    axs[1, 0].set_xlabel("Tempo (s)")
+    axs[1, 0].set_title("Cone Angle θ")
+    axs[1, 0].set_ylabel("θ (degrees)")
+    axs[1, 0].set_xlabel("Time (s)")
     axs[1, 0].legend(fontsize=9)
     axs[1, 0].grid(True, alpha=0.3)
 
@@ -244,9 +244,9 @@ def plot_lrr_dashboard(srab_sol, filename=None):
     axs[1, 1].axhline(
         sp_eq, color="#27ae60", ls=":", lw=1.5, label=f"Spin_eq ≈ {sp_eq:.0f} RPM"
     )
-    axs[1, 1].set_title("Spin de Autorrotação φ̇")
+    axs[1, 1].set_title("Autorotation Spin φ̇")
     axs[1, 1].set_ylabel("RPM")
-    axs[1, 1].set_xlabel("Tempo (s)")
+    axs[1, 1].set_xlabel("Time (s)")
     axs[1, 1].legend(fontsize=9)
     axs[1, 1].grid(True, alpha=0.3)
 

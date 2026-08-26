@@ -7,8 +7,8 @@
  *
  * Hardware setup (ESP32-C3 Super Mini):
  * - I2C: SDA=GPIO8, SCL=GPIO9 (BMP280)
- * - SD CS: GPIO5
- * - Shared SPI: MOSI=6, MISO=7, SCK=4
+ * - SD CS: GPIO10
+ * - Shared SPI: SCK=4, MISO=5, MOSI=6 (defaults da variante C3)
  *
  * Pattern:
  * 1. Try SD first
@@ -28,7 +28,7 @@
 // ============= Configurações =============
 
 #define INTERVAL 500
-#define SD_CS_PIN 5
+#define SD_CS_PIN 10
 
 #if CONFIG_IDF_TARGET_ESP32C3
   #define I2C_SDA_PIN 8
@@ -38,6 +38,8 @@
   #define I2C_SCL_PIN 22
 #endif
 
+void readAndLogBMP280(unsigned long current_millis);
+
 // ============= Variáveis Globais =============
 
 enum StorageType { STORAGE_NONE, STORAGE_SD, STORAGE_LITTLEFS };
@@ -46,6 +48,7 @@ StorageType storage_type = STORAGE_NONE;
 Adafruit_BMP280 bmp;
 unsigned long previous_millis = 0;
 bool bmp_ok = false;
+String file_path;
 
 // ============= Inicialização do BMP280 =============
 
@@ -191,8 +194,6 @@ void readAndLogBMP280(unsigned long current_millis) {
 
   appendFile(file_path.c_str(), buffer);
 }
-
-String file_path;
 
 // ============= Setup =============
 

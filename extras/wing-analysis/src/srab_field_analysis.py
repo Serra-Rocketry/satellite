@@ -316,12 +316,12 @@ def plot_dashboard(
 
     gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.42, wspace=0.32)
 
-    # ── [0,0] Altitude relativa ────────────────────────────────
+    # ── [0,0] Relative altitude ────────────────────────────────
     ax = fig.add_subplot(gs[0, 0])
     shade_phases(ax, phases)
-    ax.plot(t, alt, color="#378ADD", lw=1.5, label="Altitude rel. (m)")
+    ax.plot(t, alt, color="#378ADD", lw=1.5, label="Rel. altitude (m)")
     if sim is not None:
-        # Alinhar simulação no apogeu
+        # Align simulation at apogee
         i_peak = np.argmax(alt)
         t_peak = t[i_peak]
         ax.plot(
@@ -334,18 +334,18 @@ def plot_dashboard(
             label="Sim.",
         )
     ax.axhline(0, color="gray", lw=0.8, ls=":", alpha=0.5)
-    ax.set_ylabel("Altitude rel. (m)")
-    ax.set_title("Altitude — relativa ao solo")
+    ax.set_ylabel("Rel. altitude (m)")
+    ax.set_title("Altitude — relative to ground")
     ax.grid(True, alpha=0.25)
     add_phase_legend(ax, phases)
 
-    # ── [0,1] Velocidade vertical (barômetro) ──────────────────
+    # ── [0,1] Vertical velocity (barometer) ──────────────────
     ax = fig.add_subplot(gs[0, 1])
     shade_phases(ax, phases)
     ax.plot(t, vz, color="#E24B4A", lw=1.2, alpha=0.7, label="vz baro (m/s)")
     ax.axhline(0, color="gray", lw=0.8, ls=":", alpha=0.5)
-    ax.axhline(-20, color="orange", lw=1, ls="--", alpha=0.7, label="Limite LASC mín.")
-    ax.axhline(-45, color="red", lw=1, ls="--", alpha=0.7, label="Limite LASC máx.")
+    ax.axhline(-20, color="orange", lw=1, ls="--", alpha=0.7, label="Min LASC limit")
+    ax.axhline(-45, color="red", lw=1, ls="--", alpha=0.7, label="Max LASC limit")
     if sim is not None:
         i_peak = np.argmax(alt)
         t_peak = t[i_peak]
@@ -359,14 +359,14 @@ def plot_dashboard(
             label="Sim. v₀",
         )
     ax.set_ylabel("vz (m/s)")
-    ax.set_title("Velocidade Vertical — barômetro")
+    ax.set_title("Vertical Velocity — barometer")
     ax.legend(fontsize=8, loc="lower left")
     ax.grid(True, alpha=0.25)
 
     # ── [1,0] Spin — RPM ──────────────────────────────────────
     ax = fig.add_subplot(gs[1, 0])
     shade_phases(ax, phases)
-    ax.plot(t, rpm, color="#1D9E75", lw=1.5, label="Spin total (RPM)")
+    ax.plot(t, rpm, color="#1D9E75", lw=1.5, label="Total spin (RPM)")
     ax.plot(
         t,
         np.abs(gz) * 60 / (2 * np.pi),
@@ -389,11 +389,11 @@ def plot_dashboard(
             label="Sim. spin",
         )
     ax.set_ylabel("RPM")
-    ax.set_title("Spin de Autorrotação")
+    ax.set_title("Autorotation Spin")
     ax.legend(fontsize=8, loc="upper left")
     ax.grid(True, alpha=0.25)
 
-    # ── [1,1] Aceleração total ────────────────────────────────
+    # ── [1,1] Total acceleration ────────────────────────────────
     ax = fig.add_subplot(gs[1, 1])
     shade_phases(ax, phases)
     ax.plot(t, a_mag, color="#8e44ad", lw=1.2, label="|a| total (m/s²)")
@@ -401,24 +401,24 @@ def plot_dashboard(
         t, data["az"], color="#8e44ad", lw=1, ls="--", alpha=0.55, label="az (m/s²)"
     )
     ax.axhline(9.81, color="gray", lw=0.8, ls=":", alpha=0.5, label="g")
-    ax.set_ylabel("Aceleração (m/s²)")
-    ax.set_title("Aceleração — IMU")
+    ax.set_ylabel("Acceleration (m/s²)")
+    ax.set_title("Acceleration — IMU")
     ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.25)
 
-    # ── [2,0] Pressão ──────────────────────────────────────────
+    # ── [2,0] Pressure ──────────────────────────────────────────
     ax = fig.add_subplot(gs[2, 0])
     shade_phases(ax, phases)
     ax.plot(t, p / 100, color="#BA7517", lw=1.2)
-    ax.set_ylabel("Pressão (hPa)")
-    ax.set_xlabel("Tempo (s)")
-    ax.set_title("Pressão Barométrica")
+    ax.set_ylabel("Pressure (hPa)")
+    ax.set_xlabel("Time (s)")
+    ax.set_title("Barometric Pressure")
     ax.grid(True, alpha=0.25)
 
-    # ── [2,1] Tabela de métricas por fase ─────────────────────
+    # ── [2,1] Metrics per phase table ─────────────────────
     ax = fig.add_subplot(gs[2, 1])
     ax.axis("off")
-    rows_table = [["Fase", "Dur (s)", "Δalt (m)", "vz_med", "spin_max"]]
+    rows_table = [["Phase", "Dur (s)", "Δalt (m)", "vz_mean", "spin_max"]]
     for name, m in metrics["phases"].items():
         rows_table.append(
             [
@@ -442,7 +442,7 @@ def plot_dashboard(
         elif r % 2 == 0:
             cell.set_facecolor("#F2F4F7")
         cell.set_edgecolor("#CCCCCC")
-    ax.set_title("Métricas por Fase", fontsize=10, fontweight="bold", pad=8)
+    ax.set_title("Metrics per Phase", fontsize=10, fontweight="bold", pad=8)
 
     # Adicionar marcadores de fase em todos os subplots
     for ax_i in fig.get_axes():
@@ -458,7 +458,7 @@ def plot_dashboard(
 
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print(f"  Dashboard salvo: {out_path}")
+    print(f"  Dashboard saved: {out_path}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

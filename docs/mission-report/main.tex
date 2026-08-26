@@ -1,0 +1,121 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[expansion=false]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\setlength{\emergencystretch}{3em}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\ifLuaTeX
+  \usepackage{luacolor}
+  \usepackage[soul]{lua-ul}
+\else
+  \usepackage{soul}
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+
+% --- Heading hierarchy (LASC template: H1/H2 bold, H3 italic, same size) ---
+% The report renders numbered sections and frontmatter/appendices with
+% manual \textbf{...} at \normalsize. Without this fix, native
+% \subsection (default \large) rendered LARGER than its own section.
+\usepackage{sectsty}
+\subsectionfont{\normalsize\bfseries}
+% NOTE: sectsty's article-class \subsection/\subsubsection hard-code
+% \large / \bfseries before the user font, so \normalsize (size) and
+% \mdseries (series) are REQUIRED here to override them — \normalfont
+% does NOT reset the size in this context.
+\subsubsectionfont{\normalsize\mdseries\itshape}
+
+\hypersetup{
+  pdftitle={Team Serra Rocketry - Mission Helike \#213},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Team Serra Rocketry - Mission Helike \#213}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+
+%% ===================================================================
+%% MISSION REPORT - HELIKE #213 - 7th LASC (Serra Rocketry / IPRJ-UERJ)
+%% Template oficial LASC (AIAA style). Seccoes quebradas em sec-*.tex.
+%% Original intacto: main_backup.tex
+%% ===================================================================
+\input{sec-frontmatter}   % Abstract + Authors + Nomenclature
+\input{sec-introduction}  % 1. Introduction
+\input{sec-architecture}  % 2. System Architecture and Concept of Operations
+\input{sec-weights-measures} % 3. Weights, Measures, and Performance Data
+\input{sec-computational-simulation} % 4. Computational Simulation
+\input{sec-conclusions}   % 5. Conclusions and Lessons Learned
+\input{sec-references}    % 6. References
+
+% --- Appendices ---
+\input{sec-appendix-hazard}   % Appendix: Hazard Analysis
+\input{sec-appendix-risk}     % Appendix: Risk Assessment
+\input{sec-appendix-drawings} % Appendix: Engineering Drawings and Optional
+
+% --- Template guidance (NOT part of the final report) ---
+% Instrucoes de formatacao do template LASC, preservadas para consulta:
+%   sec-procedure.tex   (2. Procedure for submission)
+%   sec-guidelines.tex  (3. General Guidelines and Required Elements)
+%   sec-formatting.tex  (4. Detailed Formatting Instructions)
+
+\end{document}

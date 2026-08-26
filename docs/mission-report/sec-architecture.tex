@@ -1,0 +1,127 @@
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  \textbf{System Architecture and Concept of Operations}
+\end{enumerate}
+
+\subsection{System Architecture}
+
+Helike \#213 is a PocketQube 1P (50$\times$50$\times$50~mm, $\sim$200~g)
+whose central subsystem is the SRAB — the bioinspired autorotative
+recovery system. The satellite is organized in five functional blocks:
+
+\begin{center}
+{\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabularx}{\linewidth}{>{\raggedright}p{3cm}X}
+\toprule
+\textbf{Block} & \textbf{Components} \\
+\midrule
+Recovery (SRAB) & 2 autorotative wings (Asa3), passive deployment \\
+EPS & Li-Ion 1300~mAh + BMS, RBF pin, 2 kill switches \\
+Avionics & ESP32-C3 Super Mini, single 5~Hz polling loop \\
+Sensors & BME280 (pressure/temp/humidity), ICM-20602 (6-axis IMU) \\
+Telemetry & LoRa RFM95W 915~MHz, GPS NEO-8M, SD + LittleFS \\
+\bottomrule
+\end{tabularx}
+}
+\end{center}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/fig_schematic.png}
+\caption{Electrical schematic of Helike \#213 (KiCad). U1: ESP32-C3
+Super Mini; U2: LoRa RFM95W-915S2; U3: BME280; U4: ICM-20602; U5: GPS
+NEO-8M; U6: SD card module; SW1/SW2: kill switches (Z axis); SW3: RBF
+pin; J1: SMA antenna; D1/BZ1: status LED and buzzer.}
+\label{fig:schematic}
+\end{figure}
+
+\subsection{Subsystem Descriptions}
+
+\subsubsection{Recovery (SRAB)}
+
+The SRAB is a passive recovery system composed of 2 autorotative wings
+(Asa3 geometry), stowed during flight and deployed by ejection. They
+convert the potential energy of the fall into rotational kinetic
+energy, slowing the satellite to a predicted terminal velocity of
+13.33~m/s --- the $V_F = 20/1.5$~m/s design target, applying a 1.5
+safety factor to the LASC 20~m/s limit. There are no actuators: no
+servo, no pyrotechnics, no deployment electronics. Recovery does not
+depend on software at all, so it works even with total loss of the
+avionics. The two-wing configuration keeps the mechanism simple and
+light; losing a single wing is a mission-critical degradation, so the
+design relies on the robustness of the geometry and on the drop-test
+evidence accumulated across the Asa1/Asa2/Asa3 iterations.
+
+\subsubsection{Electrical Power System}
+
+Energy comes from a 1300~mAh Li-Ion battery protected by a BMS that
+covers overcharge, overdischarge, short-circuit and overcurrent. With
+an average draw of about 145~mA, the predicted autonomy exceeds 5~h, a
+margin of roughly two times the SCSM requirement of 4~h. Safety is
+handled by two kill switches (SW1/SW2, NC contacts wired in parallel,
+Z axis) plus the RBF pin
+(SW3), which cuts all energy when inserted. The satellite only powers
+on at ejection, keeping it independent from the rocket as required by
+REC 10.1.1.
+
+\subsubsection{Avionics and Telemetry}
+
+At the core sits an ESP32-C3 Super Mini, a single-core RISC-V
+microcontroller running a single synchronous 5~Hz polling loop, with
+no state machine and no RTOS scheduler. A BME280 measures pressure,
+temperature and humidity, and an ICM-20602 six-axis IMU adds
+acceleration and angular rate; together they feed the 5~Hz telemetry
+packet and the SRAB rotation analysis. Telemetry goes down through the
+LoRa RFM95W at 915~MHz (SF7, 125~kHz bandwidth, 20~dBm, sync word
+0xF3, CRC enabled), transmit-only, while a GPS NEO-8M records the
+post-landing position. Flight data are written to an SD card with
+automatic LittleFS fallback on the internal flash, and three ground
+beacons measure RSSI for trilateration once the satellite is on the
+ground. Impact detection, the buzzer and the low-power beacon mode are
+planned for a future firmware revision and are not yet part of the
+flight software.
+
+\subsection{Concept of Operations}
+
+From a technology-development standpoint, the ConOps doubles as the
+flight-test plan for the SRAB: each arc exercises one stage of the
+recovery system --- powered-off safety while stowed (SAFE), ejection
+and power-on (BOOST), passive deployment and autorotation (DESCENT),
+and ground location (POST-LANDING) --- and the descent telemetry is
+the primary evidence for validating the aerodynamic model against
+real flight data.
+
+The satellite's behavior follows the physical flight profile in four
+arcs, and the firmware mirrors them through a single polling loop
+rather than a phase-detecting state machine. The first arc is
+\emph{inert}: the satellite starts in SAFE, with the kill switches and
+the RBF pin inserted, and stays completely powered off until ejection.
+The second arc begins at \emph{ejection}: the satellite powers on,
+initializes the sensors and attempts a first GPS fix, then samples and
+transmits through the boost and coast phases while the rocket climbs
+toward apogee. The third arc is the \emph{descent}: at apogee the
+satellite leaves the rocket, the two SRAB wings deploy passively ---
+no actuator, no command required --- and the descent is governed
+entirely by autorotation while the 5~Hz telemetry packet streams
+rotation rate, descent velocity and the monitored Launch Readiness
+Review parameters. The fourth arc is \emph{post-landing}: impact
+detection, the buzzer and a low-power beacon mode are planned for a
+future firmware revision; the current firmware simply keeps
+transmitting periodic packets with RSSI and GPS position until the
+battery is exhausted or the recovery team arrives.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/fig_asa3_geometry.png}
+\caption{SRAB wing geometry views (Asa3): three orthogonal projections
+of the wing + hub assembly used in the computational simulation and
+drop tests.}
+\label{fig:wing-geometry}
+\end{figure}
+
+% TODO: replace placeholder figure above with the final CAD renders /
+% exploded view once available. fig_asa3_geometry.png is the
+% computational geometry used in the SRAB model.

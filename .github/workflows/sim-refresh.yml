@@ -1,0 +1,122 @@
+name: Refresh Helike Landing Page
+
+# Atualiza a landing page da Missao Helike #213 a cada 6h,
+# batendo com os ciclos de release do GFS (00/06/12/18 UTC).
+#
+# - Re-roda a simulacao RocketPy (Stage 1+2+3) para a data-alvo
+#   2026-09-03 12:00 UTC (09:00 BRT)
+# - Regenera os artefatos JSON/GeoJSON em docs/landing/data/
+# - Commita direto no branch atual
+#
+# Tambem roda em push (para validar mudancas) e via workflow_dispatch
+# (para re-rodar manualmente).
+
+on:
+  schedule:
+    # A cada 6h, nos ciclos GFS: 00:30, 06:30, 12:30, 18:30 UTC
+    # (GFS libera ~3h:30min apos cada synoptic hour)
+    - cron: '30 0,6,12,18 * * *'
+  push:
+    paths:
+      - 'extras/wing-analysis/scripts/export_landing_data.py'
+      - 'extras/wing-analysis/src/**'
+      - 'extras/wing-analysis/notebooks/**'
+      - 'docs/landing/index.html'
+      - '.github/workflows/sim-refresh.yml'
+  workflow_dispatch:
+
+# Sem conflito: este workflow faz commit direto no branch do PR/push,
+# sem precisar de permissao especial de PR.
+permissions:
+  contents: write
+
+concurrency:
+  # Evita rodadas simultaneas (especialmente quando dois push disparam)
+  group: sim-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('extras/wing-analysis/scripts/export_landing_data.py', '.github/workflows/sim-refresh.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Dependencias minimas para a simulacao (otimizadas para tempo de install)
+          pip install \
+            "numpy>=1.26" \
+            "pandas>=2.0" \
+            "scipy>=1.11" \
+            "matplotlib>=3.8" \
+            "rocketpy>=1.13" \
+            "ezdxf>=1.1"
+
+      - name: Verify data files
+        run: |
+          echo "=== data files needed ==="
+          ls -la extras/wing-analysis/notebooks/{motor.csv,dedalo_motor.json,dedalo_data.json,power_off_drag.csv,power_on_drag.csv}
+          echo "=== geometry ==="
+          ls -la extras/wing-analysis/geometry/
+
+      - name: Run simulation
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python extras/wing-analysis/scripts/export_landing_data.py 2>&1 | tee /tmp/sim.log
+          echo "=== exit code: $? ==="
+
+      - name: Verify outputs
+        run: |
+          test -s docs/landing/data/landing.json || (echo "ERROR: landing.json missing or empty" && exit 1)
+          test -s docs/landing/data/trajectory_3d.json || (echo "ERROR: trajectory_3d.json missing or empty" && exit 1)
+          test -s docs/landing/data/trajectory_topdown.geojson || (echo "ERROR: trajectory_topdown.geojson missing or empty" && exit 1)
+          echo "=== landing.json summary ==="
+          python -c "
+          import json
+          d = json.load(open('docs/landing/data/landing.json'))
+          print(f'  Apogeu:     {d[\"ascent\"][\"apogee_m_agl\"]:.0f} m AGL')
+          print(f'  v_impact:   {d[\"srab_descent\"][\"impact_velocity_m_s\"]:.2f} m/s')
+          print(f'  area:       {d[\"impact_zone\"][\"area_km2\"]:.3f} km²')
+          print(f'  generated:  {d[\"generated_at_utc\"]}')
+          "
+
+      - name: Commit & push
+        # So commita se houver mudancas reais
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/landing/data/
+          # Verifica se ha mudancas staged
+          if git diff --cached --quiet; then
+            echo "Sem mudancas nos artefatos — pulando commit."
+            exit 0
+          fi
+          # Mensagem com timestamp do GFS run + hash do commit
+          TS=$(date -u +"%Y-%m-%d %H:%M UTC")
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          git commit -m "data: refresh landing artifacts (GFS run @ ${TS})
+
+          - apogeu, drift SRAB, area de impacto
+          - 3D trajectory + top-down GeoJSON
+          - triggered by: ${GITHUB_EVENT_NAME}
+          - previous: @ ${SHORT_SHA}"
+          git push
+          echo "Commit pushed."

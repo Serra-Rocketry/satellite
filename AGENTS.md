@@ -89,4 +89,4 @@ Os parametros LoRa DEVEM ser iguais nos dois firmwares:
 - Sync Word: 0xF3
 - SF: 7, BW: 125 kHz, CR: 4/5, CRC: enabled
 
-Formato do pacote: 19 campos (satellite) -> receiver preenche hora/data/rssi -> 21 campos (WebUI).
+Formato do pacote: 18 campos (satellite) -> receiver preenche hora/data/vz/maxAltitude/state/parachute/rssi -> 24 campos (WebUI). Ver recovery-webui/docs/protocol.md (v2.0).
