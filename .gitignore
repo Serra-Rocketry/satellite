@@ -33,3 +33,4 @@ extras/wing-analysis/docs/*.pdf
 
 # Node.js
 node_modules/
+.history/
