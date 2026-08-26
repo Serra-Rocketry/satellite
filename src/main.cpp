@@ -96,6 +96,23 @@ void setup() {
     g_gps.begin();
     Serial.println(F("[GPS] NEO-8M initialized (9600 baud)"));
 
+    // --- Barramento SPI unico: inicia UMA vez, antes de SD e LoRa ---
+    // Ambas as libs (SD/LoRa) chamam SPI.begin() internamente com defaults;
+    // a reinicializacao dupla corrompe o estado do periferico no ESP32-C3.
+    pinMode(LORA_CS, OUTPUT);  digitalWrite(LORA_CS, HIGH);
+    pinMode(SD_CS_PIN, OUTPUT); digitalWrite(SD_CS_PIN, HIGH);
+    SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI);
+
+    // --- LoRa PRIMEIRO: o SD.begin/end reconfigura o periferico SPI e
+    // corrompe a comunicacao com o radio se rodar antes. Com o LoRa ja
+    // configurado, as transacoes SPI atomicas do SD coexistem sem conflito.
+    g_lora_ok = g_telemetry.begin();
+    if (g_lora_ok) {
+        Serial.println(F("[LORA] RFM95W OK (915MHz)"));
+    } else {
+        Serial.println(F("[LORA] ERROR: RFM95W not found!"));
+    }
+
     // --- Storage (SD primary, LittleFS fallback) ---
     if (g_fs.begin()) {
         String csv_header = "TEAM_ID,millis,count,altp,temp,umi,p,gp,gr,gy,ap,ar,ay,alt,lat,lon,sat,rssi";
@@ -104,14 +121,6 @@ void setup() {
         Serial.println(g_fs.getTypeString());
     } else {
         Serial.println(F("[FS] ERROR: No storage available!"));
-    }
-
-    // --- LoRa ---
-    g_lora_ok = g_telemetry.begin();
-    if (g_lora_ok) {
-        Serial.println(F("[LORA] RFM95W OK (915MHz)"));
-    } else {
-        Serial.println(F("[LORA] ERROR: RFM95W not found!"));
     }
 
     // --- Status summary ---

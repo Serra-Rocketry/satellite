@@ -27,12 +27,16 @@ bool FilesystemModule::begin() {
     Serial.println("Initializing storage...");
     _initialized = true;
 
+#ifndef BENCH_SKIP_SD
     // --- SD Card Primary (exact pattern from sensor_logging_fallback.ino) ---
     if (setupSD()) {
         _storage_type = STORAGE_SD;
         Serial.println("SD card available - using as primary storage");
         return true;
     }
+#else
+    Serial.println("[BENCH] SD skipped (BENCH_SKIP_SD)");
+#endif
 
     // --- LittleFS Secondary (fallback from sensor_logging_fallback.ino) ---
     if (setupLittleFS()) {
@@ -95,10 +99,19 @@ bool FilesystemModule::appendLine(const String& packet) {
     }
 
     if (!file) {
-        Serial.println("Failed to open file for writing.");
+        // SD morreu em voo (ex: queda de alimentacao): degrada p/ LittleFS
+        if (_storage_type == STORAGE_SD && ++_sd_fail_count >= SD_MAX_FAILS) {
+            Serial.println("[FS] SD failed repeatedly - switching to LittleFS");
+            SD.end();
+            _storage_type = STORAGE_NONE;
+            if (setupLittleFS()) {
+                _storage_type = STORAGE_LITTLEFS;
+            }
+        }
         return false;
     }
 
+    _sd_fail_count = 0;
     file.println(packet);
     file.flush();
     file.close();
@@ -121,14 +134,40 @@ bool FilesystemModule::exists(const char* path) const {
 
 bool FilesystemModule::setupSD() {
     Serial.println("Initializing SD...");
-    if (SD.begin(SD_CS_PIN) && SD.cardType() != CARD_NONE) {
-        Serial.printf("SD OK — type: %s  size: %llu MB\n",
-            SD.cardType() == CARD_MMC ? "MMC" :
-            SD.cardType() == CARD_SD  ? "SDSC" : "SDHC",
-            SD.cardSize() * 512ULL / 1048576ULL);
-        return true;
+
+    // Sequencia robusta de init (spec SD): ambos CS em HIGH antes de tocar
+    // o barramento, evita que o RFM95W (NSS=7) responda junto no mount
+    pinMode(SD_CS_PIN, OUTPUT);
+    digitalWrite(SD_CS_PIN, HIGH);
+    pinMode(LORA_CS, OUTPUT);
+    digitalWrite(LORA_CS, HIGH);
+
+    // SPI manual com clock baixo: 80+ clocks de wake-up com barramento
+    // ocioso (CS alto). Sem isso o cartao pode engatar deslocado e o
+    // SD.begin() falha de forma intermitente ("no token received").
+    // IMPORTANTE: NAO chamar spi->begin() aqui (o main ja iniciou) nem
+    // SD.end() em falha — ambos desligam/reconfiguram o periferico SPI
+    // e corrompem a configuracao do radio LoRa no mesmo barramento.
+    SPIClass *spi = &SPI;
+    SPISettings slow(400000, MSBFIRST, SPI_MODE0);
+    spi->beginTransaction(slow);
+    for (int i = 0; i < 20; i++) spi->transfer(0xFF);
+    spi->endTransaction();
+    digitalWrite(SD_CS_PIN, HIGH);
+
+    // Tentativa 1: clock nominal. Sem retry com SD.end() — ver nota acima.
+    if (!SD.begin(SD_CS_PIN, *spi, 4000000U)) {
+        return false;
     }
-    return false;
+
+    if (SD.cardType() == CARD_NONE) {
+        return false;
+    }
+    Serial.printf("SD OK — type: %s  size: %llu MB\n",
+        SD.cardType() == CARD_MMC ? "MMC" :
+        SD.cardType() == CARD_SD  ? "SDSC" : "SDHC",
+        SD.cardSize() * 512ULL / 1048576ULL);
+    return true;
 }
 
 bool FilesystemModule::setupLittleFS() {

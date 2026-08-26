@@ -43,6 +43,9 @@
 #define LORA_RST            1
 #define LORA_DIO0           2
 
+// SD Card SPI (compartilhado com LoRa)
+#define SD_CS_PIN           10
+
 // GPS UART (NEO-8M)
 #define GPS_RX              20
 #define GPS_TX              21
