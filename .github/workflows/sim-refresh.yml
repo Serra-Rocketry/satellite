@@ -4,7 +4,7 @@ name: Refresh Helike Landing Page
 # batendo com os ciclos de release do GFS (00/06/12/18 UTC).
 #
 # - Re-roda a simulacao RocketPy (Stage 1+2+3) para a data-alvo
-#   2026-09-03 12:00 UTC (09:00 BRT)
+#   2026-09-04 12:00 UTC (09:00 BRT)
 # - Regenera os artefatos JSON/GeoJSON em docs/landing/data/
 # - Commita direto no branch atual
 #
@@ -120,9 +120,11 @@ jobs:
           - 3D trajectory + top-down GeoJSON
           - triggered by: ${GITHUB_EVENT_NAME}
           - previous: @ ${SHORT_SHA}"
-          # Outros runs podem ter commitado na branch entre o checkout e aqui
+          # Outros runs podem ter commitado no branch entre o checkout e aqui
           # (runs de ~6h em ciclos GFS + pushes). Rebase antes de pushar.
-          git pull --rebase origin dev-2026
+          # Os artefatos sao gerados por maquina: em conflito, mantem a
+          # versao recem-gerada (a "ours" do rebase e a mais nova).
+          git pull --rebase -X ours origin "${GITHUB_REF_NAME}"
           git push
           echo "Commit pushed."
 
@@ -138,6 +140,9 @@ jobs:
           path: docs/landing
 
   deploy-pages:
+    # O ambiente 'github-pages' so aceita deploy da branch padrao;
+    # em PRs (outras branches), pula o deploy sem falhar o check.
+    if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     needs: refresh
     timeout-minutes: 3
