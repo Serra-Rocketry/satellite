@@ -16,7 +16,18 @@ non-conductive mounting plane for the electronics stack, eliminating
 the need for additional standoffs or insulating hardware. The
 mechanical architecture follows the PocketQube 1P standard envelope,
 guaranteeing compatibility with the deployer and with the Dédalo
-launch vehicle integration.
+launch vehicle integration. The complete assembled satellite, with
+the SRAB wings in the deployed configuration, is shown in
+Fig.~\ref{fig:satellite-assembly}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/Helike_complete_assy_render.JPG}
+\caption{Complete Helike \#213 assembly render: 1P Alba Orbital
+aluminum frame, FRP backplate and the two SRAB autorotative wings in
+the deployed configuration.}
+\label{fig:satellite-assembly}
+\end{figure}
 
 \subsection{Subsystem Descriptions}
 
@@ -51,10 +62,10 @@ on at ejection.
 \subsubsection{Avionics and Telemetry}
 
 At the core sits an ESP32-C3 Super Mini, a single-core RISC-V
-microcontroller running a single synchronous 20~Hz polling loop. The
+microcontroller running a single synchronous 5~Hz polling loop. The
 ESP32-C3 was selected over the dual-core ESP32-S3 used in the team's
 rocket flight computers: the flight loop reads two sensors, assembles
-a telemetry packet and transmits it at 20~Hz, a workload that keeps a
+a telemetry packet and transmits it at 5~Hz, a workload that keeps a
 single 160~MHz RISC-V core below a few percent duty cycle. A second
 core would add idle current and cost without contributing capability,
 and the bare polling loop --- no RTOS, no preemption --- eliminates
@@ -69,10 +80,12 @@ chosen for the mission's energy profile: in measurement mode it draws
 ~3.6~$\mu$A at a 1~Hz refresh rate, negligible against the link
 budget, and a single I2C transaction returns all three environmental
 quantities. The ICM-20602 was chosen for its low-power MEMS
-architecture and its sampling rate: with the SRAB autorotating at
-roughly 8~Hz at equilibrium (477~rpm), the 20~Hz polling loop sits
-above the Nyquist frequency of the spin, so the IMU resolves the
-rotation without aliasing.
+architecture; because the gyroscope measures the spin rate directly
+as a near-constant signal in steady autorotation (477~rpm at
+equilibrium), the 5~Hz telemetry rate is sufficient to estimate the
+equilibrium values without aliasing, and the 20~Hz-capable
+instrumentation was validated in bench tests (ENMC) and in the 20~m
+drop campaigns.
 
 Telemetry goes down through the LoRa RFM95W at 915~MHz, transmit-only,
 while a GPS NEO-8M records the position. The link operates at
@@ -90,6 +103,44 @@ Flight data are written to an SD card with
 automatic LittleFS fallback on the internal flash, and three ground
 beacons measure RSSI for trilateration once the satellite is on the
 ground.
+
+\subsubsection{Ground Segment: Post-Landing Recovery}
+
+The second half of the mission is the recovery of the satellite on
+the ground, performed by a ground segment composed of a LoRa receiver,
+a mesh of up to eight GPS-equipped beacons (B1--B8) and a web-based
+recovery dashboard. The receiver and the beacons use the same hardware
+as the satellite's radio front end (ESP32-C3 + RFM95W + NEO-8M), which
+allows any beacon to be promoted to receiver and vice versa. All nodes
+listen to the 915~MHz link in continuous RX mode: the receiver is the
+single point that connects to the recovery dashboard over USB serial,
+while each beacon additionally transmits a compact report
+(\#B1..\#B8, 11 fields) containing its own GPS position and the RSSI
+of the last satellite packet it heard, with a random anti-collision
+jitter of 15--120~ms between reports.
+
+The receiver correlates the reports through a synchronization basket
+indexed by the satellite's packet counter: when three or more
+listeners (receiver plus beacons) report RSSI for the \emph{same}
+satellite packet, the ground segment computes a corrected ground
+position by RSSI trilateration. The slant range to each listener is
+estimated with the log-distance model
+$r_i = 10^{(\mathrm{TX\_POWER} - \mathrm{RSSI}_i)/(10 n)}$ with
+$n = 2.0$ and $\mathrm{TX\_POWER} = 20$~dBm, then projected onto the
+ground using the satellite's own barometric altitude
+($d_i = \sqrt{r_i^2 - h^2}$); a 2D least-squares fit over the
+listeners yields the corrected latitude/longitude. A Monte Carlo
+analysis of the estimator (using the same formula implemented in
+firmware) shows a median error of 134~m at $\pm1$~dB RSSI noise (P95
+309~m) and 268~m at $\pm2$~dB (P95 744~m) --- a coarse refinement
+that complements, rather than replaces, the satellite's own GPS fix.
+The correction is only applied when the residual of the least-squares
+fit stays below 1500~m, a gate well above the P95 error at $\pm2$~dB
+that suppresses catastrophic outliers; otherwise the raw satellite GPS
+position is emitted. The resulting packet stream is presented in a web
+dashboard (Flask + WebSocket + Leaflet map) that shows the satellite's
+live position, the beacon mesh status and the RSSI history in real
+time, and logs every packet to CSV for post-mission analysis.
 
 \subsection{Concept of Operations}
 
@@ -113,7 +164,11 @@ entirely by autorotation while the telemetry packet streams
 rotation rate, descent velocity. The fourth arc is \emph{post-landing}: impact
 detection, the current firmware simply keeps
 transmitting periodic packets with RSSI and GPS position until the
-battery is exhausted or the recovery team arrives.
+battery is exhausted or the recovery team arrives. This final arc is
+the second half of the mission: the ground segment --- the LoRa
+receiver and the beacon mesh described in Section 2.3 --- converts the
+satellite's post-landing packets into an accurate ground position,
+driving the team directly to the landing point.
 
 \begin{figure}[htbp]
 \centering

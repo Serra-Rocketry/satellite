@@ -135,7 +135,7 @@ failure, and the design attacks it from two sides. Physically, the
 system is passive with no hinges to jam, and three drop-test campaigns
 validated deployment (Section 4). In firmware, the strategy is the opposite of
 complexity: the flight software runs a single synchronous polling loop
-that samples, validates and transmits at 20~Hz and a hardware watchdog 
+that samples, validates and transmits at 5~Hz and a hardware watchdog 
 (TWDT, 5~s) resets the system if the loop ever stalls.
 Energy failure is covered by a robust
 BMS with overcharge, overdischarge, short-circuit and overcurrent
@@ -190,7 +190,7 @@ Recovery & SRAB --- 2 wings, passive, non-parachute \\
 Terminal velocity (predicted) & 13.33~m/s ($V_F = 20$~m/s target, SF 1.5) \\
 Microcontroller & ESP32-C3 Super Mini (single-core RISC-V) \\
 Communication & LoRa RFM95W, 915~MHz, SF7, 125~kHz bandwidth, 20~dBm, sync 0xF3, CRC enabled \\
-Telemetry rate & 20~Hz \\
+Telemetry rate & 5~Hz \\
 Navigation & GPS NEO-8M \\
 Sensors & BME280 (pressure/temp/humidity) + ICM-20602 (6-axis IMU) \\
 Storage & SD card + LittleFS fallback \\
