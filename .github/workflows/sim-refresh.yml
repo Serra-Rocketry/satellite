@@ -122,9 +122,9 @@ jobs:
           - previous: @ ${SHORT_SHA}"
           # Outros runs podem ter commitado no branch entre o checkout e aqui
           # (runs de ~6h em ciclos GFS + pushes). Rebase antes de pushar.
-          # Usa o branch atual (em PRs, evita conflito dos commits da feature
-          # com dev-2026; no dev-2026 comporta-se como antes).
-          git pull --rebase origin "${GITHUB_REF_NAME}"
+          # Os artefatos sao gerados por maquina: em conflito, mantem a
+          # versao recem-gerada (a "ours" do rebase e a mais nova).
+          git pull --rebase -X ours origin "${GITHUB_REF_NAME}"
           git push
           echo "Commit pushed."
 
