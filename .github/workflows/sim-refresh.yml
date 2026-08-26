@@ -29,6 +29,8 @@ on:
 # sem precisar de permissao especial de PR.
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   # Evita rodadas simultaneas (especialmente quando dois push disparam)
@@ -92,7 +94,7 @@ jobs:
           python -c "
           import json
           d = json.load(open('docs/landing/data/landing.json'))
-          print(f'  Apogeu:     {d[\"ascent\"][\"apogee_m_agl\"]:.0f} m AGL')
+          print(f'  Apogee:     {d[\"ascent\"][\"apogee_m_agl\"]:.0f} m AGL')
           print(f'  v_impact:   {d[\"srab_descent\"][\"impact_velocity_m_s\"]:.2f} m/s')
           print(f'  area:       {d[\"impact_zone\"][\"area_km2\"]:.3f} km²')
           print(f'  generated:  {d[\"generated_at_utc\"]}')
@@ -120,3 +122,26 @@ jobs:
           - previous: @ ${SHORT_SHA}"
           git push
           echo "Commit pushed."
+
+      # Publica docs/landing/ no GitHub Pages (via Actions).
+      # URL: https://serra-rocketry.github.io/satellite/
+      # Requer Pages source = "GitHub Actions" nas configs do repo.
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/landing
+
+  deploy-pages:
+    runs-on: ubuntu-latest
+    needs: refresh
+    timeout-minutes: 3
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
