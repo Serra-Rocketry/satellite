@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-08-26T20:59:44Z",
+  "generated_at_utc": "2026-08-27T10:11:44Z",
   "launch": {
     "datetime_local_brt": "2026-09-04T09:00:00-03:00",
     "datetime_utc": "2026-09-03T12:00:00Z",
@@ -16,38 +16,38 @@
     "note": "GFS forecast for 2026-09-04 12:00 UTC. Updated every 6h (00/06/12/18Z)."
   },
   "ascent": {
-    "apogee_m_agl": 917.872239864814,
-    "apogee_m_asl": 1393.447435177314,
-    "apogee_time_s": 14.127997936991784,
-    "out_of_rail_velocity_m_s": 21.321075633947565,
-    "max_speed_m_s": 136.88043808884223,
-    "max_mach": 0.4049926786994128,
-    "max_acceleration_m_s2": 113.62185759708214,
-    "max_acceleration_g": 11.586205034041406
+    "apogee_m_agl": 912.4925776692899,
+    "apogee_m_asl": 1388.0677729817899,
+    "apogee_time_s": 14.08160033127801,
+    "out_of_rail_velocity_m_s": 21.317562569232887,
+    "max_speed_m_s": 136.76439280725845,
+    "max_mach": 0.4053233619541985,
+    "max_acceleration_m_s2": 113.57823679353639,
+    "max_acceleration_g": 11.581756949981532
   },
   "parachute_descent": {
-    "impact_x_m": -576.7875498886327,
-    "impact_y_m": 407.2745987084347,
-    "drift_m": 706.0853181164784,
-    "descent_time_s": 117.07629841851653
+    "impact_x_m": -658.3473677266722,
+    "impact_y_m": 415.06160090936055,
+    "drift_m": 778.2656289096157,
+    "descent_time_s": 116.53227985655113
   },
   "srab_descent": {
-    "impact_x_m": -266.7451326070909,
-    "impact_y_m": 332.19365440770963,
-    "drift_m": 426.0347283946736,
-    "descent_time_s": 68.66310017902217,
-    "impact_velocity_m_s": 13.328313430479762,
-    "impact_spin_rpm": 523.3427665378124,
+    "impact_x_m": -299.33414086413626,
+    "impact_y_m": 328.4210533776832,
+    "drift_m": 444.36619604620876,
+    "descent_time_s": 68.24481831112499,
+    "impact_velocity_m_s": 13.3404642658877,
+    "impact_spin_rpm": 523.5596323439727,
     "target_velocity_m_s": 13.333333333333334,
     "lasc_limit_m_s": 20.0
   },
   "impact_zone": {
-    "center_x_m": -421.7663412478618,
-    "center_y_m": 369.73412655807215,
-    "semi_axis_a_m": 359.5019190408616,
+    "center_x_m": -478.8407542954043,
+    "center_y_m": 371.74132714352186,
+    "semi_axis_a_m": 384.6598775714689,
     "semi_axis_b_m": 200.0,
-    "area_km2": 0.22588171756204067,
-    "impact_lat": -21.945449001334953,
-    "impact_lon": -48.95057535562334
+    "area_km2": 0.2416889291018552,
+    "impact_lat": -21.945741752037947,
+    "impact_lon": -48.95061522585468
   }
 }
