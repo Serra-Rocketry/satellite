@@ -238,6 +238,16 @@
   .vehicle-note { font-size: 11px; color: var(--fg-1); margin-top: 10px; font-style: italic; }
 
   /* ── Charts ──────────────────────────────────────────────── */
+  #stl-viewer {
+    width: 100%;
+    height: 420px;
+    border-radius: 8px;
+    background: radial-gradient(ellipse at center, #14101f 0%, var(--bg) 75%);
+    cursor: grab;
+  }
+  #stl-viewer:active { cursor: grabbing; }
+  #stl-viewer canvas { display: block; border-radius: 8px; }
+
   .chart {
     background: var(--bg-1);
     border-radius: 12px;
@@ -414,6 +424,13 @@
   </section>
 
   <!-- Charts -->
+  <section class="chart">
+    <h2 class="chart-title">3D Model — Helike #213</h2>
+    <p class="chart-sub">CAD assembly (STL) · drag to rotate · scroll to zoom</p>
+    <div id="stl-viewer"></div>
+    <p class="chart-sub" id="stl-status">Loading model…</p>
+  </section>
+
   <section class="chart">
     <h2 class="chart-title">3D Trajectory (North / East / Up)</h2>
     <p class="chart-sub">Three concatenated stages — ascent, parachute descent, SRAB descent</p>
@@ -767,6 +784,83 @@ if (typeof L !== 'undefined' && !L.ellipse) {
     console.error('Init failed:', e);
   }
 })();
+</script>
+
+<!-- STL viewer (Three.js) -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const container = document.getElementById('stl-viewer');
+const statusEl = document.getElementById('stl-status');
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(45, 2, 0.1, 2000);
+camera.position.set(80, 60, 80);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.autoRotate = true;
+controls.autoRotateSpeed = -1.5; // negative = clockwise (matches SRAB spin direction)
+
+scene.add(new THREE.AmbientLight(0x888899, 0.9));
+const key = new THREE.DirectionalLight(0xffffff, 1.6);
+key.position.set(1, 1.5, 1);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0x907abf, 0.7); // purple accent
+fill.position.set(-1, -0.5, -1);
+scene.add(fill);
+
+new STLLoader().load('data/helike_assy.stl', (geometry) => {
+  geometry.computeBoundingBox();
+  const size = new THREE.Vector3();
+  geometry.boundingBox.getSize(size);
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const scale = 100 / maxDim;
+  geometry.scale(scale, scale, scale);
+  geometry.center();
+
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x9b8fc0,
+    metalness: 0.55,
+    roughness: 0.35,
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+  scene.add(mesh);
+
+  statusEl.textContent = `Helike assembly · ${maxDim.toFixed(0)} mm bounding box`;
+}, undefined, () => {
+  statusEl.textContent = 'Failed to load STL model.';
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+});
 </script>
 </body>
 </html>
