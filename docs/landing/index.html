@@ -237,6 +237,66 @@
   .spec-val { color: var(--fg-0); font-weight: 600; text-align: right; white-space: nowrap; }
   .vehicle-note { font-size: 11px; color: var(--fg-1); margin-top: 10px; font-style: italic; }
 
+  /* ── About LASC section ──────────────────────────────────── */
+  .lasc { border-top: 3px solid var(--accent-1); }
+  .lasc-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .lasc-logo {
+    height: 56px;
+    width: auto;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.95);
+    padding: 6px 10px;
+    flex-shrink: 0;
+  }
+  .lasc-text {
+    color: var(--fg-1);
+    font-size: 13.5px;
+    line-height: 1.65;
+    margin: 8px 0;
+  }
+  .lasc-text strong { color: var(--fg-0); }
+  .lasc-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0;
+  }
+  .badge {
+    background: var(--bg-2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--fg-0);
+  }
+  .lasc-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .lasc-footer a {
+    color: var(--accent-1);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .lasc-footer a:hover { text-decoration: underline; }
+  .mission-patch {
+    height: 72px;
+    width: 72px;
+    object-fit: contain;
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  }
+
   /* ── Charts ──────────────────────────────────────────────── */
   #stl-viewer {
     width: 100%;
@@ -441,6 +501,41 @@
     <h2 class="chart-title">Top-down view — landing location</h2>
     <p class="chart-sub">Flight line, estimated impact zone (ellipse) and launch pad</p>
     <div id="map"></div>
+  </section>
+
+  <!-- About LASC -->
+  <section class="chart lasc">
+    <div class="lasc-header">
+      <img src="data/lasc_logo.png" alt="LASC logo" class="lasc-logo">
+      <div>
+        <h2 class="chart-title" style="margin-bottom:2px;">7th Latin American Space Challenge</h2>
+        <p class="chart-sub">The largest rocket and satellite engineering competition in the world</p>
+      </div>
+    </div>
+    <p class="lasc-text">
+      The <strong>2026 LASC</strong> takes place <strong>September 2–5, 2026</strong> at the
+      <strong>Sugarcane Launch Range (SLR)</strong> in Iacanga, São Paulo, Brazil. The event brings together
+      university teams from across Latin America and beyond for three competitions: the
+      <strong>Rocket Challenge</strong> (apogee categories from 500 m to 3,000 m plus hybrid/liquid),
+      the <strong>Satellite Challenge</strong> (PocketQube, CanSat and CubeSat form factors), and the new
+      <strong>Lander Challenge</strong>.
+    </p>
+    <p class="lasc-text">
+      The Helike #213 competes in the <strong>Satellite Challenge (PocketQube)</strong> aboard the
+      <strong>Dédalo #11</strong> in the Rocket Challenge — a <em>full mission</em> entry, from liftoff to
+      SRAB recovery. This is Serra Rocketry's return to the launch range after LASC 2025, with a payload
+      built to answer one question: <em>can recovery be engineered to never fail?</em>
+    </p>
+    <div class="lasc-badges">
+      <span class="badge">📅 Sep 02–05, 2026</span>
+      <span class="badge">📍 Iacanga, SP — Brazil</span>
+      <span class="badge">🛰️ Satellite Challenge · PocketQube 1P</span>
+      <span class="badge">🚀 Rocket Challenge · Dédalo #11</span>
+    </div>
+    <div class="lasc-footer">
+      <a href="https://www.lasc.space" target="_blank" rel="noopener">lasc.space ↗</a>
+      <img src="data/mission_patch.png" alt="Helike mission patch" class="mission-patch">
+    </div>
   </section>
 
   <footer>
