@@ -58,6 +58,73 @@ def now_utc_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def extract_vehicle_info(motor, rocket_full, rocket_empty, ascent) -> dict:
+    """Vehicle cards data: Dédalo (from RocketPy objects) + Helike specs.
+
+    Rockets expose properties (not methods) in RocketPy 1.x — access them
+    defensively so a RocketPy upgrade degrades to None instead of crashing
+    the whole export.
+    """
+
+    def prop(obj, name):
+        try:
+            v = getattr(obj, name)
+            if isinstance(v, (tuple, list)) and len(v) >= 2:
+                # motor.burn_time = (t_start, t_end)
+                return float(v[1] - v[0])
+            return float(v) if v is not None else None
+        except (AttributeError, TypeError, ValueError):
+            return None
+
+    total_impulse = prop(motor, "total_impulse")
+    burn_time = prop(motor, "burn_time")
+    avg_thrust = (
+        round(total_impulse / burn_time, 1)
+        if total_impulse and burn_time
+        else None
+    )
+    motor_info = {
+        "total_impulse_n_s": round(total_impulse, 1) if total_impulse else None,
+        "avg_thrust_n": avg_thrust,
+        "burn_time_s": round(burn_time, 2) if burn_time else None,
+        "propellant_mass_g": round(prop(motor, "propellant_initial_mass") * 1000)
+        if prop(motor, "propellant_initial_mass")
+        else None,
+    }
+
+    liftoff_mass = prop(rocket_full, "mass")
+    return {
+        "dedalo": {
+            "dry_mass_kg": round(rocket_empty.mass, 2) if rocket_empty.mass else None,
+            "liftoff_mass_kg": round(liftoff_mass, 2) if liftoff_mass else None,
+            "diameter_mm": 106,  # 2 × radius 0.053 m
+            "length_m": 2.53,  # nose 0.33 + body (fins at 1.54 + chord 0.16 ≈ 1.70) → measured
+            "nose_type": "Ogive",
+            "n_fins": 4,
+            "parachute_cd_s": 1.5,
+            "parachute_diameter_m": 1.2,
+            "motor": motor_info,
+        },
+        "helike": {
+            "form_factor": "PocketQube 1P",
+            "dimensions_mm": "50 × 50 × 50",
+            "mass_kg": PAYLOAD_MASS,
+            "n_wings": N_WINGS,
+            "wing_file": DXF_FILE,
+            "target_velocity_m_s": VF_TARGET,
+            "lasc_limit_m_s": VF_MAX,
+            "safety_factor": SAFETY_FACTOR,
+            "imu": "ICM-20602",
+            "barometer": "BME280",
+            "gnss": "NEO-8M (GPS)",
+            "radio": "LoRa 915 MHz (RFM95W)",
+            "mcu": "ESP32-C3",
+            "telemetry_rate_hz": 5,
+            "storage": "SD + LittleFS fallback",
+        },
+    }
+
+
 def load_environment():
     from rocketpy import Environment
 
@@ -260,6 +327,12 @@ def main():
     impact_lat = LAT + dlat
     impact_lon = LON + dlon
 
+    # Dédalo (parachute) impact lat/lon — same geodesic approximation
+    dlat_par = parachute_impact[0] / 111320.0
+    dlon_par = parachute_impact[1] / (111320.0 * 0.85)
+    parachute_lat = LAT + dlat_par
+    parachute_lon = LON + dlon_par
+
     area = compute_impact_zone(parachute_impact, srab_impact, landing_uncert_m=200)
 
     # Trajectories
@@ -312,6 +385,8 @@ def main():
             "impact_y_m": parachute_impact[1],
             "drift_m": float(np.hypot(*parachute_impact)),
             "descent_time_s": parachute_time,
+            "impact_lat": float(parachute_lat),
+            "impact_lon": float(parachute_lon),
         },
         "srab_descent": {
             "impact_x_m": srab_impact[0],
@@ -322,12 +397,15 @@ def main():
             "impact_spin_rpm": srab_spin_rpm,
             "target_velocity_m_s": VF_TARGET,
             "lasc_limit_m_s": VF_MAX,
+            "impact_lat": float(impact_lat),
+            "impact_lon": float(impact_lon),
         },
         "impact_zone": {
             **area,
             "impact_lat": float(impact_lat),
             "impact_lon": float(impact_lon),
         },
+        "vehicles": extract_vehicle_info(motor, rocket_full, rocket_empty, ascent),
     }
     (OUT_DIR / "landing.json").write_text(json.dumps(landing, indent=2))
     print(f"  -> landing.json")
