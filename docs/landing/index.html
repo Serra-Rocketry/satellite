@@ -170,7 +170,7 @@
     margin-top: 4px;
   }
 
-  /* ── Stage legend ────────────────────────────────────────── */
+  /* ── Stage legend + vehicle cards ─────────────────────────── */
   .stages {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -201,6 +201,41 @@
   .stage-info { font-size: 13px; }
   .stage-name { font-weight: 600; }
   .stage-desc { color: var(--fg-1); font-size: 12px; }
+
+  /* ── Vehicle spec cards ──────────────────────────────────── */
+  .vehicles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .vehicle {
+    background: var(--bg-1);
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .vehicle.dedalo { border-top: 3px solid var(--accent-1); }
+  .vehicle.helike { border-top: 3px solid var(--accent-3); }
+  .vehicle-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .vehicle-name { font-size: 16px; font-weight: 700; }
+  .vehicle-role { font-size: 11px; color: var(--fg-1); text-transform: uppercase; letter-spacing: 0.5px; }
+  .vehicle-specs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+  .spec { display: flex; justify-content: space-between; gap: 8px; }
+  .spec-key { color: var(--fg-1); }
+  .spec-val { color: var(--fg-0); font-weight: 600; text-align: right; white-space: nowrap; }
+  .vehicle-note { font-size: 11px; color: var(--fg-1); margin-top: 10px; font-style: italic; }
 
   /* ── Charts ──────────────────────────────────────────────── */
   .chart {
@@ -317,6 +352,30 @@
         <div class="stage-name">SRAB descent</div>
         <div class="stage-desc">Samara auto-rotation, 2 wings, Asa3.DXF, 0.2 kg</div>
       </div>
+    </div>
+  </section>
+
+  <!-- Vehicle spec cards -->
+  <section class="vehicles" id="vehicles">
+    <div class="vehicle dedalo">
+      <div class="vehicle-title">
+        <span class="vehicle-name">Dédalo #11</span>
+        <span class="vehicle-role">Launch vehicle</span>
+      </div>
+      <div class="vehicle-specs" id="dedalo-specs">
+        <!-- filled from landing.json vehicles.dedalo -->
+      </div>
+      <p class="vehicle-note">Solid propulsion · main parachute at apogee</p>
+    </div>
+    <div class="vehicle helike">
+      <div class="vehicle-title">
+        <span class="vehicle-name">Helike #213</span>
+        <span class="vehicle-role">Payload · SRAB recovery</span>
+      </div>
+      <div class="vehicle-specs" id="helike-specs">
+        <!-- filled from landing.json vehicles.helike -->
+      </div>
+      <p class="vehicle-note">Passive samara auto-rotation · zero deployment actuators</p>
     </div>
   </section>
 
@@ -458,6 +517,53 @@ async function loadLanding() {
     const dt = new Date(d.generated_at_utc);
     document.getElementById('gfs-stamp').textContent =
       dt.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' });
+
+    // Vehicle spec cards
+    if (d.vehicles) {
+      const spec = (k, v) =>
+        `<div class="spec"><span class="spec-key">${k}</span><span class="spec-val">${v}</span></div>`;
+      const v = d.vehicles;
+
+      if (v.dedalo) {
+        const dd = v.dedalo;
+        const rows = [
+          spec('Liftoff mass', dd.liftoff_mass_kg != null ? `${fmt(dd.liftoff_mass_kg, 2)} kg` : '--'),
+          spec('Dry mass', dd.dry_mass_kg != null ? `${fmt(dd.dry_mass_kg, 2)} kg` : '--'),
+          spec('Diameter', dd.diameter_mm != null ? `${dd.diameter_mm} mm` : '--'),
+          spec('Length', dd.length_m != null ? `${fmt(dd.length_m, 2)} m` : '--'),
+          dd.motor && dd.motor.total_impulse_n_s != null
+            ? spec('Total impulse', `${fmt(dd.motor.total_impulse_n_s, 0)} N·s`) : '',
+          dd.motor && dd.motor.avg_thrust_n != null
+            ? spec('Avg thrust', `${fmt(dd.motor.avg_thrust_n, 0)} N`) : '',
+          dd.motor && dd.motor.burn_time_s != null
+            ? spec('Burn time', `${fmt(dd.motor.burn_time_s, 2)} s`) : '',
+          dd.motor && dd.motor.propellant_mass_g != null
+            ? spec('Propellant', `${dd.motor.propellant_mass_g} g`) : '',
+          d.parachute_descent && d.parachute_descent.impact_lat != null
+            ? spec('Impact', `${d.parachute_descent.impact_lat.toFixed(5)}, ${d.parachute_descent.impact_lon.toFixed(5)}`) : '',
+        ].filter(Boolean).join('');
+        document.getElementById('dedalo-specs').innerHTML = rows;
+      }
+
+      if (v.helike) {
+        const hh = v.helike;
+        const rows = [
+          spec('Form factor', hh.form_factor),
+          spec('Dimensions', hh.dimensions_mm),
+          spec('Mass', hh.mass_kg != null ? `${(hh.mass_kg * 1000).toFixed(0)} g` : '--'),
+          spec('Wings', `${hh.n_wings} × ${hh.wing_file}`),
+          spec('MCU', hh.mcu),
+          spec('IMU', hh.imu),
+          spec('Radio', hh.radio),
+          spec('GNSS', hh.gnss),
+          spec('Telemetry', `${hh.telemetry_rate_hz} Hz`),
+          spec('Storage', hh.storage),
+          d.srab_descent && d.srab_descent.impact_lat != null
+            ? spec('Impact', `${d.srab_descent.impact_lat.toFixed(5)}, ${d.srab_descent.impact_lon.toFixed(5)}`) : '',
+        ].filter(Boolean).join('');
+        document.getElementById('helike-specs').innerHTML = rows;
+      }
+    }
 
     // Save globally for chart use
     window.__landing = d;

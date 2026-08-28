@@ -39,7 +39,9 @@
     "impact_velocity_m_s": 13.335325860083161,
     "impact_spin_rpm": 523.5322972989228,
     "target_velocity_m_s": 13.333333333333334,
-    "lasc_limit_m_s": 20.0
+    "lasc_limit_m_s": 20.0,
+    "impact_lat": -21.944842111575756,
+    "impact_lon": -48.95108622213136
   },
   "impact_zone": {
     "center_x_m": -566.5796742536661,
