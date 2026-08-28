@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-08-26T13:19:30Z",
+  "generated_at_utc": "2026-08-28T04:00:29Z",
   "launch": {
     "datetime_local_brt": "2026-09-04T09:00:00-03:00",
     "datetime_utc": "2026-09-03T12:00:00Z",
@@ -16,38 +16,77 @@
     "note": "GFS forecast for 2026-09-04 12:00 UTC. Updated every 6h (00/06/12/18Z)."
   },
   "ascent": {
-    "apogee_m_agl": 924.0977223777443,
-    "apogee_m_asl": 1399.6729176902443,
-    "apogee_time_s": 14.179025582709148,
-    "out_of_rail_velocity_m_s": 21.32675486366068,
-    "max_speed_m_s": 137.2626746583926,
-    "max_mach": 0.40353887845007735,
-    "max_acceleration_m_s2": 113.45207195546391,
-    "max_acceleration_g": 11.568891716892509
+    "apogee_m_agl": 929.0294407781189,
+    "apogee_m_asl": 1404.604636090619,
+    "apogee_time_s": 14.213779029253326,
+    "out_of_rail_velocity_m_s": 21.325255540405376,
+    "max_speed_m_s": 137.2278784958064,
+    "max_mach": 0.40373069741338574,
+    "max_acceleration_m_s2": 113.40068731714642,
+    "max_acceleration_g": 11.563651942013474
   },
   "parachute_descent": {
-    "impact_x_m": -437.79604965024055,
-    "impact_y_m": 147.40738666653374,
-    "drift_m": 461.94622926614835,
-    "descent_time_s": 117.41737377023688
+    "impact_x_m": -355.9780263022232,
+    "impact_y_m": 289.5353356188702,
+    "drift_m": 458.8584376275085,
+    "descent_time_s": 117.92114806622637,
+    "impact_lat": -21.946250590390786,
+    "impact_lon": -48.95102618438187
   },
   "srab_descent": {
-    "impact_x_m": -232.1039832209287,
-    "impact_y_m": 228.95748756179512,
-    "drift_m": 326.0272843453914,
-    "descent_time_s": 69.1074588599286,
-    "impact_velocity_m_s": 13.326141408965615,
-    "impact_spin_rpm": 523.1698451215441,
+    "impact_x_m": -199.18616461302827,
+    "impact_y_m": 283.8544436864807,
+    "drift_m": 346.76861647763025,
+    "descent_time_s": 69.41990751522076,
+    "impact_velocity_m_s": 13.332814351304272,
+    "impact_spin_rpm": 523.4158003025321,
     "target_velocity_m_s": 13.333333333333334,
-    "lasc_limit_m_s": 20.0
+    "lasc_limit_m_s": 20.0,
+    "impact_lat": -21.944842111575756,
+    "impact_lon": -48.95108622213136
   },
   "impact_zone": {
-    "center_x_m": -334.95001643558464,
-    "center_y_m": 188.18243711416443,
-    "semi_axis_a_m": 310.6341325586138,
+    "center_x_m": -277.58209545762577,
+    "center_y_m": 286.69488965267544,
+    "semi_axis_a_m": 278.4473715702303,
     "semi_axis_b_m": 200.0,
-    "area_km2": 0.19517718176007584,
-    "impact_lat": -21.945137816018875,
-    "impact_lon": -48.95166639329794
+    "area_km2": 0.17495364338728459,
+    "impact_lat": -21.944842111575756,
+    "impact_lon": -48.95108622213136
+  },
+  "vehicles": {
+    "dedalo": {
+      "dry_mass_kg": 4.9,
+      "liftoff_mass_kg": 5.1,
+      "diameter_mm": 106,
+      "length_m": 2.53,
+      "nose_type": "Ogive",
+      "n_fins": 4,
+      "parachute_cd_s": 1.5,
+      "parachute_diameter_m": 1.2,
+      "motor": {
+        "total_impulse_n_s": 1304.0,
+        "avg_thrust_n": 406.5,
+        "burn_time_s": 3.21,
+        "propellant_mass_g": 1265
+      }
+    },
+    "helike": {
+      "form_factor": "PocketQube 1P",
+      "dimensions_mm": "50 \u00d7 50 \u00d7 50",
+      "mass_kg": 0.2,
+      "n_wings": 2,
+      "wing_file": "Asa3.DXF",
+      "target_velocity_m_s": 13.333333333333334,
+      "lasc_limit_m_s": 20.0,
+      "safety_factor": 1.5,
+      "imu": "ICM-20602",
+      "barometer": "BME280",
+      "gnss": "NEO-8M (GPS)",
+      "radio": "LoRa 915 MHz (RFM95W)",
+      "mcu": "ESP32-C3",
+      "telemetry_rate_hz": 5,
+      "storage": "SD + LittleFS fallback"
+    }
   }
 }
