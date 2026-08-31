@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-08-31T14:21:01Z",
+  "generated_at_utc": "2026-08-31T23:00:08Z",
   "launch": {
     "datetime_local_brt": "2026-09-04T09:00:00-03:00",
     "datetime_utc": "2026-09-03T12:00:00Z",
@@ -16,43 +16,43 @@
     "note": "GFS forecast for 2026-09-04 12:00 UTC. Updated every 6h (00/06/12/18Z)."
   },
   "ascent": {
-    "apogee_m_agl": 926.6801578044283,
-    "apogee_m_asl": 1402.2553531169283,
-    "apogee_time_s": 14.198846593898475,
-    "out_of_rail_velocity_m_s": 21.320854269516076,
-    "max_speed_m_s": 137.12601718202663,
-    "max_mach": 0.4064768422320753,
-    "max_acceleration_m_s2": 113.39421108886081,
-    "max_acceleration_g": 11.562991550515296
+    "apogee_m_agl": 926.6118140718622,
+    "apogee_m_asl": 1402.1870093843622,
+    "apogee_time_s": 14.197632336007059,
+    "out_of_rail_velocity_m_s": 21.3204418767412,
+    "max_speed_m_s": 137.15003417665125,
+    "max_mach": 0.4062605438571209,
+    "max_acceleration_m_s2": 113.33349055808334,
+    "max_acceleration_g": 11.556799779545853
   },
   "parachute_descent": {
-    "impact_x_m": -564.0315646460608,
-    "impact_y_m": 46.93084293004147,
-    "drift_m": 565.9806621565862,
-    "descent_time_s": 117.79235837565514,
-    "impact_lat": -21.94811955857569,
-    "impact_lon": -48.953590117639344
+    "impact_x_m": -650.072858898085,
+    "impact_y_m": -38.23904765395383,
+    "drift_m": 651.1965499305189,
+    "descent_time_s": 117.73911084875368,
+    "impact_lat": -21.948892477137065,
+    "impact_lon": -48.954490224280335
   },
   "srab_descent": {
-    "impact_x_m": -218.44636399583854,
-    "impact_y_m": 200.67471312318892,
-    "drift_m": 296.62965871617854,
-    "descent_time_s": 68.88994241902884,
-    "impact_velocity_m_s": 13.335300093689892,
-    "impact_spin_rpm": 523.5551313322349,
+    "impact_x_m": -234.73270689182954,
+    "impact_y_m": 177.43196153471476,
+    "drift_m": 294.2474208193201,
+    "descent_time_s": 68.87952916338052,
+    "impact_velocity_m_s": 13.33513609865031,
+    "impact_spin_rpm": 523.5494877142078,
     "target_velocity_m_s": 13.333333333333334,
     "lasc_limit_m_s": 20.0,
-    "impact_lat": -21.945015128099136,
-    "impact_lon": -48.95196529603133
+    "impact_lat": -21.945161430137368,
+    "impact_lon": -48.95221093395474
   },
   "impact_zone": {
-    "center_x_m": -391.23896432094966,
-    "center_y_m": 123.8027780266152,
-    "semi_axis_a_m": 389.1205359885738,
+    "center_x_m": -442.4027828949572,
+    "center_y_m": 69.59645694038046,
+    "semi_axis_a_m": 433.9986250349765,
     "semi_axis_b_m": 200.0,
-    "area_km2": 0.24449164344452526,
-    "impact_lat": -21.945015128099136,
-    "impact_lon": -48.95196529603133
+    "area_km2": 0.27268937841559066,
+    "impact_lat": -21.945161430137368,
+    "impact_lon": -48.95221093395474
   },
   "vehicles": {
     "dedalo": {
