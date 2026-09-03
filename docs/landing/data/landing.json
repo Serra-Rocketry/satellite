@@ -56,8 +56,8 @@
   },
   "vehicles": {
     "dedalo": {
-      "dry_mass_kg": 4.9,
-      "liftoff_mass_kg": 5.1,
+      "dry_mass_kg": 4.61,
+      "liftoff_mass_kg": 4.81,
       "diameter_mm": 106,
       "length_m": 2.53,
       "nose_type": "Ogive",
