@@ -29,7 +29,7 @@ public:
     bool hasNewData() const override { return _hasNewData; }
     void markDataRead() override { _hasNewData = false; }
 
-    /** Try BME280 first, then BMP280, then BMP585 */
+    /** Try BME280 first, then BMP585, then BMP280 */
     bool begin(TwoWire &wire, uint8_t addr = BME280_ADDR);
 
     float getTemperature();
@@ -46,8 +46,8 @@ private:
     Adafruit_BME280 _bme;
     Adafruit_BMP280 _bmp;
     Adafruit_BMP5xx _bmp585;
-    bool _useBME;       // true = BME280, false = BMP280 fallback
-    bool _useBMP585;    // true = BMP585 fallback (highest priority after BME)
+    bool _useBME;       // true = BME280; false = BMP585 ou BMP280
+    bool _useBMP585;    // true = BMP585 (tem prioridade sobre o BMP280)
     bool _ready;
     bool _hasNewData;
     float _seaLevelPressure;
