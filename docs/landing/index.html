@@ -652,7 +652,7 @@ async function loadLanding() {
           dd.motor && dd.motor.propellant_mass_g != null
             ? spec('Propellant', `${dd.motor.propellant_mass_g} g`) : '',
           d.parachute_descent && d.parachute_descent.impact_lat != null
-            ? spec('Impact', `${d.parachute_descent.impact_lat.toFixed(5)}, ${d.parachute_descent.impact_lon.toFixed(5)}`) : '',
+            ? spec('Impact', `${d.parachute_descent.impact_lat.toFixed(6)}, ${d.parachute_descent.impact_lon.toFixed(6)}`) : '',
         ].filter(Boolean).join('');
         document.getElementById('dedalo-specs').innerHTML = rows;
       }
@@ -671,7 +671,7 @@ async function loadLanding() {
           spec('Telemetry', `${hh.telemetry_rate_hz} Hz`),
           spec('Storage', hh.storage),
           d.srab_descent && d.srab_descent.impact_lat != null
-            ? spec('Impact', `${d.srab_descent.impact_lat.toFixed(5)}, ${d.srab_descent.impact_lon.toFixed(5)}`) : '',
+            ? spec('Impact', `${d.srab_descent.impact_lat.toFixed(6)}, ${d.srab_descent.impact_lon.toFixed(6)}`) : '',
         ].filter(Boolean).join('');
         document.getElementById('helike-specs').innerHTML = rows;
       }

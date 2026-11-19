@@ -17,14 +17,12 @@
   │  0  BUZZER ─────────── Active buzzer        │
   │  1  RESET ──────────── RFM95W (LoRa RST)    │
   │  2  DIO0 ───────────── RFM95W (LoRa IRQ)    │
-  │  3  LED ────────────── Status indicator     │
-  │  4  SCK ─── SPI ────── RFM95W + SD Card     │
-  │  5  MISO ── SPI ────── RFM95W + SD Card     │
-  │  6  MOSI ── SPI ────── RFM95W + SD Card     │
+  │  4  SCK ─── SPI ────── RFM95W               │
+  │  5  MISO ── SPI ────── RFM95W               │
+  │  6  MOSI ── SPI ────── RFM95W               │
   │  7  NSS ────────────── RFM95W (LoRa CS)     │
   │  8  SDA ─── I2C ────── BME280 + ICM-20602   │
   │  9  SCL ─── I2C ────── BME280 + ICM-20602   │
-  │ 10  CS_SD ──────────── SD Card (CS)          │
   │ 20  TX_GPS ── UART ─── GPS NEO-8M (TX)      │
   │ 21  RX_GPS ── UART ─── GPS NEO-8M (RX)      │
   └─────────────────────────────────────────────┘

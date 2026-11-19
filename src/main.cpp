@@ -6,6 +6,7 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <esp_task_wdt.h>
+#include <esp_system.h> // esp_random()
 
 #include "config.h"
 #include "calc/SensorData.h"
@@ -65,23 +66,31 @@ void setup() {
     Serial.println(F("========================================"));
     Serial.println();
 
+    // --- Buzzer (early: beep on every boot, before any init can fail) ---
+    g_buzzer.begin();
+    g_buzzer.playBeep();
+    Serial.println(F("[ACT] Buzzer initialized — boot beep"));
+
     // --- I2C (single begin — initialize global Wire for all sensors) ---
     Wire.begin(I2C_SDA, I2C_SCL);
     delay(100);
     Wire.setClock(400000); // 400kHz Fast Mode
     Serial.println(F("[I2C] Bus initialized (SDA=8, SCL=9, 400kHz)"));
 
-    // --- Buzzer & LED ---
-    g_buzzer.begin();
+    // --- LED ---
     g_led.begin();
-    Serial.println(F("[ACT] Buzzer & LED initialized"));
+    Serial.println(F("[ACT] LED initialized"));
 
-    // --- BME280 ---
+    // --- BME280 (BMP280/BMP585 fallbacks inside) ---
     g_bme_ok = g_bme.begin(Wire, BME280_ADDR);
     if (g_bme_ok) {
-        Serial.println(F("[BME] BME280 OK"));
+        if (g_bme.isBMP585()) {
+            Serial.println(F("[BMP] BMP585 fallback OK @ 0x46 (no humidity)"));
+        } else {
+            Serial.println(F("[BME] BME280 OK"));
+        }
     } else {
-        Serial.println(F("[BME] ERROR: BME280 not found!"));
+        Serial.println(F("[BME] ERROR: no barometric sensor found!"));
     }
 
     // --- ICM-20602 ---
@@ -165,6 +174,13 @@ void loop() {
     // --- Feed watchdog ---
     esp_task_wdt_reset();
 
+    // --- Beep every 1s ---
+    static uint32_t g_last_beep = 0;
+    if (now - g_last_beep >= 1000) {
+        g_last_beep = now;
+        g_buzzer.playBeep();
+    }
+
     // --- Update IMU ---
     g_icm.update();
 
@@ -206,10 +222,17 @@ void loop() {
         Serial.println(F("[LORA] ERROR: send() failed"));
     }
 
-    // --- Log to storage (LittleFS/SD) ---
-    if (!g_fs.appendLine(packet)) {
-        g_fs_failures++;
-        Serial.println(F("[FS] ERROR: appendLine() failed"));
+    // --- Log to storage (LittleFS/SD) @ 1Hz ---
+    // O LoRa transmite a 5Hz (200ms); o arquivo de backup grava a 1Hz para
+    // preservar a flash interna: ~70B/s vs ~350B/s. Se a flash chegar a
+    // ZERO bytes livres, o log para sozinho (o LoRa segue transmittindo).
+    static uint32_t s_last_log = 0;
+    if (now - s_last_log >= FS_LOG_INTERVAL_MS) {
+        s_last_log = now;
+        if (!g_fs.appendLine(packet)) {
+            g_fs_failures++;
+            Serial.println(F("[FS] ERROR: appendLine() failed"));
+        }
     }
 
     // --- Heartbeat LED ---
@@ -238,5 +261,8 @@ void loop() {
         Serial.print(F(" FS fails:"));
         Serial.println(g_fs_failures);
     }
-    g_last_sample = now;
+    // --- Agenda proximo ciclo com jitter (reduz colisao com o foguete) ---
+    // Desloca o intervalo em ±LORA_JITTER_MS; esp_random() = RNG de hardware.
+    g_last_sample = now + (int32_t)(esp_random() % (2 * LORA_JITTER_MS + 1))
+                    - LORA_JITTER_MS;
 }

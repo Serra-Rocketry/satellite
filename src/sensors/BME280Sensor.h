@@ -15,6 +15,7 @@
 #include <Arduino.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_BMP280.h>
+#include <Adafruit_BMP5xx.h>
 #include "config.h"
 #include "ISensor.h"
 
@@ -28,21 +29,25 @@ public:
     bool hasNewData() const override { return _hasNewData; }
     void markDataRead() override { _hasNewData = false; }
 
-    /** Try BME280 first, fallback to BMP280 */
+    /** Try BME280 first, then BMP280, then BMP585 */
     bool begin(TwoWire &wire, uint8_t addr = BME280_ADDR);
 
     float getTemperature();
     float getPressure();
-    /** Returns NAN when using BMP280 fallback (no humidity sensor) */
+    /** Returns NAN when using BMP280/BMP585 fallback (no humidity sensor) */
     float getHumidity();
     float getAltitude();
     void setSeaLevelPressure(float pressure);
     float getSeaLevelPressure();
+    /** True when running on the BMP585 fallback (sensor type reporting) */
+    bool isBMP585() const { return _useBMP585; }
 
 private:
     Adafruit_BME280 _bme;
     Adafruit_BMP280 _bmp;
+    Adafruit_BMP5xx _bmp585;
     bool _useBME;       // true = BME280, false = BMP280 fallback
+    bool _useBMP585;    // true = BMP585 fallback (highest priority after BME)
     bool _ready;
     bool _hasNewData;
     float _seaLevelPressure;

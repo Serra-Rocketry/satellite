@@ -6,6 +6,14 @@
  * Smart storage strategy: SD card primary, LittleFS secondary for permanent storage
  * Persistent file management across reboots
  *
+ * Desgaste de flash: o arquivo permanece ABERTO entre escritas (abre 1x no
+ * begin/createFile), com flush() por linha. Abrir/fechar a cada pacote no
+ * LittleFS journaliza metadados 5x mais rapido que os dados e esgota os
+ * 1.4MB livres em ~1h.
+ *
+ * Erase de fabrica: compile com -D FS_ERASE_ON_BOOT para formatar o LittleFS
+ * no boot (ex.: pio run -e helike_esp32c3 -t upload com build flag).
+ *
  * @author Serra Rocketry Team — Mission #213
  * @date 2026
  */
@@ -82,7 +90,9 @@ bool FilesystemModule::createFile(const char* path, const String& header) {
 
     file.println(header);
     file.flush();
-    file.close();
+    // Mantem aberto para escritas subsequentes (ver nota de desgaste no topo)
+    _log = file;
+    _log_path = path;
     return true;
 }
 
@@ -91,11 +101,19 @@ bool FilesystemModule::appendLine(const String& packet) {
         return false;
     }
 
+    // Caminho rapido: arquivo ja aberto
+    if (_log) {
+        _log.println(packet);
+        _log.flush();
+        return true;
+    }
+
+    // Fallback: reabre (ex.: depois de erro de escrita)
     File file;
     if (_storage_type == STORAGE_SD) {
-        file = SD.open("/telemetry.csv", FILE_APPEND);
+        file = SD.open(_log_path.c_str(), FILE_APPEND);
     } else {
-        file = LittleFS.open("/telemetry.csv", FILE_APPEND);
+        file = LittleFS.open(_log_path.c_str(), FILE_APPEND);
     }
 
     if (!file) {
@@ -112,9 +130,9 @@ bool FilesystemModule::appendLine(const String& packet) {
     }
 
     _sd_fail_count = 0;
-    file.println(packet);
-    file.flush();
-    file.close();
+    _log = file;
+    _log.println(packet);
+    _log.flush();
     return true;
 }
 
@@ -172,6 +190,14 @@ bool FilesystemModule::setupSD() {
 
 bool FilesystemModule::setupLittleFS() {
     Serial.println("SD failed. Trying LittleFS...");
+#ifdef FS_ERASE_ON_BOOT
+    Serial.println("[FS] FS_ERASE_ON_BOOT: formatting LittleFS...");
+    if (LittleFS.format()) {
+        Serial.println("[FS] LittleFS formatted.");
+    } else {
+        Serial.println("[FS] LittleFS format FAILED — mounting anyway.");
+    }
+#endif
     if (LittleFS.begin(true)) {
         Serial.printf("LittleFS OK — %u bytes free\n",
             (unsigned)(LittleFS.totalBytes() - LittleFS.usedBytes()));
