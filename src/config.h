@@ -77,6 +77,13 @@
 // ao intervalo.
 #define LORA_JITTER_MS      40
 
+// Beep de localizacao em solo (1Hz) — desligado por padrao em voo.
+// Habilite na recuperacao: -D BEEP_HEARTBEAT_ENABLED=1
+#ifndef BEEP_HEARTBEAT_ENABLED
+#define BEEP_HEARTBEAT_ENABLED 0
+#endif
+#define BEEP_HEARTBEAT_PERIOD_MS 1000
+
 // GPS read interval (ms)
 #define GPS_READ_INTERVAL_MS 1000
 

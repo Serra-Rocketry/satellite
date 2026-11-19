@@ -76,6 +76,11 @@ bool FilesystemModule::createFile(const char* path, const String& header) {
         return false;
     }
 
+    // Fecha handle anterior antes de trocar de arquivo/storage
+    if (_log) {
+        _log.close();
+    }
+
     File file;
     if (_storage_type == STORAGE_SD) {
         file = SD.open(path, FILE_WRITE);
@@ -103,8 +108,19 @@ bool FilesystemModule::appendLine(const String& packet) {
 
     // Caminho rapido: arquivo ja aberto
     if (_log) {
-        _log.println(packet);
+        size_t written = _log.println(packet);
         _log.flush();
+        if (written == 0) {
+            // Escrita falhou (ex.: SD removido): invalida o handle para que o
+            // proximo ciclo reabra e, apos SD_MAX_FAILS, degrade p/ LittleFS.
+            Serial.println("[FS] ERROR: write failed - invalidating handle");
+            _log = File();
+            if (_storage_type == STORAGE_SD && ++_sd_fail_count >= SD_MAX_FAILS) {
+                degradeToLittleFS();
+            }
+            return false;
+        }
+        _sd_fail_count = 0;
         return true;
     }
 
@@ -119,20 +135,19 @@ bool FilesystemModule::appendLine(const String& packet) {
     if (!file) {
         // SD morreu em voo (ex: queda de alimentacao): degrada p/ LittleFS
         if (_storage_type == STORAGE_SD && ++_sd_fail_count >= SD_MAX_FAILS) {
-            Serial.println("[FS] SD failed repeatedly - switching to LittleFS");
-            SD.end();
-            _storage_type = STORAGE_NONE;
-            if (setupLittleFS()) {
-                _storage_type = STORAGE_LITTLEFS;
-            }
+            degradeToLittleFS();
         }
         return false;
     }
 
     _sd_fail_count = 0;
     _log = file;
-    _log.println(packet);
+    size_t written = _log.println(packet);
     _log.flush();
+    if (written == 0) {
+        _log = File();
+        return false;
+    }
     return true;
 }
 
@@ -205,4 +220,13 @@ bool FilesystemModule::setupLittleFS() {
     }
     Serial.println("LittleFS mount failed.");
     return false;
+}
+
+void FilesystemModule::degradeToLittleFS() {
+    Serial.println("[FS] SD failed repeatedly - switching to LittleFS");
+    SD.end();
+    _storage_type = STORAGE_NONE;
+    if (setupLittleFS()) {
+        _storage_type = STORAGE_LITTLEFS;
+    }
 }

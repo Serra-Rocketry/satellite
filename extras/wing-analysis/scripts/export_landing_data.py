@@ -40,8 +40,9 @@ sys.path.insert(0, str(WING_SRC))
 LAT = -21.942472
 LON = -48.952111
 ELEV = 478
-LAUNCH_UTC = datetime(2026, 9, 4, 18, 0, tzinfo=ZoneInfo("America/Sao_Paulo"))
-LAUNCH_LOCAL_STR = LAUNCH_UTC.isoformat()
+LAUNCH_LOCAL = datetime(2026, 9, 4, 18, 0, tzinfo=ZoneInfo("America/Sao_Paulo"))
+LAUNCH_UTC = LAUNCH_LOCAL.astimezone(timezone.utc)
+LAUNCH_LOCAL_STR = LAUNCH_LOCAL.isoformat()
 
 RAIL_LENGTH = 4.0
 INCLINATION = 85
@@ -133,7 +134,7 @@ def load_environment():
     from rocketpy import Environment
 
     env = Environment(latitude=LAT, longitude=LON, elevation=ELEV)
-    env.set_date(LAUNCH_UTC)
+    env.set_date(LAUNCH_LOCAL)
     env.set_atmospheric_model(type="Forecast", file="GFS")
     return env
 
@@ -296,7 +297,7 @@ def main():
     import numpy as np
 
     print(f"[{now_utc_iso()}] Starting landing page export...")
-    print(f"  Target launch: {LAUNCH_LOCAL_STR} (12:00 UTC)")
+    print(f"  Target launch: {LAUNCH_LOCAL_STR} ({LAUNCH_UTC.strftime('%H:%M UTC')})")
 
     print("[1/6] Loading Environment (GFS forecast)...")
     env = load_environment()
@@ -385,7 +386,7 @@ def main():
         "atmospheric_model": {
             "type": "GFS",
             "gfs_run_date_utc": LAUNCH_UTC.strftime("%Y-%m-%d"),
-            "note": "GFS forecast for 2026-09-04 12:00 UTC. Updated every 6h (00/06/12/18Z).",
+            "note": f"GFS forecast for {LAUNCH_UTC.strftime('%Y-%m-%d %H:%M')} UTC. Updated every 6h (00/06/12/18Z).",
         },
         "ascent": {
             "apogee_m_agl": apogee_agl,

@@ -41,6 +41,7 @@ static FilesystemModule g_fs;
 //==============================================================================
 
 static uint32_t g_last_sample = 0;
+static uint32_t g_next_interval = SAMPLE_INTERVAL_MS;
 static uint32_t g_last_debug_print = 0;
 static bool g_bme_ok = false;
 static bool g_icm_ok = false;
@@ -167,19 +168,15 @@ void loop() {
     // --- GPS update (always, to keep parser fresh) ---
     g_gps.update();
 
-    // --- Main loop at sample interval ---
-    if (now - g_last_sample < SAMPLE_INTERVAL_MS) {
+    // --- Beep de localizacao (nao-bloqueante; ver BEEP_HEARTBEAT_ENABLED) ---
+    g_buzzer.updateHeartbeat(now);
+
+    // --- Main loop at sample interval (jitter entra no limiar) ---
+    if (now - g_last_sample < g_next_interval) {
         return;
     }
     // --- Feed watchdog ---
     esp_task_wdt_reset();
-
-    // --- Beep every 1s ---
-    static uint32_t g_last_beep = 0;
-    if (now - g_last_beep >= 1000) {
-        g_last_beep = now;
-        g_buzzer.playBeep();
-    }
 
     // --- Update IMU ---
     g_icm.update();
@@ -262,7 +259,9 @@ void loop() {
         Serial.println(g_fs_failures);
     }
     // --- Agenda proximo ciclo com jitter (reduz colisao com o foguete) ---
-    // Desloca o intervalo em ±LORA_JITTER_MS; esp_random() = RNG de hardware.
-    g_last_sample = now + (int32_t)(esp_random() % (2 * LORA_JITTER_MS + 1))
-                    - LORA_JITTER_MS;
+    // O jitter entra no limiar, nao no timestamp: agendar g_last_sample no
+    // futuro causaria underflow em "now - g_last_sample" (unsigned) e rajadas.
+    g_last_sample = now;
+    g_next_interval = SAMPLE_INTERVAL_MS
+        + (int32_t)(esp_random() % (2 * LORA_JITTER_MS + 1)) - LORA_JITTER_MS;
 }

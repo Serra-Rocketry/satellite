@@ -94,6 +94,9 @@ private:
 
     // LittleFS-related
     bool setupLittleFS();
+
+    // Degrada o armazenamento de SD para LittleFS apos falhas consecutivas
+    void degradeToLittleFS();
 };
 
 #endif // FILESYSTEM_MODULE_H

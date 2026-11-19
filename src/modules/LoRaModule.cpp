@@ -22,14 +22,16 @@ bool LoRaModule::begin() {
     delay(10);
     SPISettings probe(400000, MSBFIRST, SPI_MODE0);
     SPI.beginTransaction(probe);
-    digitalWrite(LORA_CS, LOW);
-    SPI.transfer(0x42 & 0x7F);
     Serial.print(F("[LORA] Pre-begin RegVersion: "));
     for (int i = 0; i < 5; i++) {
+        // CS deve ser reafirmado a cada leitura; caso contrario o chip
+        // devolve registradores consecutivos (0x42..0x46), nao o RegVersion.
+        digitalWrite(LORA_CS, LOW);
+        SPI.transfer(0x42 & 0x7F);
         uint8_t ver = SPI.transfer(0xFF);
+        digitalWrite(LORA_CS, HIGH);
         Serial.printf("0x%02X ", ver);
     }
-    digitalWrite(LORA_CS, HIGH);
     SPI.endTransaction();
     Serial.println(F("(esperado 0x12 sempre)"));
 
